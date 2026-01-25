@@ -1,0 +1,12 @@
+{
+  "apps": [
+    { "id":"spenflix", "appName":"Spenflix : Free Media", "appURL":"https://spenflix.ru/", "appIcon":"./assets/images/spenflix.webp" },
+    { "id":"youtube", "appName":"Youtube", "appURL":"https://youtube.com", "appIcon":"./assets/images/youtube.webp" },
+    { "id":"nealfun", "appName":"Neal.Fun", "appURL":"https://neal.fun", "appIcon":"./assets/images/nealfun.webp" },
+    { "id":"netflix", "appName":"Netflix", "appURL":"https://netflix.com", "appIcon":"./assets/images/netflix.webp" },
+    { "id":"soundcloud", "appName":"Sound Cloud", "appURL":"https://soundcloud.com", "appIcon":"./assets/images/soundcloud.webp" },
+    { "id":"spotify", "appName":"Spotify", "appURL":"https://spotify.com", "appIcon":"./assets/images/spotify.webp" },
+    { "id":"hdtoday", "appName":"HDToday", "appURL":"https://hdtodayz.to/", "appIcon":"./assets/images/hdtoday.webp" },
+    { "id":"snokido", "appName":"Snokido", "appURL":"https://www.snokido.com/", "appIcon":"./assets/images/snokido.webp" }
+  ]
+}

@@ -1,0 +1,2420 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Link Joint — Categorized and Rated</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=settings" />
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    /* * CLEANER UI REVISION 
+ * Key changes: Subtle gradients, better shadows, cleaner input fields, 
+ * more defined components, and refined color usage for a modern dark theme.
+ */
+    :root {
+      /* Color Palette Refinement */
+      --bg: #0c1015;
+      /* Darker, less blue-black */
+      --panel: #141a21;
+      /* Slightly lighter than card */
+      --muted: #aab5c4;
+      /* Softer mute color */
+      --accent: #5e95ff;
+      /* A slightly more vibrant blue */
+      --card: #1c2430;
+      /* Primary surface color */
+      --danger: #ef5a5a;
+      --sidebar: #10141a;
+      /* Sidebar background */
+      --indicator: var(--accent);
+      --border-color: rgba(255, 255, 255, 0.06);
+      /* For subtle borders */
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #080a0c);
+      /* Deeper background fade */
+      color: #e6eef6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-size: 15px;
+      /* Slightly larger base font for readability */
+    }
+
+    /* Base Layout */
+    .app {
+      display: flex;
+      min-height: 100vh
+    }
+
+    /* Sidebar: Cleaner, more defined */
+    .sidebar {
+      width: 80px;
+      /* Slightly wider */
+      background: var(--sidebar);
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      border-right: 1px solid var(--border-color);
+      position: relative;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      align-items: center
+    }
+
+    .nav-btn {
+      width: 90%;
+      height: 52px;
+      /* Tighter button height */
+      margin: 0 5%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      position: relative;
+      border-radius: 8px;
+      /* Rounded buttons */
+      transition: all .2s ease;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--accent);
+      transform: scale(1.02);
+    }
+
+    .nav-btn.active {
+      background: var(--card);
+      /* Match main card background */
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(0, 0, 0, 0.4);
+      transform: none;
+    }
+
+    /* This rule applies your preferred horizontal centering and lets flexbox handle vertical */
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+      display: block;
+      margin: 0 auto;
+      stroke-width: 1.8;
+    }
+
+    .nav-tooltip {
+      position: absolute;
+      left: 100%;
+      margin-left: 15px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      white-space: nowrap;
+      transform: translateX(0);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s ease, transform .15s ease;
+      z-index: 100;
+    }
+
+    .nav-btn:hover .nav-tooltip {
+      opacity: 1;
+      transform: translateX(5px)
+    }
+
+    /* Main Content Area */
+    .main {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      /* Slightly more rounded */
+      padding: 20px;
+      /* More padding */
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      /* Stronger, deeper shadow */
+      border: 1px solid var(--border-color);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center
+    }
+
+    /* Increased gap */
+
+    /* Inputs, Textareas, and Selects */
+    input,
+    textarea {
+      padding: 12px;
+      /* More vertical padding */
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--panel);
+      /* Consistent panel background */
+      color: inherit;
+      font-size: 15px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+      width: 100%;
+      margin-top: 5px;
+      /* Space from label */
+      min-height: 44px;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(94, 149, 255, 0.2);
+      outline: none;
+    }
+
+    input[type="number"] {
+      width: 80px;
+    }
+
+
+    /* Specific styling for select dropdowns to fit the dark theme */
+    select {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      color: inherit;
+      background-color: var(--panel);
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aab5c4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 35px;
+      cursor: pointer;
+      margin-top: 5px;
+      /* Space from label */
+      min-height: 44px;
+      transition: border-color .15s ease;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    select::-ms-expand {
+      display: none;
+    }
+
+    select option {
+      background: var(--card);
+      color: #e6eef6;
+    }
+
+    /* Buttons */
+    button {
+      padding: 10px 16px;
+      /* Larger hit area */
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #0d1218;
+      /* Darker text for contrast */
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: #73a8ff;
+      /* Lighter on hover */
+      box-shadow: 0 2px 8px rgba(94, 149, 255, 0.4);
+    }
+
+    button:active {
+      transform: scale(.98);
+      box-shadow: none;
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--accent);
+      box-shadow: none;
+    }
+
+    button.ghost:hover {
+      background: rgba(94, 149, 255, 0.1);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(94, 149, 255, 0.2);
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: white
+    }
+
+    button.danger:hover {
+      background: #d04d4d;
+      box-shadow: 0 2px 8px rgba(239, 90, 90, 0.4);
+    }
+    
+    button.secondary {
+        background: var(--panel);
+        border: 1px solid var(--border-color);
+        color: var(--muted);
+    }
+    button.secondary:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+    }
+
+    /* Icon within button */
+    button svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2.5;
+    }
+
+    /* Typography and Labels */
+    h2 {
+      margin: 0;
+      font-size: 18px
+    }
+
+    /* Slightly larger headers */
+    h3 {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    label.muted {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .2s ease, transform .2s ease
+    }
+
+    /* Faster transition */
+    .section.active {
+      display: block;
+      opacity: 1;
+      transform: none
+    }
+
+    /* Lists and Items */
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      /* More padding */
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--panel);
+      /* Use panel for list items */
+      transition: background-color .15s ease;
+      position: relative;
+    }
+
+    .item:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    
+    /* Checkbox for bulk select */
+    .bulk-select-check {
+        margin-right: 15px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent);
+        cursor: pointer;
+        display: none; /* Hidden by default */
+    }
+    
+    .selection-mode .bulk-select-check {
+        display: block;
+    }
+
+    /* Subtle hover */
+    /* .fade-in removed */
+
+    /* Badges */
+    .badge {
+      background: rgba(94, 149, 255, 0.15);
+      /* Match accent color */
+      color: var(--accent);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* Controls & Search */
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 15px
+    }
+
+    .controls input[type="search"] {
+      flex: 1;
+      min-width: 180px;
+      margin-top: 0;
+    }
+
+    .controls select {
+      min-width: 180px;
+      margin-top: 0;
+    }
+
+    /* No-results */
+    .no-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 40px;
+      border-radius: 12px;
+      color: var(--muted);
+      background: var(--panel);
+    }
+
+    .no-results .ill {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+
+    /* Selected link for keyboard nav */
+    .link-selected {
+      outline: 3px solid var(--accent);
+      /* More visible outline */
+      box-shadow: 0 0 0 1px var(--accent);
+      transform: translateX(0);
+      /* Remove slide for cleaner look */
+      background: rgba(94, 149, 255, 0.1);
+    }
+
+    /* Category Grouping Styles - Refinement for a cleaner look */
+    .cat-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Tighter gap */
+    .cat-group details {
+      background: var(--panel);
+      /* Use panel for the details background */
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .cat-group summary {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.03);
+      list-style: none;
+      transition: background-color .15s ease;
+    }
+
+    .cat-group summary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .cat-group summary::marker {
+      display: none;
+    }
+
+    .cat-group summary::before {
+      content: '▶';
+      display: inline-block;
+      transform: rotate(0);
+      transition: transform 0.2s ease;
+      margin-right: 10px;
+      font-size: 10px;
+      color: var(--accent);
+      /* Accent color for the indicator */
+    }
+
+    .cat-group details[open]>summary:before {
+      transform: rotate(90deg);
+    }
+
+    .cat-group details[open]>summary {
+      border-bottom: 1px solid var(--border-color);
+      background: var(--card);
+      /* Darker summary when open */
+    }
+
+    .cat-content {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    /* Tighter gap in content */
+    .cat-group .item {
+      padding: 10px 12px;
+      margin: 0;
+      border: 1px solid(var(--border-color));
+      /* Retain border for list items inside */
+      background: var(--card);
+      /* Card for item inside content */
+    }
+
+    .cat-group .item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    /* URL Visbility Override */
+    body.show-full-urls .link-url-display {
+        white-space: normal !important;
+        word-break: break-all;
+    }
+
+
+    /* Star Rating Styles - More defined stars */
+    .rating-stars {
+      display: inline-flex;
+      gap: 3px;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .star {
+      color: var(--muted);
+      transition: color 0.15s ease;
+    }
+
+    .star.active {
+      color: #facc15;
+    }
+
+    /* Tailwind yellow-400 */
+    .star:hover {
+      color: #fcd34d;
+    }
+
+    /* Tailwind amber-300 */
+    .cat-rating-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    /* Bulk Action Bar */
+    .bulk-actions-bar {
+        display: none;
+        background: var(--panel);
+        border: 1px solid var(--accent);
+        padding: 12px;
+        border-radius: 12px;
+        margin-top: 15px;
+        align-items: center;
+        gap: 12px;
+        animation: slideDown 0.2s ease-out;
+    }
+    .bulk-actions-bar.visible {
+        display: flex;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modal Styles - Elevated and modern */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      /* More opaque background */
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 450px;
+      /* Slightly wider modal */
+      transform: scale(0.98);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      /* Bouncy transition */
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--border-color);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-overlay.open .modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-close {
+      background: transparent;
+      color: var(--muted);
+      font-size: 24px;
+      padding: 0;
+      margin: 0;
+      min-height: auto;
+      width: 30px;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .modal-body>div {
+      margin-bottom: 20px;
+    }
+
+    .modal-body label {
+      margin-bottom: 8px;
+    }
+
+    .filter-rating-select {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .filter-rating-select .rating-stars {
+      font-size: 24px;
+    }
+
+    .filter-rating-select .star.filter-star {
+      cursor: pointer;
+    }
+
+    /* Theme Grid Styles */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .theme-preset-card {
+      background: var(--panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .theme-preset-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .theme-preset-card.active-theme {
+      border-color: var(--accent);
+      background: rgba(94, 149, 255, 0.05);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .preset-swatch {
+      width: 100%;
+      height: 60px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorate the swatch a bit to show colors */
+    .preset-swatch::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 40%;
+      height: 40%;
+      background: var(--swatch-accent, white);
+      border-top-left-radius: 6px;
+    }
+
+    .preset-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .theme-preset-card:hover .preset-name {
+      color: #fff;
+    }
+    
+    /* Toggle Switch Style */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .toggle-row:last-child {
+      border-bottom: none;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--panel);
+      border: 1px solid var(--border-color);
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 2px;
+      background-color: var(--muted);
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    input:checked + .slider:before {
+      transform: translateX(18px);
+      background-color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="nav" role="tablist" aria-orientation="vertical">
+        <div class="nav-btn" data-tab="links" role="tab" title="Links">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12h3l3-9 4 18 3-9h3"></path>
+          </svg>
+          <div class="nav-tooltip">Links</div>
+        </div>
+
+        <div id="nav-create-link" class="nav-btn" data-tab="create-link" role="tab" title="Create Link"
+          style="display:none">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <path d="M12 8v8"></path>
+            <path d="M8 12h8"></path>
+          </svg>
+          <div class="nav-tooltip">Create Link</div>
+        </div>
+
+        <div class="nav-btn" data-tab="categories" role="tab" title="Categories">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="8" height="8"></rect>
+            <rect x="13" y="3" width="8" height="8"></rect>
+            <rect x="3" y="13" width="8" height="8"></rect>
+            <rect x="13" y="13" width="8" height="8"></rect>
+          </svg>
+          <div class="nav-tooltip">Categories</div>
+        </div>
+
+        <div class="nav-btn" data-tab="tools" role="tab" title="Tools">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+            </path>
+          </svg>
+          <div class="nav-tooltip">Tools</div>
+        </div>
+
+        <div id="nav-admin" class="nav-btn" data-tab="admin" role="tab" title="Admin" style="display:none">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <div class="nav-tooltip">Admin</div>
+        </div>
+
+        <div class="nav-btn" data-tab="account" role="tab" title="Account">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <div class="nav-tooltip">Account</div>
+        </div>
+
+        <div id="nav-settings" class="nav-btn" data-tab="settings" role="tab" title="Settings" style="margin-top:8px">
+          <span class="material-symbols-outlined nav-icon" aria-hidden="true">settings</span>
+          <div class="nav-tooltip">Settings</div>
+        </div>
+
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h2>Link Joint</h2>
+          <div class="muted" id="top-sub">Manage links, categories, and approvals</div>
+        </div>
+
+        <div id="auth-card" class="card" style="min-width:320px">
+          <div id="signed-out">
+            <div style="font-weight:700">Sign in / Sign up</div>
+            <div class="muted" style="margin:8px 0 12px 0; font-size:13px">Enter username (eg. <code>30crispwg</code>) &
+              password. Resulting email: <code>30crispwg@website.com</code></div>
+            <label class="muted">Username</label>
+            <input id="username" placeholder="username" autocomplete="username" />
+            <label class="muted">Password</label>
+            <input id="password" type="password" placeholder="password" autocomplete="current-password" />
+            <div class="row" style="margin-top:15px">
+              <button id="btn-signup">Create account</button>
+              <button id="btn-signin" class="ghost">Sign in</button>
+            </div>
+            <div id="auth-msg" class="muted" style="margin-top:10px"></div>
+          </div>
+
+          <div id="signed-in" style="display:none">
+            <div style="font-weight:700">Signed in as <span id="user-display"></span></div>
+            <div class="muted" id="user-role-display" style="margin-top:6px"></div>
+            <div class="row" style="margin-top:10px">
+              <button id="btn-logout" class="ghost">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section id="links" class="card section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>Links <span id="perm-badge" class="badge"></span></h2>
+          </div>
+          <div id="links-hint" class="muted"></div>
+        </div>
+
+        <div class="controls">
+          <input id="link-search" placeholder="Search links by title or URL..." type="search"
+            aria-label="Search links" />
+          <button id="btn-select-mode" class="secondary" title="Toggle Select Mode">Select</button>
+          <button id="btn-open-filters" class="ghost">Filters (<span id="filter-count">0</span>)</button>
+        </div>
+        
+        <!-- Bulk Action Bar -->
+        <div id="bulk-actions" class="bulk-actions-bar">
+            <div style="font-weight:600; font-size:13px;"><span id="selected-count">0</span> Selected</div>
+            <div style="flex:1"></div>
+            <button id="btn-bulk-move" class="ghost">Move</button>
+            <button id="btn-bulk-rename" class="ghost">Rename</button>
+            <button id="btn-bulk-delete" class="danger">Delete</button>
+        </div>
+
+        <div id="links-list-wrapper" style="margin-top:16px">
+          <div id="links-list" class="list cat-group"></div>
+        </div>
+
+      </section>
+
+      <!-- New Create Link page (moved from within Links) -->
+      <section id="create-link" class="card section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>Create Link</h2>
+          </div>
+          <div class="muted">Add a single link — or import many at once</div>
+        </div>
+
+        <!-- SINGLE LINK CREATION -->
+        <div style="margin-top:15px; display: flex; flex-direction: column; gap: 10px;">
+          <div>
+            <label class="muted" for="link-title">Title</label>
+            <input id="link-title" placeholder="Title" />
+          </div>
+          <div>
+            <label class="muted" for="link-url">URL</label>
+            <input id="link-url" placeholder="https://example.com" />
+          </div>
+          <div>
+            <label class="muted" for="link-category">Category</label>
+            <select id="link-category">
+              <option value="none">Unsorted</option>
+            </select>
+          </div>
+          <div style="margin-top:15px" class="row">
+            <button id="create-link-btn">Create link</button>
+          </div>
+        </div>
+
+        <hr style="margin:30px 0; border-color:var(--border-color)" />
+
+        <!-- BULK IMPORT -->
+        <div>
+          <h3>Bulk Link Import</h3>
+          <label class="muted">Paste URLs or text containing URLs:</label>
+          <textarea id="multi-links-input" style="min-height:140px"
+            placeholder="https://... or just paste text with links inside"></textarea>
+
+          <!-- New Common Title Field -->
+          <div>
+            <label class="muted" for="multi-link-title">Common Title (Optional)</label>
+            <input id="multi-link-title" placeholder="e.g. Project Resources (will become Project Resources 1, 2...)" />
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button class="ghost" id="btn-detect-links">Detect links</button>
+            <select id="multi-link-category" style="flex:1">
+              <option value="none">Unsorted</option>
+            </select>
+          </div>
+
+          <div id="detected-list" class="muted" style="margin-top:10px">No links detected yet.</div>
+
+          <div style="margin-top:15px" class="row">
+            <button id="btn-add-all">Add All</button>
+            <button id="btn-clear-detected" class="ghost">Clear</button>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="categories" class="card section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>Categories</h2>
+          </div>
+          <div class="muted">View or manage categories</div>
+        </div>
+
+        <div id="create-cat" class="card" style="margin-top:15px; display:none">
+          <label class="muted">New category name</label>
+          <input id="cat-name" placeholder="Category name" />
+          <div style="margin-top:15px" class="row"><button id="create-cat-btn">Create category</button></div>
+        </div>
+
+        <div id="cats-list" class="list" style="margin-top:16px"></div>
+      </section>
+
+      <section id="settings" class="card section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>Settings</h2>
+          </div>
+          <div class="muted">Theme presets, multi-link import, UI preferences</div>
+        </div>
+
+        <div style="margin-top:15px" class="settings-grid">
+          <div>
+            <h3 style="margin-bottom:8px">Appearance</h3>
+            <div class="muted" style="margin-bottom:12px">Select a theme to customize your workspace.</div>
+
+            <!-- New Grid Layout for Themes -->
+            <div class="theme-grid">
+
+              <div class="theme-preset-card" onclick="applyTheme('default')">
+                <div class="preset-swatch" style="background:#1c2430; --swatch-accent:#5e95ff"></div>
+                <div class="preset-name">Default</div>
+              </div>
+
+              <div class="theme-preset-card" onclick="applyTheme('midnight')">
+                <div class="preset-swatch" style="background:#0b0f14; --swatch-accent:#4f7fff"></div>
+                <div class="preset-name">Midnight</div>
+              </div>
+
+              <div class="theme-preset-card" onclick="applyTheme('blackwhite')">
+                <div class="preset-swatch" style="background:#111; --swatch-accent:#fff"></div>
+                <div class="preset-name">Mono</div>
+              </div>
+
+              <div class="theme-preset-card" onclick="applyTheme('solarized')">
+                <div class="preset-swatch" style="background:#073642; --swatch-accent:#268bd2"></div>
+                <div class="preset-name">Solarized</div>
+              </div>
+
+              <div class="theme-preset-card" onclick="applyTheme('forest')">
+                <div class="preset-swatch" style="background:#142016; --swatch-accent:#6fdc6f"></div>
+                <div class="preset-name">Forest</div>
+              </div>
+
+              <div class="theme-preset-card" onclick="applyTheme('nebula')">
+                <div class="preset-swatch" style="background:#1d224f; --swatch-accent:#8e5fff"></div>
+                <div class="preset-name">Nebula</div>
+              </div>
+
+            </div>
+
+            <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color)">
+              <h3 style="margin-bottom:12px">Custom Theme</h3>
+              <div
+                style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:10px">
+                <div><label class="muted">Background</label><input id="custom-bg" placeholder="#000000" /></div>
+                <div><label class="muted">Panel</label><input id="custom-panel" placeholder="#111111" /></div>
+                <div><label class="muted">Accent</label><input id="custom-accent" placeholder="#5e95ff" /></div>
+              </div>
+              <div style="margin-top:12px" class="row">
+                <button onclick="applyCustomTheme()">Apply Custom</button>
+                <button class="ghost" onclick="resetTheme()">Reset Default</button>
+              </div>
+            </div>
+
+            <!-- New Preferences Section -->
+            <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color)">
+              <h3 style="margin-bottom:12px">General Preferences</h3>
+              
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight:600">Open links in new tab</div>
+                  <div class="muted">When clicking a link item in the list</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-new-tab" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight:600">Auto-Expand Categories</div>
+                  <div class="muted">Show all categories open by default</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-auto-expand">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight:600">Show Full URLs</div>
+                  <div class="muted">Display entire URL text in list items</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-full-urls">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+            </div>
+
+          </div>
+      </section>
+
+      <section id="tools" class="card section">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2>Tools</h2>
+          </div>
+          <div class="muted">Utilities and settings</div>
+        </div>
+
+        <div class="list" style="margin-top:16px">
+          <div class="item">
+            <div>
+              <div style="font-weight:700">Obamacl0aker</div>
+              <div class="muted">Launch the utility</div>
+            </div>
+            <button onclick="window.location.href='../obamacl0aker.html'">Open</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin" class="card section">
+        <h2>Pending approvals</h2>
+        <div id="pending-box" class="list" style="margin-top:16px"></div>
+
+        <h2 style="margin-top:20px">Users</h2>
+        <div id="users-box" class="list" style="margin-top:16px"></div>
+      </section>
+
+      <section id="account" class="card section">
+        <h2>Account</h2>
+        <div id="account-info">You must sign in to see account info.</div>
+      </section>
+
+      <div class="footer">Client UI — permissions are enforced server-side by your Firestore rules.</div>
+    </main>
+  </div>
+
+  <div id="filters-modal" class="modal-overlay" onclick="closeFilters(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Link Filters</h3>
+        <button class="modal-close" onclick="closeFilters()">×</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label for="filter-category-modal">Filter by Category</label>
+          <select id="filter-category-modal">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+        <div>
+          <label class="muted">Minimum Category Rating</label>
+          <div class="filter-rating-select">
+            <div id="filter-min-rating-stars" class="rating-stars">
+            </div>
+            <span id="min-rating-label" class="badge" style="min-width: 80px; text-align: center;">All Ratings</span>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="justify-content: flex-end; margin-top: 25px;">
+        <button class="ghost" onclick="resetFilters()">Clear Filters</button>
+        <button onclick="closeFilters()">Apply & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Confirmation Modal -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 380px;">
+      <div class="modal-header">
+        <h3 id="confirm-title">Confirm Action</h3>
+        <button class="modal-close" id="confirm-close">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-msg" class="muted" style="font-size: 15px; margin: 0;">Are you sure?</p>
+      </div>
+      <div class="row" style="justify-content: flex-end; margin-top: 20px;">
+        <button class="ghost" id="confirm-cancel">Cancel</button>
+        <button class="danger" id="confirm-ok">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Firebase init (compat) */
+    const firebaseConfig = {
+      // Your config is here
+      apiKey: "AIzaSyBHNeca9gURUczisK4gNV6LhBfzK65vg9U",
+      authDomain: "link-joint.firebaseapp.com",
+      projectId: "link-joint",
+      storageBucket: "link-joint.firebaseapi.com",
+      messagingSenderId: "568319687772",
+      appId: "1:568319687772:web:0f04ad3a1d2597da63ba99",
+      measurementId: "G-W88WBHPEDZ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    /* DOM refs */
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const sections = document.querySelectorAll('.section');
+    const navAdmin = document.getElementById('nav-admin');
+    const navCreateLink = document.getElementById('nav-create-link');
+
+    const signedOutEl = document.getElementById('signed-out');
+    const signedInEl = document.getElementById('signed-in');
+    const userDisplay = document.getElementById('user-display');
+    const userRoleDisplay = document.getElementById('user-role-display');
+    const authMsg = document.getElementById('auth-msg');
+
+    const btnSignup = document.getElementById('btn-signup');
+    const btnSignin = document.getElementById('btn-signin');
+    const btnLogout = document.getElementById('btn-logout');
+    const btnSettingsNav = document.getElementById('nav-settings');
+
+
+    const permBadge = document.getElementById('perm-badge');
+    const linksPanel = document.getElementById('links');
+    const categoriesPanel = document.getElementById('categories');
+    const adminPanel = document.getElementById('admin');
+    const accountPanel = document.getElementById('account');
+
+    // This is the section for creating a link
+    const createLinkPage = document.getElementById('create-link'); // <-- Fixed ID reference
+    const linkTitleInput = document.getElementById('link-title');
+    const linkUrlInput = document.getElementById('link-url');
+    const linkCategorySelect = document.getElementById('link-category');
+    const createLinkBtn = document.getElementById('create-link-btn');
+    const linksList = document.getElementById('links-list');
+    const linksHint = document.getElementById('links-hint');
+
+    // New Filter Elements
+    const linkSearchInput = document.getElementById('link-search');
+    const btnOpenFilters = document.getElementById('btn-open-filters');
+    const filterCount = document.getElementById('filter-count');
+    const filtersModal = document.getElementById('filters-modal');
+    const filterCategoryModal = document.getElementById('filter-category-modal');
+    const filterMinRatingStars = document.getElementById('filter-min-rating-stars');
+    const minRatingLabel = document.getElementById('min-rating-label');
+
+    const createCatCard = document.getElementById('create-cat');
+    const catNameInput = document.getElementById('cat-name');
+    const createCatBtn = document.getElementById('create-cat-btn');
+    const catsList = document.getElementById('cats-list');
+
+    const pendingBox = document.getElementById('pending-box');
+    const usersBox = document.getElementById('users-box');
+
+    const accountInfo = document.getElementById('account-info');
+    
+    // Bulk Import Refs
+    const btnDetectLinks = document.getElementById('btn-detect-links');
+    const detectedList = document.getElementById('detected-list');
+    const btnAddAll = document.getElementById('btn-add-all');
+    const btnClearDetected = document.getElementById('btn-clear-detected');
+    const multiLinksInput = document.getElementById('multi-links-input');
+    const multiLinkCategory = document.getElementById('multi-link-category');
+    const multiLinkTitle = document.getElementById('multi-link-title');
+    let detectedLinks = [];
+    
+    // Bulk Actions Refs
+    const btnSelectMode = document.getElementById('btn-select-mode');
+    const bulkActionsBar = document.getElementById('bulk-actions');
+    const selectedCountEl = document.getElementById('selected-count');
+    const btnBulkMove = document.getElementById('btn-bulk-move');
+    const btnBulkRename = document.getElementById('btn-bulk-rename');
+    const btnBulkDelete = document.getElementById('btn-bulk-delete');
+    
+    let isSelectMode = false;
+    let selectedLinkIds = new Set();
+
+
+    // Preferences Refs
+    const prefNewTab = document.getElementById('pref-new-tab');
+    const prefAutoExpand = document.getElementById('pref-auto-expand');
+    const prefFullUrls = document.getElementById('pref-full-urls');
+
+    // Confirm Modal Refs
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmTitle = document.getElementById('confirm-title');
+    const confirmMsg = document.getElementById('confirm-msg');
+    const confirmOkBtn = document.getElementById('confirm-ok');
+    const confirmCancelBtn = document.getElementById('confirm-cancel');
+    const confirmCloseBtn = document.getElementById('confirm-close');
+    let confirmCallback = null;
+
+    let currentUser = null;
+    let currentUserData = null;
+    let unsubLinks = null, unsubCats = null, unsubPending = null, unsubUsers = null;
+    let latestLinksSnapshot = null;
+    let categoryMap = {}; // Map category ID to {name, rating}
+    let visibleLinkEls = [];
+    let selectedIndex = -1;
+    
+    // Default User Preferences
+    let userPreferences = {
+        openInNewTab: true,
+        autoExpandCategories: false,
+        showFullUrls: false
+    };
+
+    /* Filter State Management */
+    let filterState = {
+      search: '',
+      categoryId: 'all', // 'all' or actual category ID
+      minRating: 0 // 0 to 5, where 0 is no minimum rating
+    };
+
+    function updateFilterState() {
+      // Read state from UI/local storage
+      filterState.search = (linkSearchInput.value || '').trim().toLowerCase();
+      filterState.categoryId = filterCategoryModal.value || 'all';
+      filterState.minRating = parseInt(filtersModal.dataset.minRating || '0', 10);
+
+      let count = 0;
+      if (filterState.categoryId !== 'all') count++;
+      if (filterState.minRating > 0) count++;
+      if (filterState.search) count++;
+      filterCount.textContent = count;
+
+      renderLinksFromSnapshot();
+    }
+
+    function resetFilters() {
+      linkSearchInput.value = '';
+      filterCategoryModal.value = 'all';
+      filtersModal.dataset.minRating = 0;
+      minRatingLabel.textContent = 'All Ratings';
+      updateFilterState();
+      closeFilters();
+    }
+
+    /* Modal Logic */
+    function openFilters() {
+      // Ensure modal reflects current filter state
+      filterCategoryModal.value = filterState.categoryId;
+      filtersModal.dataset.minRating = filterState.minRating;
+      renderFilterStars(filterState.minRating);
+      filtersModal.classList.add('open');
+    }
+
+    function closeFilters(event) {
+      if (event && event.target !== filtersModal && !event.target.classList.contains('modal-close')) return;
+      filtersModal.classList.remove('open');
+      updateFilterState();
+    }
+
+    btnOpenFilters.addEventListener('click', openFilters);
+    linkSearchInput.addEventListener('input', debounce(updateFilterState, 220));
+
+    /* Star Rating Helper */
+    function renderStarRating(categoryId, currentRating = 0, isEditable = true) {
+      const container = document.createElement('div');
+      container.className = 'rating-stars';
+      container.setAttribute('aria-label', `Current rating: ${currentRating} out of 5`);
+
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span');
+        star.className = 'star';
+        star.textContent = '★'; // Star character
+        if (i <= currentRating) {
+          star.classList.add('active');
+        }
+
+        if (isEditable) {
+          star.setAttribute('role', 'button');
+          star.setAttribute('tabindex', '0');
+          star.setAttribute('aria-valuenow', i);
+          star.setAttribute('aria-valuemax', 5);
+
+          star.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newRating = (i === currentRating) ? 0 : i;
+            rateCategory(categoryId, newRating);
+          });
+        }
+        container.appendChild(star);
+      }
+      return container;
+    }
+
+    function rateCategory(categoryId, newRating) {
+      if (!currentUser || (currentUserData.permission_lvl || 0) < 2) return showAuthMsg('Insufficient permission to rate categories', true);
+
+      try {
+        db.collection('categories').doc(categoryId).update({
+          rating: newRating > 0 ? newRating : firebase.firestore.FieldValue.delete(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showAuthMsg(`Category rating set to ${newRating || 'N/A'}`);
+      } catch (e) {
+        console.error('Rating failed:', e);
+        showAuthMsg('Rating failed: ' + e.message, true);
+      }
+    }
+
+    /* Filter Star Renderer */
+    function renderFilterStars(currentMinRating) {
+      filterMinRatingStars.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span');
+        star.className = 'star filter-star';
+        star.textContent = '★';
+        if (i <= currentMinRating) {
+          star.classList.add('active');
+        }
+
+        star.addEventListener('click', () => {
+          const newRating = (i === currentMinRating) ? 0 : i;
+          filtersModal.dataset.minRating = newRating;
+          renderFilterStars(newRating);
+          minRatingLabel.textContent = newRating > 0 ? `${newRating} Stars` : 'All Ratings';
+        });
+        filterMinRatingStars.appendChild(star);
+      }
+      minRatingLabel.textContent = currentMinRating > 0 ? `${currentMinRating} Stars` : 'All Ratings';
+    }
+    renderFilterStars(0); // Initial render
+
+    /* helpers */
+    function usernameToEmail(u) { return (u.trim() + '@website.com').toLowerCase(); }
+    function showAuthMsg(msg, err = false) { authMsg.textContent = msg; authMsg.style.color = err ? 'salmon' : '#9fb3ff'; setTimeout(() => { if (authMsg.textContent === msg) authMsg.textContent = ''; }, 5000); }
+    function escapeHtml(s) { if (!s) return ''; return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#03F;'); }
+    function debounce(fn, wait = 250) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; }
+
+    /* Update UI based on permissions */
+    function updateCreatePanels() {
+      const pl = currentUserData ? (currentUserData.permission_lvl || 0) : 0;
+      // Get the currently active tab name
+      const activeTab = Array.from(navButtons).find(b => b.classList.contains('active'))?.dataset?.tab;
+
+      // The 'create-link' page visibility is now correctly handled *only* by the activateTab function.
+
+      // Show/hide category creation card only if 'categories' tab is active and user has permission
+      createCatCard.style.display = (activeTab === 'categories' && pl >= 2) ? 'block' : 'none';
+    }
+
+
+    /* tab logic */
+    function activateTab(name) {
+      navButtons.forEach(b => { b.classList.toggle('active', b.dataset.tab === name); });
+      sections.forEach(s => {
+        if (s.id === name) {
+          s.style.display = 'block';
+          setTimeout(() => { s.classList.add('active'); }, 10);
+        } else {
+          s.classList.remove('active');
+          s.style.display = 'none';
+        }
+      });
+      // This function now only handles sub-panels, not main sections.
+      if (currentUser) {
+        updateCreatePanels();
+      }
+    }
+    navButtons.forEach(b => b.addEventListener('click', () => {
+      activateTab(b.dataset.tab);
+    }));
+    activateTab('links');
+
+    /* auth actions */
+    btnSignup.addEventListener('click', async () => {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      if (!u || !p) { showAuthMsg('Provide username & password', true); return; }
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(usernameToEmail(u), p);
+        await db.collection('pending_users').doc(cred.user.uid).set({ uid: cred.user.uid, email: cred.user.email, displayName: u, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        showAuthMsg('Account created — waiting for admin approval');
+      } catch (e) { console.error(e); showAuthMsg('Signup error: ' + e.message, true); }
+    });
+    btnSignin.addEventListener('click', async () => { const u = document.getElementById('username').value.trim(); const p = document.getElementById('password').value; if (!u || !p) { showAuthMsg('Provide username & password', true); return; } try { await auth.signInWithEmailAndPassword(usernameToEmail(u), p); showAuthMsg('Signed in'); } catch (e) { console.error(e); showAuthMsg('Sign-in error: ' + e.message, true); } });
+    btnLogout.addEventListener('click', async () => { await auth.signOut(); location.reload(); });
+
+    /* auth state */
+    auth.onAuthStateChanged(async user => {
+      if (unsubLinks) { unsubLinks(); unsubLinks = null; }
+      if (unsubCats) { unsubCats(); unsubCats = null; }
+      if (unsubPending) { unsubPending(); unsubPending = null; }
+      if (unsubUsers) { unsubUsers(); unsubUsers = null; }
+
+      currentUser = user;
+      signedOutEl.style.display = user ? 'none' : 'block';
+      signedInEl.style.display = user ? 'block' : 'none';
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+      if (!user) {
+        activateTab('account');
+        accountInfo.innerHTML = '<div class="muted">You are signed out. Sign in or create an account.</div>';
+        navAdmin.style.display = 'none';
+        navCreateLink.style.display = 'none'; // Hide create link nav
+        currentUserData = { role: 'unapproved', permission_lvl: 0 };
+        updateCreatePanels();
+        return;
+      }
+
+      try {
+        const ud = await db.collection('user_data').doc(user.uid).get();
+        if (ud.exists) { 
+            currentUserData = ud.data();
+            // Apply saved theme if exists
+            if (currentUserData.theme) {
+                applyTheme(currentUserData.theme, false);
+            }
+            // Apply saved preferences if exists
+            if (currentUserData.preferences) {
+                userPreferences = { ...userPreferences, ...currentUserData.preferences };
+                prefNewTab.checked = userPreferences.openInNewTab;
+                prefAutoExpand.checked = userPreferences.autoExpandCategories;
+                prefFullUrls.checked = userPreferences.showFullUrls;
+                applyPreferences();
+            }
+        } else { 
+            const pending = await db.collection('pending_users').doc(user.uid).get(); 
+            if (pending.exists) { 
+                currentUserData = { role: 'unapproved', permission_lvl: 0 }; 
+                showAuthMsg('Account pending approval — limited access'); 
+            } else { 
+                currentUserData = { role: 'unapproved', permission_lvl: 0 }; 
+                showAuthMsg('No account data found. Contact admin to approve.', true); 
+            } 
+        }
+      } catch (e) { console.error('Error fetching user_data:', e); showAuthMsg('Error reading account info: ' + (e.message || e), true); currentUserData = { role: 'unapproved', permission_lvl: 0 }; }
+
+      userDisplay.textContent = user.email;
+      userRoleDisplay.textContent = `role: ${currentUserData.role} — perm: ${currentUserData.permission_lvl}`;
+      navAdmin.style.display = (currentUserData.role === 'admin' || currentUserData.role === 'owner') ? 'block' : 'none';
+
+      // Show create-link nav button only if permission level >= 2
+      navCreateLink.style.display = (currentUserData.permission_lvl >= 2) ? 'block' : 'none';
+
+      if (currentUserData.permission_lvl >= 1) {
+        activateTab('links');
+        accountInfo.innerHTML = `
+      <div class="list">
+        <div class="item">
+          <div style="font-weight:700">Email:</div>
+          <div class="muted">${escapeHtml(user.email)}</div>
+        </div>
+        <div class="item">
+          <div style="font-weight:700">Role:</div>
+          <div class="muted">${escapeHtml(currentUserData.role)}</div>
+        </div>
+        <div class="item">
+          <div style="font-weight:700">Permission Level:</div>
+          <div class="muted">${currentUserData.permission_lvl}</div>
+        </div>
+        <div class="item">
+          <div style="font-weight:700">User ID:</div>
+          <div class="muted" style="font-size:10px; overflow: hidden; max-width: 250px; text-overflow: ellipsis;">${escapeHtml(user.uid)}</div>
+        </div>
+      </div>
+    `;
+      } else {
+        activateTab('account');
+        accountInfo.innerHTML = '<div class="muted">Your account is not approved yet — ask an admin to approve you.</div>';
+      }
+
+      subscribeCategories();
+      if (currentUserData.permission_lvl >= 1) { subscribeLinks(); } else { linksPanel.style.display = 'none'; }
+      if (currentUserData.role === 'admin' || currentUserData.role === 'owner') { subscribePending(); subscribeUsers(); }
+      updateCreatePanels();
+    });
+
+    /* Links subscription */
+    function subscribeLinks() {
+      linksPanel.style.display = 'block';
+      permBadge.textContent = 'perm ' + (currentUserData.permission_lvl || 0);
+      linksHint.textContent = '';
+      try {
+        if (unsubLinks) { unsubLinks(); unsubLinks = null; }
+        unsubLinks = db.collection('links').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+          latestLinksSnapshot = snapshot;
+          updateFilterState(); // Re-render links using the current filter state
+        }, err => {
+          console.error('Links onSnapshot error', err);
+          linksList.innerHTML = `<div class="muted">Error loading links: ${escapeHtml(err.message || String(err))}</div>`;
+        });
+      } catch (e) {
+        console.error('subscribeLinks error', e);
+        linksList.innerHTML = `<div class="muted">Permission error loading links.</div>`;
+      }
+    }
+
+    function renderLinksFromSnapshot() {
+      visibleLinkEls = [];
+      selectedIndex = -1;
+      // Note: We don't reset selectedLinkIds here to preserve selection during updates if possible,
+      // but if items disappear they will just be ignored.
+      
+      if (!latestLinksSnapshot) return;
+      linksList.innerHTML = '';
+      
+      // Update Selection UI status in case it was open
+      updateBulkActionBar();
+
+      const { search, categoryId: filterCatId, minRating } = filterState;
+
+      // 1. Filter and Group the links
+      const groupedLinks = {};
+      let totalVisibleLinks = 0;
+
+      latestLinksSnapshot.forEach((doc) => {
+        const d = doc.data();
+        const id = doc.id;
+        const catId = d.category || 'none';
+
+        // Filtering by selected category ID
+        if (filterCatId !== 'all' && catId !== filterCatId) return;
+
+        // Filtering by search term
+        if (search) {
+          const hay = ((d.title || '') + ' ' + (d.url || '')).toLowerCase();
+          if (!hay.includes(search)) return;
+        }
+
+        // Determine category data for display/grouping and rating check
+        const catData = categoryMap[catId] || { name: catId === 'none' ? 'Unsorted' : `Unknown Category (${catId})`, rating: 0 };
+
+        // Filtering by minimum rating
+        if (minRating > 0) {
+          const actualRating = catData.rating || 0;
+          if (actualRating < minRating) return;
+        }
+
+        const categoryName = catData.name;
+
+        if (!groupedLinks[categoryName]) {
+          groupedLinks[categoryName] = [];
+        }
+        groupedLinks[categoryName].push({ docId: id, data: d });
+        totalVisibleLinks++;
+      });
+
+      if (totalVisibleLinks === 0) {
+        linksList.innerHTML = `<div class="no-results"><div class="ill">🔎</div><div class="muted">No links match your current filters.</div></div>`;
+        return;
+      }
+
+      // 2. Render Groups (Categories)
+      let linkElementIndex = 0;
+      // Sort category names alphabetically, but keep "Unsorted" at the bottom
+      const sortedCategoryNames = Object.keys(groupedLinks).sort((a, b) => {
+        if (a === 'Unsorted') return 1;
+        if (b === 'Unsorted') return -1;
+        return a.localeCompare(b);
+      });
+
+      for (const categoryName of sortedCategoryNames) {
+        const group = groupedLinks[categoryName];
+
+        const details = document.createElement('details');
+        
+        // Auto-expand setting
+        if (userPreferences.autoExpandCategories) {
+            details.open = true;
+        } else {
+            details.open = false;
+        }
+
+        const summary = document.createElement('summary');
+        summary.textContent = `${categoryName} (${group.length})`;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'cat-content';
+
+        group.forEach((linkItem) => {
+          const { docId: id, data: d } = linkItem;
+          const item = document.createElement('div');
+          item.className = 'item';
+          item.tabIndex = 0;
+          item.dataset.docId = id;
+          item.dataset.index = linkElementIndex;
+          
+          // Bulk Select Checkbox
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'bulk-select-check';
+          checkbox.checked = selectedLinkIds.has(id);
+          // Show/Hide based on Select Mode state
+          if(isSelectMode) checkbox.style.display = 'block';
+          
+          checkbox.addEventListener('click', (e) => {
+              e.stopPropagation();
+              toggleSelection(id);
+          });
+          item.appendChild(checkbox);
+
+          const left = document.createElement('div');
+          left.style.flex = '1';
+          left.style.minWidth = '0'; // Fix for flex overflow
+          left.innerHTML = `<div style="font-weight:700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(d.title || '')}</div><div class="muted link-url-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><a href="${escapeHtml(d.url || '#')}" target="_blank" rel="noopener">${escapeHtml(d.url || '')}</a></div>`;
+
+          const right = document.createElement('div');
+          right.className = 'row';
+          right.style.flexShrink = '0'; // Prevent buttons from shrinking
+          const pl = currentUserData.permission_lvl || 0;
+          const isCreator = currentUser && d.creator === currentUser.uid;
+
+          // COPY BUTTON
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'ghost';
+          copyBtn.title = 'Copy URL';
+          copyBtn.style.padding = '8px'; // Smaller square button
+          copyBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+          copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            copyToClipboard(d.url);
+          });
+          right.appendChild(copyBtn);
+
+          if (pl >= 3) {
+            const edit = document.createElement('button');
+            edit.className = 'ghost';
+            edit.textContent = 'Edit';
+            edit.addEventListener('click', (e) => { e.stopPropagation(); editLink(id, d); });
+            right.appendChild(edit);
+          }
+
+          if ((pl >= 3) || (pl >= 2 && isCreator)) {
+            const del = document.createElement('button');
+            del.className = 'danger';
+            del.textContent = 'Delete';
+            del.addEventListener('click', (e) => {
+              e.stopPropagation();
+              // New Modal Confirmation instead of prompt
+              showConfirm(`Are you sure you want to delete "${d.title}"?`, async () => {
+                try {
+                  await db.collection('links').doc(id).delete();
+                } catch (e) { showAuthMsg('Delete failed: ' + e.message, true); }
+              });
+            });
+            right.appendChild(del);
+          }
+
+          item.appendChild(left);
+          item.appendChild(right);
+          contentDiv.appendChild(item);
+
+          visibleLinkEls.push({ el: item, url: d.url });
+
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Handle select mode click on row
+            if (isSelectMode) {
+                // If clicked checkbox directly, event stopped prop above.
+                // If clicked anywhere else in item, toggle selection
+                toggleSelection(id);
+                // Sync checkbox state visually
+                checkbox.checked = selectedLinkIds.has(id);
+                return;
+            }
+          
+            clearKeyboardSelection();
+            item.classList.add('link-selected');
+            selectedIndex = parseInt(item.dataset.index, 10);
+          });
+          
+          item.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') { 
+                if (userPreferences.openInNewTab) {
+                    window.open(d.url, '_blank'); 
+                } else {
+                    window.location.href = d.url;
+                }
+            }
+          });
+          
+          // Mouse Click Behavior based on preference (Only if not Select Mode)
+          item.addEventListener('click', (e) => {
+              if (isSelectMode) return;
+              // If not clicking a button/interactive element
+              if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('input')) {
+                  if (userPreferences.openInNewTab) {
+                    window.open(d.url, '_blank'); 
+                } else {
+                    window.location.href = d.url;
+                }
+              }
+          });
+
+          linkElementIndex++;
+        });
+
+        details.appendChild(summary);
+        details.appendChild(contentDiv);
+        linksList.appendChild(details);
+      }
+    }
+    
+    /* Bulk Edit Logic */
+    btnSelectMode.addEventListener('click', () => {
+        isSelectMode = !isSelectMode;
+        
+        // Update Button Style
+        if(isSelectMode) {
+            btnSelectMode.classList.remove('secondary');
+            btnSelectMode.classList.add('active'); // Style active state if defined or default accent
+            btnSelectMode.style.background = 'var(--accent)';
+            btnSelectMode.style.color = '#fff';
+            btnSelectMode.style.border = 'none';
+        } else {
+            btnSelectMode.classList.add('secondary');
+            btnSelectMode.classList.remove('active');
+            btnSelectMode.style.background = '';
+            btnSelectMode.style.color = '';
+            btnSelectMode.style.border = '';
+            selectedLinkIds.clear();
+            updateBulkActionBar();
+        }
+        
+        // Update DOM
+        const checkboxes = document.querySelectorAll('.bulk-select-check');
+        checkboxes.forEach(cb => {
+            cb.style.display = isSelectMode ? 'block' : 'none';
+            if(!isSelectMode) cb.checked = false;
+        });
+    });
+    
+    function toggleSelection(id) {
+        if (selectedLinkIds.has(id)) {
+            selectedLinkIds.delete(id);
+        } else {
+            selectedLinkIds.add(id);
+        }
+        updateBulkActionBar();
+    }
+    
+    function updateBulkActionBar() {
+        const count = selectedLinkIds.size;
+        selectedCountEl.textContent = count;
+        if(count > 0 && isSelectMode) {
+            bulkActionsBar.classList.add('visible');
+        } else {
+            bulkActionsBar.classList.remove('visible');
+        }
+    }
+    
+    // Bulk Delete
+    btnBulkDelete.addEventListener('click', () => {
+        const count = selectedLinkIds.size;
+        if(count === 0) return;
+        
+        showConfirm(`Are you sure you want to delete ${count} links?`, async () => {
+            try {
+                const promises = Array.from(selectedLinkIds).map(id => db.collection('links').doc(id).delete());
+                await Promise.all(promises);
+                showAuthMsg(`Deleted ${count} links.`);
+                selectedLinkIds.clear();
+                updateBulkActionBar();
+            } catch(e) {
+                showAuthMsg('Bulk delete failed: ' + e.message, true);
+            }
+        });
+    });
+    
+    // Bulk Move
+    btnBulkMove.addEventListener('click', () => {
+        const count = selectedLinkIds.size;
+        if(count === 0) return;
+        
+        const newCat = prompt("Enter new Category ID (copy from another category or leave empty for Unsorted):");
+        if(newCat === null) return;
+        
+        const targetCat = newCat.trim() || 'none';
+        
+        showConfirm(`Move ${count} links to category ID "${targetCat}"?`, async () => {
+            try {
+                const batch = db.batch();
+                selectedLinkIds.forEach(id => {
+                    const ref = db.collection('links').doc(id);
+                    batch.update(ref, { category: targetCat });
+                });
+                await batch.commit();
+                showAuthMsg(`Moved ${count} links.`);
+                selectedLinkIds.clear();
+                updateBulkActionBar();
+            } catch(e) {
+                showAuthMsg('Bulk move failed: ' + e.message, true);
+            }
+        });
+    });
+    
+    // Bulk Rename (Find & Replace)
+    btnBulkRename.addEventListener('click', () => {
+        const count = selectedLinkIds.size;
+        if(count === 0) return;
+        
+        const findStr = prompt("Find text in titles:");
+        if(!findStr) return;
+        
+        const replaceStr = prompt("Replace with:");
+        if(replaceStr === null) return;
+        
+        showConfirm(`Replace "${findStr}" with "${replaceStr}" in ${count} links?`, async () => {
+            try {
+               // We have to fetch current titles first since we can't do regex update in Firestore easily
+               // Fortunately we likely have them in latestLinksSnapshot, but let's be safe and just update individually based on local data if acceptable, 
+               // OR fetch fresh. Since we are in client, let's look up data from snapshot.
+               
+               let updatedCount = 0;
+               const updates = [];
+               
+               latestLinksSnapshot.forEach(doc => {
+                   if(selectedLinkIds.has(doc.id)) {
+                       const currentTitle = doc.data().title || "";
+                       if(currentTitle.includes(findStr)) {
+                           const newTitle = currentTitle.replaceAll(findStr, replaceStr);
+                           updates.push(db.collection('links').doc(doc.id).update({ title: newTitle }));
+                           updatedCount++;
+                       }
+                   }
+               });
+               
+               await Promise.all(updates);
+               showAuthMsg(`Updated titles for ${updatedCount} links.`);
+               selectedLinkIds.clear();
+               updateBulkActionBar();
+               
+            } catch(e) {
+                showAuthMsg('Bulk rename failed: ' + e.message, true);
+            }
+        });
+    });
+
+    /* Copy to clipboard helper */
+    function copyToClipboard(text) {
+      // Fallback for iFrame environments where navigator.clipboard might fail
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      
+      // Ensure it's not visible but part of the DOM
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if(successful) {
+          showAuthMsg('Link copied to clipboard!');
+        } else {
+           showAuthMsg('Failed to copy', true);
+        }
+      } catch (err) {
+        showAuthMsg('Failed to copy', true);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+    
+    // Bulk Link Detection Logic (Fixed)
+    btnDetectLinks.addEventListener('click', () => {
+        const text = multiLinksInput.value;
+        if(!text) return;
+        
+        // Robust Regex for finding HTTP/HTTPS links
+        const regex = /(https?:\/\/[^\s"']+)/g;
+        const matches = text.match(regex);
+        
+        if(!matches || matches.length === 0) {
+            detectedList.innerHTML = '<div class="muted">No links detected. Make sure they start with http:// or https://</div>';
+            detectedLinks = [];
+            return;
+        }
+        
+        // Deduplicate
+        detectedLinks = [...new Set(matches)];
+        
+        detectedList.innerHTML = `<div style="margin-bottom:5px; font-weight:bold; color:var(--accent)">Detected ${detectedLinks.length} unique links:</div>` + 
+            detectedLinks.map(url => `<div style="font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(url)}</div>`).join('');
+            
+        showAuthMsg(`${detectedLinks.length} links found.`);
+    });
+    
+    btnClearDetected.addEventListener('click', () => {
+        multiLinksInput.value = '';
+        multiLinkTitle.value = '';
+        detectedLinks = [];
+        detectedList.innerHTML = 'No links detected yet.';
+    });
+    
+    btnAddAll.addEventListener('click', async () => {
+        if(!currentUser) return showAuthMsg('Sign in first', true);
+        if((currentUserData.permission_lvl || 0) < 2) return showAuthMsg('Insufficient permission', true);
+        if(detectedLinks.length === 0) return showAuthMsg('Detect links first', true);
+        
+        const cat = multiLinkCategory.value || 'none';
+        const commonTitle = multiLinkTitle.value.trim();
+        
+        let successCount = 0;
+        
+        showAuthMsg('Importing...', false);
+        
+        try {
+            // Process in parallel
+            const promises = detectedLinks.map(async (url, index) => {
+                let title = '';
+                if(commonTitle) {
+                    // If common title exists, append index if > 1 link, or just use title if 1 link
+                    if(detectedLinks.length > 1) {
+                        title = `${commonTitle} ${index + 1}`;
+                    } else {
+                        title = commonTitle;
+                    }
+                } else {
+                    // Fallback to domain
+                    try {
+                        title = new URL(url).hostname;
+                    } catch(e) {
+                        title = 'Link';
+                    }
+                }
+                
+                await db.collection('links').add({
+                    title: title,
+                    url: url,
+                    category: cat,
+                    creator: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                successCount++;
+            });
+            
+            await Promise.all(promises);
+            
+            showAuthMsg(`Successfully imported ${successCount} links!`);
+            multiLinksInput.value = '';
+            multiLinkTitle.value = '';
+            detectedLinks = [];
+            detectedList.innerHTML = 'No links detected yet.';
+            activateTab('links');
+            
+        } catch(e) {
+            console.error(e);
+            showAuthMsg(`Import partial/failed: ${e.message}`, true);
+        }
+    });
+
+    // This function saves the data to Firestore, matching your screenshot's structure
+    createLinkBtn.addEventListener('click', async () => {
+      if (!currentUser) return showAuthMsg('Sign in first', true);
+      if ((currentUserData.permission_lvl || 0) < 2) return showAuthMsg('Insufficient permission to create links', true);
+      const title = linkTitleInput.value.trim();
+      const url = linkUrlInput.value.trim();
+      const cat = linkCategorySelect.value || 'none';
+      if (!title || !url) return showAuthMsg('Provide title and url', true);
+      // Basic URL validation
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return showAuthMsg('URL must start with http:// or https://', true);
+      }
+      try {
+        await db.collection('links').add({
+          title: title,
+          url: url,
+          category: cat, // This is the category ID
+          creator: currentUser.uid, // This is the creator ID
+          createdAt: firebase.firestore.FieldValue.serverTimestamp() // This adds the timestamp
+        });
+        linkTitleInput.value = '';
+        linkUrlInput.value = '';
+        linkCategorySelect.value = 'none'; // Reset dropdown
+        showAuthMsg('Link created');
+        activateTab('links'); // Go back to links list after creation
+      } catch (e) {
+        console.error(e);
+        showAuthMsg('Create link error: ' + e.message, true);
+      }
+    });
+
+    async function editLink(id, data) {
+      if ((currentUserData.permission_lvl || 0) < 3) return showAuthMsg('Insufficient permission to edit links', true);
+      const newTitle = prompt('Title', data.title);
+      if (newTitle === null) return;
+      const newUrl = prompt('URL', data.url);
+      if (newUrl === null) return;
+      const newCat = prompt('Category id (or none)', data.category || 'none');
+      if (newCat === null) return;
+      try {
+        await db.collection('links').doc(id).update({
+          title: newTitle,
+          url: newUrl,
+          category: newCat
+        });
+        showAuthMsg('Link updated');
+      } catch (e) {
+        showAuthMsg('Update failed: ' + e.message, true);
+      }
+    }
+
+    /* categories */
+    function subscribeCategories() {
+      try {
+        if (unsubCats) { unsubCats = null; }
+        // This populates the dropdown in the "Create Link" page
+        unsubCats = db.collection('categories').orderBy('name').onSnapshot(snapshot => {
+          catsList.innerHTML = '';
+          linkCategorySelect.innerHTML = '<option value="none">Unsorted</option>';
+          const multiCat = document.getElementById('multi-link-category');
+          multiCat.innerHTML = '<option value="none">Unsorted</option>';
+          filterCategoryModal.innerHTML = '<option value="all">All categories</option>';
+          categoryMap = { 'none': { name: 'Unsorted', rating: 0 } }; // Reset map with default
+
+          if (snapshot.empty) {
+            catsList.innerHTML = '<div class="muted">No categories yet.</div>';
+          } else {
+            snapshot.forEach(doc => {
+              const c = doc.data();
+              const id = doc.id;
+              const catName = c.name || id;
+              const catRating = c.rating || 0;
+
+              // Populate the Category Map with rating
+              categoryMap[id] = { name: catName, rating: catRating };
+
+              const opt = document.createElement('option');
+              opt.value = id;
+              opt.textContent = catName;
+              linkCategorySelect.appendChild(opt.cloneNode(true)); // <-- Adds to Create Link dropdown
+              filterCategoryModal.appendChild(opt.cloneNode(true)); // <-- Adds to Filter modal dropdown
+              multiCat.appendChild(opt.cloneNode(true));
+
+              const item = document.createElement('div');
+              item.className = 'item';
+
+              // Left side: Name and Rating component
+              const left = document.createElement('div');
+              left.style.flex = '1';
+              const nameEl = document.createElement('div');
+              nameEl.style.fontWeight = '700';
+              nameEl.textContent = escapeHtml(catName);
+
+              const ratingContainer = document.createElement('div');
+              ratingContainer.className = 'cat-rating-container';
+              ratingContainer.appendChild(nameEl);
+              // Only allow rating if perm_lvl is high enough
+              const canEdit = (currentUserData.permission_lvl || 0) >= 2;
+              ratingContainer.appendChild(renderStarRating(id, catRating, canEdit));
+
+              left.appendChild(ratingContainer);
+
+              // Right side: Controls
+              const right = document.createElement('div');
+              right.className = 'row';
+              const pl = currentUserData.permission_lvl || 0;
+              const isCreator = currentUser && c.creator === currentUser.uid;
+
+              if ((pl >= 3) || (pl >= 2 && isCreator)) {
+                const del = document.createElement('button');
+                del.className = 'danger';
+                del.textContent = 'Delete';
+                del.addEventListener('click', async () => {
+                  showConfirm(`Are you sure you want to delete category "${catName}"? Links will become Unsorted.`, async () => {
+                    try {
+                      await db.collection('categories').doc(id).delete();
+                      showAuthMsg('Category deleted');
+                    } catch (e) { showAuthMsg('Category delete failed: ' + e.message, true); }
+                  });
+                });
+                right.appendChild(del);
+              }
+              item.appendChild(left);
+              item.appendChild(right);
+              catsList.appendChild(item);
+            });
+          }
+
+          // Update links filter UI (category dropdown)
+          filterCategoryModal.value = filterState.categoryId;
+
+          // Re-render links after the category map is updated
+          if (currentUser && currentUserData.permission_lvl >= 1) {
+            updateFilterState();
+          }
+
+        }, err => {
+          console.error('categories onSnapshot error', err);
+          catsList.innerHTML = `<div class="muted">Categories error: ${escapeHtml(err.message || String(err))}</div>`;
+          createCatCard.style.display = 'none';
+          linkCategorySelect.innerHTML = '<option>(No access)</option>';
+          filterCategoryModal.innerHTML = '<option>(No access)</option>';
+        });
+      } catch (e) {
+        console.error('subscribeCategories error', e);
+        catsList.innerHTML = `<div class="muted">Permission error loading categories.</div>`;
+        createCatCard.style.display = 'none';
+      }
+    }
+    createCatBtn.addEventListener('click', async () => {
+      if (!currentUser) return showAuthMsg('Sign in first', true);
+      if ((currentUserData.permission_lvl || 0) < 2) return showAuthMsg('Insufficient permission to create categories', true);
+      const name = catNameInput.value.trim();
+      if (!name) return showAuthMsg('Provide category name', true);
+      try {
+        await db.collection('categories').add({
+          name,
+          creator: currentUser.uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        catNameInput.value = '';
+        showAuthMsg('Category created');
+      } catch (e) {
+        showAuthMsg('Create category error: ' + e.message, true);
+      }
+    });
+
+    /* Confirmation Modal Logic */
+    function showConfirm(msg, onOk) {
+      confirmMsg.textContent = msg;
+      confirmCallback = onOk;
+      confirmModal.style.display = 'flex';
+      setTimeout(() => confirmModal.classList.add('open'), 10);
+    }
+    
+    function closeConfirm() {
+      confirmModal.classList.remove('open');
+      setTimeout(() => {
+        confirmModal.style.display = 'none';
+        confirmCallback = null;
+      }, 300); // match transition duration
+    }
+
+    confirmOkBtn.addEventListener('click', () => {
+      if(confirmCallback) confirmCallback();
+      closeConfirm();
+    });
+    
+    confirmCancelBtn.addEventListener('click', closeConfirm);
+    confirmCloseBtn.addEventListener('click', closeConfirm);
+
+
+    /* pending & users */
+    function subscribePending() { try { if (unsubPending) { unsubPending = null; } unsubPending = db.collection('pending_users').orderBy('createdAt', 'desc').onSnapshot(snapshot => { pendingBox.innerHTML = ''; if (snapshot.empty) { pendingBox.innerHTML = '<div class="muted">No pending users.</div>'; return; } snapshot.forEach(doc => { const d = doc.data(); const uid = doc.id; const item = document.createElement('div'); item.className = 'item'; const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:700">${escapeHtml(d.displayName || d.email)}</div><div class="muted">${escapeHtml(d.email || '')}</div>`; const right = document.createElement('div'); right.className = 'row'; const roleSel = document.createElement('select');['user', 'admin', 'owner'].forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; roleSel.appendChild(o); }); const permInput = document.createElement('input'); permInput.type = 'number'; permInput.min = 0; permInput.max = 3; permInput.value = 1; permInput.style.width = '72px'; const approve = document.createElement('button'); approve.className = 'ghost'; approve.textContent = 'Approve'; const reject = document.createElement('button'); reject.className = 'danger'; reject.textContent = 'Reject'; approve.addEventListener('click', async () => { const role = roleSel.value; const perm = parseInt(permInput.value, 10) || 0; const check = prompt(`Type APPROVE to confirm ${d.displayName || d.email} as ${role} (perm ${perm}).`); if (check !== 'APPROVE') return; try { await db.collection('user_data').doc(uid).set({ role, permission_lvl: perm, displayName: d.displayName || '', createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await db.collection('pending_users').doc(uid).delete(); showAuthMsg('User approved'); } catch (e) { showAuthMsg('Approve failed: ' + e.message, true); } }); reject.addEventListener('click', async () => { const check = prompt("Type REJECT to remove pending entry."); if (check !== 'REJECT') return; try { await db.collection('pending_users').doc(uid).delete(); showAuthMsg('Pending removed'); } catch (e) { showAuthMsg('Reject failed: ' + e.message, true); } }); right.appendChild(roleSel); right.appendChild(permInput); right.appendChild(approve); right.appendChild(reject); item.appendChild(left); item.appendChild(right); pendingBox.appendChild(item); }); }, err => { console.error('pending onSnapshot', err); pendingBox.innerHTML = `<div class="muted">Pending error: ${escapeHtml(err.message || String(err))}</div>`; }); } catch (e) { console.error('subscribePending', e); pendingBox.innerHTML = `<div class="muted">Permission error reading pending users</div>`; } }
+    function subscribeUsers() { try { if (unsubUsers) { unsubUsers = null; } unsubUsers = db.collection('user_data').orderBy('createdAt', 'desc').onSnapshot(snapshot => { usersBox.innerHTML = ''; if (snapshot.empty) { usersBox.innerHTML = '<div class."muted">No users found.</div>'; return; } snapshot.forEach(doc => { const u = doc.data(); const uid = doc.id; const item = document.createElement('div'); item.className = 'item'; const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:700">${escapeHtml(u.displayName || '')}</div><div class="muted">${escapeHtml(uid)}</div>`; const right = document.createElement('div'); right.className = 'row'; const roleSel = document.createElement('select');['unapproved', 'user', 'admin', 'owner'].forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; if (u.role === r) o.selected = true; roleSel.appendChild(o); }); const permSel = document.createElement('select');[0, 1, 2, 3].forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; if (u.permission_lvl === n) o.selected = true; permSel.appendChild(o); }); const save = document.createElement('button'); save.className = 'ghost'; save.textContent = 'Save'; save.addEventListener('click', async () => { try { await db.collection('user_data').doc(uid).update({ role: roleSel.value, permission_lvl: parseInt(permSel.value, 10) }); showAuthMsg('User updated'); } catch (e) { showAuthMsg('Update failed: ' + e.message, true); } }); right.appendChild(roleSel); right.appendChild(permSel); right.appendChild(save); item.appendChild(left); item.appendChild(right); usersBox.appendChild(item); }); }, err => { console.error('users onSnapshot', err); usersBox.innerHTML = `<div class="muted">Users error: ${escapeHtml(err.message || String(err))}</div>`; }); } catch (e) { console.error('subscribeUsers', e); usersBox.innerHTML = `<div class="muted">Permission error reading users</div>`; } }
+
+    /* Keyboard navigation: up/down to move selection, Enter to open */
+    document.addEventListener('keydown', (e) => {
+      const activeTab = Array.from(navButtons).find(b => b.classList.contains('active'))?.dataset?.tab || 'links';
+      if (activeTab !== 'links') return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); selectNext(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); selectPrev(); }
+      else if (e.key === 'Enter') { if (selectedIndex >= 0 && visibleLinkEls[selectedIndex]) { const url = visibleLinkEls[selectedIndex].url; if (url) window.open(url, '_blank'); } }
+      else if (e.key === '/') {
+        e.preventDefault();
+        if (document.activeElement !== linkSearchInput) {
+          linkSearchInput.focus();
+          linkSearchInput.select();
+        }
+      }
+    });
+    function selectNext() { if (!visibleLinkEls.length) return; selectedIndex = Math.min(visibleLinkEls.length - 1, selectedIndex + 1); updateSelection(); }
+    function selectPrev() { if (!visibleLinkEls.length) return; selectedIndex = Math.max(0, selectedIndex - 1); updateSelection(); }
+    function clearKeyboardSelection() { visibleLinkEls.forEach((v) => v.el.classList.remove('link-selected')); selectedIndex = -1; }
+    function updateSelection() { visibleLinkEls.forEach((v, i) => v.el.classList.toggle('link-selected', i === selectedIndex)); if (selectedIndex >= 0) { visibleLinkEls[selectedIndex].el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); visibleLinkEls[selectedIndex].el.focus(); } }
+
+    const THEMES = {
+      default: {
+        '--bg': '#0c1015',
+        '--panel': '#141a21',
+        '--muted': '#aab5c4',
+        '--accent': '#5e95ff',
+        '--card': '#1c2430'
+      },
+
+      midnight: {
+        '--bg': '#05070a',
+        '--panel': '#0b0f14',
+        '--muted': '#8899aa',
+        '--accent': '#4f7fff',
+        '--card': '#10141b'
+      },
+
+      blackwhite: {
+        '--bg': '#000000',
+        '--panel': '#111111',
+        '--muted': '#bbbbbb',
+        '--accent': '#ffffff',
+        '--card': '#1a1a1a'
+      },
+
+      solarized: {
+        '--bg': '#002b36',
+        '--panel': '#073642',
+        '--muted': '#93a1a1',
+        '--accent': '#268bd2',
+        '--card': '#0e3a45'
+      },
+
+      forest: {
+        '--bg': '#0c120c',
+        '--panel': '#142016',
+        '--muted': '#b3ccb3',
+        '--accent': '#6fdc6f',
+        '--card': '#1b2b1f'
+      },
+
+      nebula: {
+        '--bg': '#0b0e27',
+        '--panel': '#14183d',
+        '--muted': '#a9b4ff',
+        '--accent': '#8e5fff',
+        '--card': '#1d224f'
+      }
+    };
+
+    function applyTheme(name, save = true) {
+      const t = THEMES[name];
+      if (!t) return;
+      for (const k in t) document.documentElement.style.setProperty(k, t[k]);
+      localStorage.setItem('lj_theme', name);
+      
+      // Update active state in grid
+      document.querySelectorAll('.theme-preset-card').forEach(card => {
+        card.classList.remove('active-theme');
+        const text = card.querySelector('.preset-name').textContent.toLowerCase();
+        if(text === 'mono' && name === 'blackwhite') card.classList.add('active-theme');
+        else if(text === name) card.classList.add('active-theme');
+      });
+      
+      if(save && currentUser) {
+          db.collection('user_data').doc(currentUser.uid).update({ theme: name }).catch(err => console.log('Err saving theme', err));
+      }
+    }
+
+    function resetTheme() {
+      applyTheme('default');
+      localStorage.removeItem('lj_theme');
+    }
+
+    function applyCustomTheme() {
+      const bg = document.getElementById('custom-bg').value.trim();
+      const panel = document.getElementById('custom-panel').value.trim();
+      const accent = document.getElementById('custom-accent').value.trim();
+      if (bg) document.documentElement.style.setProperty('--bg', bg);
+      if (panel) document.documentElement.style.setProperty('--panel', panel);
+      if (accent) document.documentElement.style.setProperty('--accent', accent);
+      localStorage.setItem('lj_theme', 'custom');
+      
+      document.querySelectorAll('.theme-preset-card').forEach(c => c.classList.remove('active-theme'));
+      if(currentUser) {
+          db.collection('user_data').doc(currentUser.uid).update({ theme: 'custom' }).catch(err => console.log(err));
+      }
+    }
+    
+    /* Preferences Logic */
+    function savePreferences() {
+        if(currentUser) {
+            db.collection('user_data').doc(currentUser.uid).update({
+                preferences: userPreferences
+            }).catch(e => console.error('Pref save err', e));
+        }
+    }
+    
+    function applyPreferences() {
+        // Apply "Show Full URLs" logic
+        if(userPreferences.showFullUrls) {
+            document.body.classList.add('show-full-urls');
+        } else {
+            document.body.classList.remove('show-full-urls');
+        }
+        
+        // "Auto-Expand Categories" logic is handled in renderLinksFromSnapshot
+        // But if we toggle it, we might want to re-render to apply immediately
+        renderLinksFromSnapshot();
+    }
+    
+    prefNewTab.addEventListener('change', (e) => {
+        userPreferences.openInNewTab = e.target.checked;
+        savePreferences();
+    });
+    
+    prefAutoExpand.addEventListener('change', (e) => {
+        userPreferences.autoExpandCategories = e.target.checked;
+        applyPreferences(); // Applies and saves visually
+        savePreferences();
+    });
+    
+    prefFullUrls.addEventListener('change', (e) => {
+        userPreferences.showFullUrls = e.target.checked;
+        applyPreferences();
+        savePreferences();
+    });
+
+
+    /* expose for debugging */
+    window._lj = { auth, db };
+  </script>
+</body>
+
+</html>

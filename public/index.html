@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Midnight TERMINAL // V2.0</title>
+
+	<link rel="shortcut icon" href="/assets/images/logo.png" />
+
+	<!-- Fonts: Orbitron for headers, Rajdhani for UI -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+
+	<style>
+		:root {
+			--bg-color: #030508;
+			--panel-color: rgba(10, 15, 30, 0.65);
+			--accent-primary: #00f3ff; /* Cyan */
+			--accent-secondary: #bc13fe; /* Purple */
+			--text-main: #e0f7fa;
+			--text-muted: #627c85;
+			--grid-color: rgba(0, 243, 255, 0.1);
+			--border-glow: 0 0 10px rgba(0, 243, 255, 0.3);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			height: 100vh;
+			overflow: hidden;
+			font-family: 'Rajdhani', sans-serif;
+			background-color: var(--bg-color);
+			color: var(--text-main);
+			display: flex;
+			flex-direction: column;
+		}
+
+		/* Background Effects */
+		#starfield {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: -2;
+		}
+
+		.scanlines {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: repeating-linear-gradient(
+				0deg,
+				rgba(0, 0, 0, 0.15),
+				rgba(0, 0, 0, 0.15) 1px,
+				transparent 1px,
+				transparent 2px
+			);
+			pointer-events: none;
+			z-index: -1;
+		}
+
+		.vignette {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: radial-gradient(circle, transparent 50%, #000000 150%);
+			pointer-events: none;
+			z-index: -1;
+		}
+
+		/* Main Layout */
+		.app-container {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+		}
+
+		/* Navigation */
+		.topbar {
+			height: 70px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 40px;
+			background: rgba(5, 8, 16, 0.8);
+			border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+			backdrop-filter: blur(10px);
+			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+		}
+
+		.brand {
+			font-family: "Orbitron", sans-serif;
+			font-weight: 900;
+			font-size: 20px;
+			letter-spacing: 2px;
+			color: var(--accent-primary);
+			text-decoration: none;
+			text-transform: uppercase;
+			text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+			position: relative;
+			padding-left: 15px;
+		}
+		
+		.brand::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 6px;
+			height: 6px;
+			background: var(--accent-secondary);
+			box-shadow: 0 0 8px var(--accent-secondary);
+		}
+
+		.nav {
+			display: flex;
+			gap: 4px;
+		}
+
+		.nav-link {
+			position: relative;
+			font-size: 16px;
+			font-weight: 600;
+			color: var(--text-muted);
+			text-decoration: none;
+			padding: 8px 16px;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			transition: all 0.3s ease;
+			overflow: hidden;
+		}
+
+		.nav-link:hover, .nav-link.active {
+			color: var(--text-main);
+			background: rgba(0, 243, 255, 0.05);
+			text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+		}
+
+		/* Futuristic Underline Animation */
+		.nav-link::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 0%;
+			height: 2px;
+			background: var(--accent-primary);
+			transition: width 0.3s ease;
+			box-shadow: 0 0 10px var(--accent-primary);
+		}
+
+		.nav-link:hover::after, .nav-link.active::after {
+			width: 100%;
+		}
+
+		/* Center Content */
+		.center-stage {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			perspective: 1000px;
+		}
+
+		.glass-panel {
+			width: min(700px, 90vw);
+			padding: 60px 40px;
+			background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+			border: 1px solid rgba(0, 243, 255, 0.15);
+			backdrop-filter: blur(12px);
+			border-radius: 4px; /* Slight rounded for UI, mostly sharp for sci-fi */
+			position: relative;
+			text-align: center;
+			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+			transition: transform 0.1s ease-out;
+		}
+
+		/* Decorative HUD Corners */
+		.glass-panel::before, .glass-panel::after, 
+		.corner-bl, .corner-br {
+			content: '';
+			position: absolute;
+			width: 20px;
+			height: 20px;
+			border: 2px solid var(--accent-primary);
+			transition: all 0.3s ease;
+		}
+
+		.glass-panel::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+		.glass-panel::after { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+		
+		.corner-container { position: absolute; inset: 0; pointer-events: none; }
+		.corner-bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+		.corner-br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+		.glass-panel:hover::before, .glass-panel:hover::after,
+		.glass-panel:hover .corner-bl, .glass-panel:hover .corner-br {
+			width: 30px;
+			height: 30px;
+			box-shadow: 0 0 15px var(--accent-primary);
+		}
+
+		/* Title Glitch Effect */
+		h1 {
+			font-family: "Orbitron", sans-serif;
+			font-size: clamp(40px, 8vw, 70px);
+			margin: 0 0 40px;
+			letter-spacing: 4px;
+			color: #fff;
+			position: relative;
+			text-transform: uppercase;
+			display: inline-block;
+		}
+
+		h1::before, h1::after {
+			content: attr(data-text);
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: var(--bg-color);
+		}
+
+		h1::before {
+			left: 2px;
+			text-shadow: -1px 0 #ff00c1;
+			clip: rect(44px, 450px, 56px, 0);
+			animation: glitch-anim 5s infinite linear alternate-reverse;
+		}
+
+		h1::after {
+			left: -2px;
+			text-shadow: -1px 0 #00fff9;
+			clip: rect(44px, 450px, 56px, 0);
+			animation: glitch-anim2 5s infinite linear alternate-reverse;
+		}
+
+		@keyframes glitch-anim {
+			0% { clip: rect(13px, 9999px, 89px, 0); }
+			5% { clip: rect(65px, 9999px, 100px, 0); }
+			10% { clip: rect(4px, 9999px, 92px, 0); }
+			15% { clip: rect(24px, 9999px, 2px, 0); }
+			20% { clip: rect(67px, 9999px, 63px, 0); }
+			25% { clip: rect(10px, 9999px, 35px, 0); }
+			30% { clip: rect(13px, 9999px, 89px, 0); }
+			100% { clip: rect(65px, 9999px, 100px, 0); }
+		}
+		@keyframes glitch-anim2 {
+			0% { clip: rect(89px, 9999px, 13px, 0); }
+			5% { clip: rect(100px, 9999px, 65px, 0); }
+			10% { clip: rect(92px, 9999px, 4px, 0); }
+			15% { clip: rect(2px, 9999px, 24px, 0); }
+			20% { clip: rect(63px, 9999px, 67px, 0); }
+			25% { clip: rect(35px, 9999px, 10px, 0); }
+			30% { clip: rect(89px, 9999px, 13px, 0); }
+			100% { clip: rect(100px, 9999px, 65px, 0); }
+		}
+
+		/* Search Input */
+		.input-wrapper {
+			position: relative;
+			width: 100%;
+			max-width: 500px;
+			margin: 0 auto;
+		}
+
+		.search {
+			width: 100%;
+			height: 60px;
+			background: rgba(0, 0, 0, 0.4);
+			border: 1px solid var(--text-muted);
+			color: var(--accent-primary);
+			font-family: 'Space Grotesk', monospace;
+			font-size: 18px;
+			padding: 0 24px;
+			outline: none;
+			transition: all 0.3s ease;
+			clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+		}
+
+		.search::placeholder {
+			color: rgba(98, 124, 133, 0.5);
+			font-family: 'Rajdhani', sans-serif;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+
+		.search:focus {
+			border-color: var(--accent-primary);
+			background: rgba(0, 243, 255, 0.05);
+			box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+		}
+
+		.input-status {
+			position: absolute;
+			right: 15px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 12px;
+			color: var(--accent-primary);
+			opacity: 0.5;
+			pointer-events: none;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+
+		/* Footer */
+		footer {
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 12px;
+			color: var(--text-muted);
+			text-transform: uppercase;
+			letter-spacing: 2px;
+			border-top: 1px solid rgba(255, 255, 255, 0.05);
+			background: rgba(0,0,0,0.8);
+		}
+
+		.status-dot {
+			width: 8px;
+			height: 8px;
+			background: #00ff41;
+			border-radius: 50%;
+			margin-right: 10px;
+			box-shadow: 0 0 5px #00ff41;
+			animation: pulse 2s infinite;
+		}
+
+		@keyframes pulse {
+			0% { opacity: 0.5; }
+			50% { opacity: 1; }
+			100% { opacity: 0.5; }
+		}
+
+		/* Mobile Optimizations */
+		@media (max-width: 600px) {
+			.topbar { padding: 0 15px; height: 60px; }
+			.nav { gap: 0; }
+			.nav-link { font-size: 13px; padding: 8px 10px; }
+			.glass-panel { padding: 40px 20px; width: 95vw; }
+			h1 { font-size: 32px; }
+		}
+
+	</style>
+</head>
+
+<body>
+
+	<!-- Background Canvas for Stars -->
+	<canvas id="starfield"></canvas>
+	<div class="scanlines"></div>
+	<div class="vignette"></div>
+
+	<div class="app-container">
+		<div class="topbar">
+			<a href="index.html" class="brand">Midnight</a>
+			<nav class="nav">
+				<a href="index.html" class="nav-link active">Home</a>
+				<a href="b.html" class="nav-link">Browser</a>
+				<a href="g.html" class="nav-link">Games</a>
+				<a href="apps.html" class="nav-link">Apps</a>
+				<a href="apps.html" class="nav-link">Tv Shows</a>
+				<a href="movies.html" class="nav-link">Movies</a>
+				<a href="music.html" class="nav-link">Music</a>
+				<a href="settings.html" class="nav-link">Settings</a>
+			</nav>
+		</div>
+
+		<div class="center-stage">
+			<div class="glass-panel" id="tiltPanel">
+				<div class="corner-container">
+					<div class="corner-bl"></div>
+					<div class="corner-br"></div>
+				</div>
+				
+				<h1 data-text="MIDNIGHT">MIDNIGHT</h1>
+				
+				<div class="input-wrapper">
+					<input class="search" id="mainSearch" placeholder="Initiate Search Protocol..." 
+						autocomplete="off"
+						onkeydown="if(event.key==='Enter'){location.href='b.html'}" />
+					<div class="input-status">READY</div>
+				</div>
+			</div>
+		</div>
+
+		<footer>
+			<div class="status-dot"></div>
+			System Online // Powered by Scramjet
+		</footer>
+	</div>
+
+	<script>
+		// --- Starfield Animation ---
+		const canvas = document.getElementById('starfield');
+		const ctx = canvas.getContext('2d');
+
+		let width, height;
+		let stars = [];
+		const starCount = 150;
+		const mouse = { x: 0, y: 0 };
+		const center = { x: 0, y: 0 };
+
+		// Resize handling
+		function resize() {
+			width = window.innerWidth;
+			height = window.innerHeight;
+			canvas.width = width;
+			canvas.height = height;
+			center.x = width / 2;
+			center.y = height / 2;
+		}
+
+		window.addEventListener('resize', resize);
+		resize();
+
+		// Mouse tracking
+		window.addEventListener('mousemove', (e) => {
+			mouse.x = (e.clientX - center.x) * 0.1; // Scale down movement
+			mouse.y = (e.clientY - center.y) * 0.1;
+		});
+
+		// Star Class
+		class Star {
+			constructor() {
+				this.init();
+			}
+
+			init() {
+				this.x = (Math.random() - 0.5) * width * 2;
+				this.y = (Math.random() - 0.5) * height * 2;
+				this.z = Math.random() * width;
+				this.size = Math.random() * 2;
+				this.color = Math.random() > 0.8 ? '#bc13fe' : '#00f3ff'; // Occasional purple star
+			}
+
+			update() {
+				// Move stars closer (Z-axis)
+				this.z -= 2; 
+
+				// Respond to mouse
+				this.x += (mouse.x - this.x * 0.001) * 0.02;
+				this.y += (mouse.y - this.y * 0.001) * 0.02;
+
+				// Reset if passed screen
+				if (this.z <= 0) {
+					this.init();
+					this.z = width;
+				}
+			}
+
+			draw() {
+				// Project 3D coordinates to 2D
+				const sx = (this.x / this.z) * width + center.x;
+				const sy = (this.y / this.z) * height + center.y;
+				
+				// Size grows as it gets closer
+				const r = (1 - this.z / width) * 4 * this.size;
+
+				// Opacity fades as it gets closer
+				const opacity = 1 - this.z / width;
+
+				ctx.beginPath();
+				ctx.arc(sx, sy, Math.max(0, r), 0, Math.PI * 2);
+				ctx.fillStyle = this.color;
+				ctx.globalAlpha = opacity;
+				ctx.fill();
+				ctx.globalAlpha = 1;
+			}
+		}
+
+		// Initialize stars
+		for (let i = 0; i < starCount; i++) {
+			stars.push(new Star());
+		}
+
+		// Animation Loop
+		function animate() {
+			// Clear with trail effect
+			ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
+			ctx.fillRect(0, 0, width, height);
+
+			stars.forEach(star => {
+				star.update();
+				star.draw();
+			});
+
+			requestAnimationFrame(animate);
+		}
+		animate();
+
+		// --- Panel Tilt Effect ---
+		const panel = document.getElementById('tiltPanel');
+		
+		document.addEventListener('mousemove', (e) => {
+			if(window.innerWidth < 768) return; // Disable on mobile
+
+			const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+			const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+			
+			panel.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+		});
+
+		// --- Input Interaction ---
+		const searchInput = document.getElementById('mainSearch');
+		const statusText = document.querySelector('.input-status');
+
+		searchInput.addEventListener('focus', () => {
+			statusText.textContent = "LISTENING...";
+			statusText.style.color = "#fff";
+		});
+
+		searchInput.addEventListener('blur', () => {
+			statusText.textContent = "READY";
+			statusText.style.color = "var(--accent-primary)";
+		});
+
+	</script>
+</body>
+</html>

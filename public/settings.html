@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Settings // Midnight</title>
+    <link rel="shortcut icon" href="/assets/images/logo.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #030508;
+            --panel-color: rgba(10, 15, 30, 0.65);
+            --accent-primary: #00f3ff;
+            --accent-secondary: #bc13fe;
+            --text-main: #e0f7fa;
+            --text-muted: #627c85;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .topbar {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(5, 8, 16, 0.85);
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-family: "Orbitron", sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: 2px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-link {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-main);
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        main {
+            flex: 1;
+            z-index: 1;
+        }
+
+        .wrap {
+            width: min(980px, 92vw);
+            margin: 30px auto;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-family: "Orbitron", sans-serif;
+            font-size: 32px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        p {
+            margin: 0;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .card {
+            margin-top: 20px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            background: rgba(10, 15, 30, 0.7);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid var(--accent-primary);
+            border-left: 2px solid var(--accent-primary);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            height: 48px;
+            padding: 0 20px;
+            border: 1px solid var(--accent-primary);
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .btn:hover {
+            background: var(--accent-primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-primary);
+        }
+
+        footer {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 0 15px;
+                height: 60px;
+            }
+
+            .nav-link {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="scanlines"></div>
+
+    <div class="topbar">
+        <a href="index.html" class="brand">Midnight</a>
+        <nav class="nav">
+				<a href="index.html" class="nav-link">Home</a>
+				<a href="b.html" class="nav-link">Browser</a>
+				<a href="g.html" class="nav-link">Games</a>
+				<a href="apps.html" class="nav-link">Apps</a>
+				<a href="shows.html" class="nav-link">Tv Shows</a>
+				<a href="movies.html" class="nav-link">Movies</a>
+				<a href="music.html" class="nav-link">Music</a>
+				<a href="settings.html" class="nav-link active">Settings</a>
+			</nav>
+    </div>
+
+    <main>
+        <div class="wrap">
+            <h1>Settings Config</h1>
+            <p>System Parameters & Audio Link</p>
+
+            <!-- STEALTH MODE -->
+            <section class="card">
+                <h2
+                    style="margin:0; font-family:Orbitron, sans-serif; font-size: 20px; letter-spacing:1px; color:var(--accent-secondary);">
+                    STEALTH MODE</h2>
+                <div class="row">
+                    <button class="btn" id="openNewTab" type="button" onclick="openGame()">Launch in Cloaked
+                        Tab</button>
+                </div>
+            </section>
+
+            <!-- AUDIO UPLINK -->
+            <section class="card" style="margin-top: 30px; border-color: var(--accent-secondary);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2
+                        style="margin:0; font-family:Orbitron, sans-serif; font-size: 20px; letter-spacing:1px; color:var(--accent-primary);">
+                        AUDIO UPLINK</h2>
+                    <span
+                        style="font-size:12px; color:var(--accent-primary); border:1px solid var(--accent-primary); padding:2px 8px;">V2.1</span>
+                </div>
+                <p style="margin-top:10px;">Establish connection to Nightride FM or Lofi systems. Opens in a dedicated
+                    pop-up to maintain signal during navigation.</p>
+                <div class="row">
+                    <button class="btn" onclick="openRadio()">Launch Radio Module</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>System Online // Powered by Scramjet</footer>
+
+    <script>
+        function openGame() {
+            const Icon = document.createElement("link");
+            const win = window.open();
+            win.document.title = "Home"
+            Icon.type = "image/x-icon"
+            Icon.rel = "shortcut icon"
+            Icon.href = "./assets/images/classroomcloak.webp"
+            win.document.head.appendChild(Icon)
+            win.document.body.style.margin = "0";
+            win.document.body.style.height = "100vh";
+            const iframe = win.document.createElement("iframe");
+            iframe.style.border = "none";
+            iframe.style.width = "100%";
+            iframe.style.height = "100%";
+            iframe.style.margin = "0";
+            iframe.referrerpolicy = "no-referrer";
+            iframe.allow = "fullscreen";
+            iframe.src = "./index.html";
+            win.document.body.appendChild(iframe);
+        }
+
+        function openRadio() {
+            // Open a small popup window for the radio
+            window.open(
+                'radio.html',
+                'MidnightRadio',
+                'width=350,height=500,menubar=no,toolbar=no,location=no,status=no,resizable=yes'
+            );
+        }
+
+        // Starfield
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+        function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+        window.addEventListener('resize', resize); resize();
+        class Star {
+            constructor() { this.init(); }
+            init() { this.x = (Math.random() - 0.5) * width * 2; this.y = (Math.random() - 0.5) * height * 2; this.z = Math.random() * width; this.color = Math.random() > 0.8 ? '#bc13fe' : '#00f3ff'; }
+            update() { this.z -= 2; if (this.z <= 0) { this.init(); this.z = width; } }
+            draw() {
+                const sx = (this.x / this.z) * width + width / 2; const sy = (this.y / this.z) * height + height / 2;
+                const r = (1 - this.z / width) * 2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+            }
+        }
+        for (let i = 0; i < 100; i++) stars.push(new Star());
+        function animate() {
+            ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height);
+            stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+
+</html>

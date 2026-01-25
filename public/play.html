@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0, shrink-to-fit=no" />
+  <title>Player // Midnight</title>
+  <link rel="shortcut icon" href="/assets/images/logo.png" />
+
+  <!-- Scripts -->
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="baremux/index.js" defer></script>
+  <script src="epoxy/index.js" defer></script>
+  <script src="register-sw.js" defer></script>
+  <script src="search.js" defer></script>
+  <script>
+    (() => {
+      const p = new URLSearchParams(location.search);
+      const hasLegacy = p.has("game") || p.has("app");
+      const hasNew = p.has("type") && p.has("id");
+      if (!hasLegacy && hasNew) {
+        const type = (p.get("type") || "games").toLowerCase();
+        const id = p.get("id") || "";
+        const np = new URLSearchParams();
+        if (type === "apps") np.set("app", id);
+        else np.set("game", id);
+        history.replaceState(null, "", location.pathname + "?" + np.toString());
+      }
+    })();
+  </script>
+  <script src="play.js" defer></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #030508;
+      --panel-color: rgba(10, 15, 30, 0.65);
+      --accent-primary: #00f3ff;
+      --accent-secondary: #bc13fe;
+      --text-main: #e0f7fa;
+      --text-muted: #627c85;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-color);
+      overflow: hidden;
+    }
+
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Top Nav */
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px;
+      height: 60px;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      background: rgba(5, 8, 16, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 15px;
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      background: rgba(0, 243, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .brand-wrap img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    .brand-wrap .title {
+      font-family: "Orbitron", sans-serif;
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: var(--accent-primary);
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .nav {
+			display: flex;
+			gap: 4px;
+		}
+
+		.nav-link {
+			position: relative;
+			font-size: 16px;
+			font-weight: 600;
+			color: var(--text-muted);
+			text-decoration: none;
+			padding: 8px 16px;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			transition: all 0.3s ease;
+			overflow: hidden;
+		}
+
+		.nav-link:hover, .nav-link.active {
+			color: var(--text-main);
+			background: rgba(0, 243, 255, 0.05);
+			text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+		}
+
+		/* Futuristic Underline Animation */
+		.nav-link::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 0%;
+			height: 2px;
+			background: var(--accent-primary);
+			transition: width 0.3s ease;
+			box-shadow: 0 0 10px var(--accent-primary);
+		}
+
+		.nav-link:hover::after, .nav-link.active::after {
+			width: 100%;
+		}
+
+    /* Hidden elements for play.js compatibility */
+    .btns {
+      display: none;
+    }
+
+    #sj-form {
+      position: absolute;
+      left: -9999px;
+    }
+
+    /* Stage */
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .shell {
+      width: min(1200px, 95vw);
+    }
+
+    .frameWrap {
+      position: relative;
+      width: 100%;
+      border: 1px solid var(--accent-primary);
+      background: #000;
+      box-shadow: 0 0 40px rgba(0, 243, 255, 0.15);
+      /* Tech corners */
+      clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px),
+          calc(100% - 20px) 100%, 0 100%, 0 20px);
+    }
+
+    .frameSizer {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 75vh;
+      position: relative;
+      background: #000;
+    }
+
+    #gameHost {
+      position: absolute;
+      inset: 0;
+      background: #000;
+    }
+
+    /* Loading Overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(3, 5, 8, 0.9);
+      z-index: 2;
+    }
+
+    .loading-card {
+      padding: 30px;
+      text-align: center;
+      border: 1px solid var(--accent-secondary);
+      background: rgba(20, 10, 30, 0.8);
+      box-shadow: 0 0 20px rgba(188, 19, 254, 0.3);
+    }
+
+    .loading-card h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--accent-secondary);
+      margin: 0 0 10px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    /* Bottom Controls */
+    .belowControls {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .pillBtn {
+      height: 44px;
+      padding: 0 24px;
+      border: 1px solid var(--text-muted);
+      background: rgba(0, 0, 0, 0.6);
+      color: var(--text-main);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+
+    .pillBtn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+
+    .pillBtn.primary {
+      border-color: var(--accent-primary);
+      background: rgba(0, 243, 255, 0.1);
+      color: var(--accent-primary);
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        display: none;
+      }
+
+      /* Hide nav links on mobile to save space */
+    }
+
+    #sj-error,
+    #sj-error-code {
+      display: none;
+    }
+  </style>
+</head>
+
+<body data-mode="player">
+  <canvas id="starfield"></canvas>
+  <div class="scanlines"></div>
+
+  <div class="top">
+    <div class="brand-wrap" title="Midnight Player">
+      <img id="gameIcon" src="sj.png" alt="Icon" />
+      <span class="title" id="gameTitle">SYSTEM</span>
+    </div>
+
+    <div class="spacer"></div>
+
+    <nav class="nav">
+				<a href="index.html" class="nav-link">Home</a>
+				<a href="b.html" class="nav-link">Browser</a>
+				<a href="g.html" class="nav-link">Games</a>
+				<a href="apps.html" class="nav-link">Apps</a>
+				<a href="shows.html" class="nav-link">Tv Shows</a>
+				<a href="movies.html" class="nav-link">Movies</a>
+				<a href="music.html" class="nav-link">Music</a>
+				<a href="settings.html" class="nav-link">Settings</a>
+			</nav>
+
+    <!-- Hidden form for legacy script compatibility -->
+    <div class="btns"></div> <!-- Placeholder for script searching for .btns -->
+    <form id="sj-form" autocomplete="off">
+      <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
+      <input id="sj-address" type="text" />
+    </form>
+  </div>
+
+  <div class="stage">
+    <div class="shell">
+      <div class="frameWrap">
+        <div class="frameSizer">
+          <div class="overlay" id="loading">
+            <div class="loading-card">
+              <h1>LOADING ASSETS</h1>
+              <p>Establishing secure connection...</p>
+            </div>
+          </div>
+
+          <div id="gameHost"></div>
+
+          <p id="sj-error"></p>
+          <pre id="sj-error-code"></pre>
+        </div>
+      </div>
+
+      <div class="belowControls">
+        <button id="navFull" class="pillBtn primary" type="button">MAXIMIZE</button>
+        <button id="navReload" class="pillBtn" type="button">RELOAD</button>
+        <button id="navGames" class="pillBtn" type="button" onclick="history.back()">RETURN</button>
+        <button class="pillBtn" type="button" onclick="window.location.href='index.html'">TERMINATE</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Starfield Background
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let width, height, stars = [];
+    function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+    window.addEventListener('resize', resize); resize();
+    class Star {
+      constructor() { this.init(); }
+      init() { this.x = (Math.random() - 0.5) * width * 2; this.y = (Math.random() - 0.5) * height * 2; this.z = Math.random() * width; this.color = Math.random() > 0.8 ? '#bc13fe' : '#00f3ff'; }
+      update() { this.z -= 2; if (this.z <= 0) { this.init(); this.z = width; } }
+      draw() {
+        const sx = (this.x / this.z) * width + width / 2; const sy = (this.y / this.z) * height + height / 2;
+        const r = (1 - this.z / width) * 2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+      }
+    }
+    for (let i = 0; i < 80; i++) stars.push(new Star());
+    function animate() {
+      ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height);
+      stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+
+</html>

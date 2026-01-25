@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFlow | Table Edition</title>
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            /* Default (Clean Light) */
+            --bg-body: #f8fafc; --bg-card: #ffffff;
+            --text-primary: #0f172a; --text-secondary: #64748b;
+            --accent: #3b82f6; --accent-hover: #2563eb;
+            --border: #e2e8f0; --row-hover: #f1f5f9;
+            --danger: #ef4444; --success: #10b981;
+            --bg-modal: rgba(0, 0, 0, 0.4); --radius: 12px;
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            
+            /* Badges */
+            --p-high: #fee2e2; --p-high-text: #991b1b;
+            --p-med: #ffedd5; --p-med-text: #9a3412;
+            --p-low: #dcfce7; --p-low-text: #166534;
+            --cat-bg: #e0e7ff; --cat-text: #3730a3;
+
+            /* Timer */
+            --timer-bg: #eff6ff; --timer-text: #1e40af;
+        }
+
+        /* 2. Dark */
+        [data-theme="dark"] {
+            --bg-body: #0f172a; --bg-card: #1e293b;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8;
+            --accent: #60a5fa; --accent-hover: #3b82f6;
+            --border: #334155; --row-hover: #334155; --bg-modal: rgba(0, 0, 0, 0.7);
+            --p-high: #7f1d1d; --p-high-text: #fecaca;
+            --p-med: #7c2d12; --p-med-text: #fed7aa;
+            --p-low: #14532d; --p-low-text: #bbf7d0;
+            --cat-bg: #312e81; --cat-text: #c7d2fe;
+            --timer-bg: #172554; --timer-text: #bfdbfe;
+        }
+
+        /* 3. Midnight */
+        [data-theme="midnight"] {
+            --bg-body: #020617; --bg-card: #0f172a;
+            --text-primary: #e2e8f0; --text-secondary: #64748b;
+            --accent: #38bdf8; --accent-hover: #0ea5e9;
+            --border: #1e293b; --row-hover: #1e293b;
+            --cat-bg: #0c4a6e; --cat-text: #bae6fd;
+        }
+
+        /* 4. Forest */
+        [data-theme="forest"] {
+            --bg-body: #f0fdf4; --bg-card: #ffffff;
+            --text-primary: #14532d; --text-secondary: #166534;
+            --accent: #15803d; --accent-hover: #166534;
+            --border: #bbf7d0; --row-hover: #dcfce7;
+            --cat-bg: #dcfce7; --cat-text: #14532d;
+        }
+
+        /* 5. Cyberpunk */
+        [data-theme="cyberpunk"] {
+            --bg-body: #000000; --bg-card: #111;
+            --text-primary: #00ff41; --text-secondary: #008f11;
+            --accent: #f700ff; --accent-hover: #d500dc;
+            --border: #333; --row-hover: #222;
+            --danger: #ff0055;
+            --cat-bg: #2a0a2e; --cat-text: #f700ff;
+        }
+
+        /* --- GLOBAL LAYOUT --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            transition: background 0.4s, color 0.4s;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1000px; /* Wider for table */
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 85vh;
+            border: 1px solid var(--border);
+            transition: border-color 0.4s;
+        }
+
+        /* --- HEADER & TIMER --- */
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+        }
+
+        h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+
+        .timer-widget {
+            background: var(--timer-bg);
+            color: var(--timer-text);
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-size: 1.1rem;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+        }
+        
+        .timer-controls button {
+            background: none; border: none; cursor: pointer; color: inherit;
+            display: flex; align-items: center; opacity: 0.7; transition: 0.2s;
+        }
+        .timer-controls button:hover { opacity: 1; transform: scale(1.1); }
+
+        .header-actions { display: flex; gap: 0.8rem; }
+
+        .btn-icon {
+            background: transparent; border: 1px solid var(--border);
+            border-radius: 8px; width: 40px; height: 40px;
+            display: grid; place-items: center; cursor: pointer;
+            color: var(--text-secondary); transition: all 0.2s;
+        }
+        .btn-icon:hover { color: var(--accent); border-color: var(--accent); transform: rotate(15deg); }
+
+        .btn-primary {
+            background: var(--accent); color: white; border: none;
+            padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        /* --- CONTROLS --- */
+        .controls {
+            padding: 1rem 2rem; display: flex; gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-body); flex-wrap: wrap;
+        }
+        .search-bar { flex: 1; min-width: 200px; }
+        input, select {
+            padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg-card); color: var(--text-primary);
+        }
+
+        /* --- TABLE VIEW (The Big Change) --- */
+        .table-wrapper {
+            flex: 1; overflow: auto;
+            background: var(--bg-card);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: var(--bg-body);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+
+        tr { transition: background-color 0.2s; }
+        tr:hover { background-color: var(--row-hover); }
+
+        /* Table Checkbox */
+        .custom-checkbox {
+            appearance: none; width: 20px; height: 20px;
+            border: 2px solid var(--text-secondary); border-radius: 6px;
+            cursor: pointer; transition: 0.2s; display: grid; place-content: center;
+        }
+        .custom-checkbox:checked { background: var(--success); border-color: var(--success); }
+        .custom-checkbox:checked::after { content: '✓'; color: white; font-size: 12px; font-weight: 800; }
+
+        /* Table Styles Specifics */
+        .task-cell { font-weight: 500; font-size: 1rem; }
+        .completed .task-cell { text-decoration: line-through; color: var(--text-secondary); }
+        .completed { background-color: rgba(0,0,0,0.02); }
+
+        .badge { padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+        .badge-high { background: var(--p-high); color: var(--p-high-text); }
+        .badge-medium { background: var(--p-med); color: var(--p-med-text); }
+        .badge-low { background: var(--p-low); color: var(--p-low-text); }
+        
+        .badge-category {
+            background: var(--cat-bg); color: var(--cat-text);
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 8px; border-radius: 6px; font-size: 0.75rem;
+            margin-left: 8px; font-weight: 500; text-transform: none;
+        }
+
+        .date-cell { color: var(--text-secondary); font-size: 0.9rem; white-space: nowrap; }
+        .overdue { color: var(--danger); font-weight: 600; }
+
+        .action-cell { text-align: right; }
+        .action-btn {
+            background: none; border: none; cursor: pointer; color: var(--text-secondary);
+            padding: 6px; border-radius: 6px; transition: 0.2s;
+        }
+        .action-btn:hover { background: var(--p-high); color: var(--danger); }
+
+        .empty-row td { text-align: center; padding: 3rem; color: var(--text-secondary); font-style: italic; }
+
+        /* --- THEME DECK (The Wacky Change) --- */
+        .theme-deck-container {
+            perspective: 1000px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 0 2rem;
+            /* Hide scrollbar */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .theme-deck-container::-webkit-scrollbar { display: none; }
+
+        .theme-card {
+            min-width: 120px;
+            height: 160px;
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            border-radius: 12px;
+            margin-right: -40px; /* Overlap effect */
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            position: relative;
+            border: 2px solid white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1rem;
+            transform-style: preserve-3d;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-20px) rotate(-3deg) scale(1.1);
+            margin-right: 20px; /* Open up space */
+            margin-left: 20px;
+            z-index: 10;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+        }
+
+        .theme-card.active {
+            transform: translateY(-10px);
+            z-index: 5;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent), 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .theme-name {
+            font-weight: 800; font-size: 0.9rem; text-transform: uppercase;
+            color: rgba(0,0,0,0.7); mix-blend-mode: multiply;
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-modal); backdrop-filter: blur(4px);
+            z-index: 100; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal-card {
+            background: var(--bg-card); width: 90%; max-width: 600px;
+            border-radius: 16px; padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.95); transition: transform 0.2s;
+            border: 1px solid var(--border);
+        }
+        .modal-overlay.open .modal-card { transform: scale(1); }
+        
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; align-items: center; }
+        .modal-title { font-size: 1.4rem; font-weight: 700; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .modal-footer { margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem; }
+
+        /* SVG Utility */
+        svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div>
+                <h1>FocusFlow</h1>
+                <div class="subtitle">Table Edition</div>
+            </div>
+
+            <div class="timer-widget">
+                <div class="timer-controls">
+                    <button id="timerToggle"><svg id="timerIcon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
+                </div>
+                <span id="timerDisplay">25:00</span>
+                <div class="timer-controls">
+                    <button id="timerReset"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn-icon" id="settingsBtn" title="Theme & Data"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+                <button class="btn-primary" id="openAddModalBtn"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> New Task</button>
+            </div>
+        </header>
+
+        <div class="controls">
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search tasks, categories...">
+            <select id="filterSelect" style="width: 150px;">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+            </select>
+            <select id="sortSelect" style="width: 150px;">
+                <option value="date-added">Newest</option>
+                <option value="priority">Priority</option>
+                <option value="due-date">Due Date</option>
+            </select>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="60">Done</th>
+                        <th>Task Name</th>
+                        <th width="120">Priority</th>
+                        <th width="200">Due Date</th>
+                        <th width="80">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="todoTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Experience</div>
+                <button class="close-modal" id="closeSettingsBtn">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Select Theme Deck</label>
+                <div class="theme-deck-container" id="themeDeck">
+                    </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                <label class="form-label">Data Management</label>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-icon" onclick="exportData()" title="Export JSON" style="width:auto; padding: 0 1rem; gap: 5px; display:flex;">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Backup
+                    </button>
+                    <button class="btn-icon" onclick="document.getElementById('importFile').click()" title="Import" style="width:auto; padding: 0 1rem; gap: 5px; display:flex;">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Restore
+                    </button>
+                    <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                    <button class="btn-icon" onclick="clearCompleted()" style="width:auto; padding: 0 1rem; color: var(--text-secondary); margin-left: auto;">Clean Completed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <div class="modal-title">New Task</div>
+                <button class="close-modal" id="closeAddBtn">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Task Name</label>
+                <input type="text" id="mTitle" style="width: 100%; font-size: 1.1rem; padding: 0.8rem;" placeholder="What needs focus?">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <input type="text" id="mCategory" style="width: 100%;" placeholder="e.g. Work">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select id="mPriority" style="width: 100%;">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" id="mDate" style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time</label>
+                    <input type="time" id="mTime" style="width: 100%;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-icon" id="cancelAddBtn" style="width: auto; border:none;">Cancel</button>
+                <button class="btn-primary" id="saveTaskBtn">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        const DATA_KEY = 'focusflow_table_data';
+        const THEME_KEY = 'focusflow_theme';
+        let todos = JSON.parse(localStorage.getItem(DATA_KEY)) || [];
+        let currentFilter = 'all';
+        let currentSort = 'date-added';
+        let searchQuery = '';
+
+        // --- THEME DEFINITIONS (GRADIENTS FOR WACKY DECK) ---
+        const themes = [
+            { id: 'light', name: 'Classic', grad: 'linear-gradient(135deg, #f0f2f5 0%, #ffffff 100%)' },
+            { id: 'dark', name: 'Dark Mode', grad: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' },
+            { id: 'midnight', name: 'Midnight', grad: 'linear-gradient(135deg, #0c4a6e 0%, #020617 100%)' },
+            { id: 'forest', name: 'Forest', grad: 'linear-gradient(135deg, #dcfce7 0%, #166534 100%)' },
+            { id: 'cyberpunk', name: 'Cyberpunk', grad: 'linear-gradient(135deg, #2a0a2e 0%, #000000 100%)' }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const todoTableBody = document.getElementById('todoTableBody');
+        const themeDeck = document.getElementById('themeDeck');
+        
+        // Modals
+        const settingsModal = document.getElementById('settingsModal');
+        const addModal = document.getElementById('addModal');
+        
+        // Timer
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerIcon = document.getElementById('timerIcon');
+        let timerInterval = null;
+        let timerSeconds = 1500;
+        let isTimerRunning = false;
+
+        // Audio
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playDing() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // --- INIT ---
+        function init() {
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+            applyTheme(savedTheme);
+            renderThemeDeck(savedTheme);
+            renderTable();
+        }
+
+        // --- RENDER TABLE ---
+        function renderTable() {
+            let filtered = todos.filter(t => {
+                if (currentFilter === 'active') return !t.completed;
+                if (currentFilter === 'completed') return t.completed;
+                return true;
+            });
+
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.filter(t => t.text.toLowerCase().includes(q) || (t.category && t.category.toLowerCase().includes(q)));
+            }
+
+            filtered.sort((a, b) => {
+                if (currentSort === 'date-added') return b.createdAt - a.createdAt;
+                if (currentSort === 'priority') return { high: 3, medium: 2, low: 1 }[b.priority] - { high: 3, medium: 2, low: 1 }[a.priority];
+                if (currentSort === 'due-date') {
+                    const getVal = (i) => i.dueDate ? new Date(`${i.dueDate}T${i.dueTime||'23:59'}`).getTime() : 9e15;
+                    return getVal(a) - getVal(b);
+                }
+            });
+
+            if (filtered.length === 0) {
+                todoTableBody.innerHTML = `<tr class="empty-row"><td colspan="5">No tasks found. Time to plan!</td></tr>`;
+                return;
+            }
+
+            todoTableBody.innerHTML = filtered.map(t => {
+                const isOverdue = t.dueDate && new Date(t.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) && !t.completed;
+                const dateStr = t.dueDate ? new Date(t.dueDate).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : '-';
+                const timeStr = t.dueTime ? new Date(`1970-01-01T${t.dueTime}`).toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'}) : '';
+                const categoryHTML = t.category ? `<span class="badge-category">${escapeHtml(t.category)}</span>` : '';
+
+                return `
+                <tr class="${t.completed ? 'completed' : ''}">
+                    <td style="text-align:center;">
+                        <input type="checkbox" class="custom-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleComplete(${t.id})">
+                    </td>
+                    <td class="task-cell">
+                        ${escapeHtml(t.text)}
+                        ${categoryHTML}
+                    </td>
+                    <td>
+                        <span class="badge badge-${t.priority}">${t.priority}</span>
+                    </td>
+                    <td class="date-cell ${isOverdue ? 'overdue' : ''}">
+                        ${dateStr} ${timeStr ? '<small style="opacity:0.7">@ '+timeStr+'</small>' : ''}
+                    </td>
+                    <td class="action-cell">
+                        <button class="action-btn" onclick="deleteTodo(${t.id})" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        // --- RENDER THEME DECK (WACKY!) ---
+        function renderThemeDeck(activeId) {
+            themeDeck.innerHTML = themes.map(t => `
+                <div class="theme-card ${t.id === activeId ? 'active' : ''}" 
+                     style="background: ${t.grad}"
+                     onclick="applyTheme('${t.id}')">
+                     <span class="theme-name">${t.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function applyTheme(id) {
+            if (id === 'light') document.body.removeAttribute('data-theme');
+            else document.body.setAttribute('data-theme', id);
+            localStorage.setItem(THEME_KEY, id);
+            renderThemeDeck(id);
+        }
+
+        // --- LOGIC ---
+        function saveTask() {
+            const title = document.getElementById('mTitle').value.trim();
+            if(!title) return;
+            
+            todos.push({
+                id: Date.now(),
+                text: title,
+                category: document.getElementById('mCategory').value.trim(),
+                priority: document.getElementById('mPriority').value,
+                dueDate: document.getElementById('mDate').value,
+                dueTime: document.getElementById('mTime').value,
+                completed: false,
+                createdAt: Date.now()
+            });
+            saveAndRender();
+            toggleModal('addModal', false);
+            // Reset fields
+            document.getElementById('mTitle').value = '';
+            document.getElementById('mCategory').value = '';
+            document.getElementById('mDate').value = '';
+            document.getElementById('mTime').value = '';
+        }
+
+        function toggleComplete(id) {
+            const t = todos.find(x => x.id === id);
+            if(t) { t.completed = !t.completed; if(t.completed) playDing(); saveAndRender(); }
+        }
+        function deleteTodo(id) {
+            todos = todos.filter(x => x.id !== id);
+            saveAndRender();
+        }
+        function clearCompleted() {
+            if(confirm("Clear all finished tasks?")) { todos = todos.filter(t => !t.completed); saveAndRender(); }
+        }
+        function saveAndRender() {
+            localStorage.setItem(DATA_KEY, JSON.stringify(todos));
+            renderTable();
+        }
+        function escapeHtml(text) {
+            const div = document.createElement('div'); div.textContent = text; return div.innerHTML;
+        }
+
+        // --- TIMER ---
+        function formatTime(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+        document.getElementById('timerToggle').onclick = () => {
+            if(isTimerRunning) { clearInterval(timerInterval); isTimerRunning = false; timerIcon.innerHTML='<polygon points="5 3 19 12 5 21 5 3"></polygon>'; }
+            else { isTimerRunning = true; timerIcon.innerHTML='<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; 
+                timerInterval = setInterval(() => { if(timerSeconds>0) { timerSeconds--; timerDisplay.textContent=formatTime(timerSeconds); } else { playDing(); clearInterval(timerInterval); isTimerRunning=false; alert("Time's up!"); } }, 1000); }
+        };
+        document.getElementById('timerReset').onclick = () => { clearInterval(timerInterval); isTimerRunning=false; timerSeconds=1500; timerDisplay.textContent="25:00"; timerIcon.innerHTML='<polygon points="5 3 19 12 5 21 5 3"></polygon>'; };
+
+        // --- BACKUP/RESTORE ---
+        function exportData() {
+            const a = document.createElement('a');
+            a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(todos));
+            a.download = "focusflow_backup.json"; a.click();
+        }
+        function importData(input) {
+            const file = input.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { try { todos = JSON.parse(e.target.result); saveAndRender(); alert("Import successful!"); } catch(x){alert("Invalid file");} };
+            reader.readAsText(file);
+        }
+
+        // --- EVENT BINDING ---
+        function toggleModal(id, open) { 
+            const el = document.getElementById(id); 
+            open ? el.classList.add('open') : el.classList.remove('open'); 
+        }
+        document.getElementById('settingsBtn').onclick = () => toggleModal('settingsModal', true);
+        document.getElementById('closeSettingsBtn').onclick = () => toggleModal('settingsModal', false);
+        document.getElementById('openAddModalBtn').onclick = () => { toggleModal('addModal', true); document.getElementById('mTitle').focus(); };
+        document.getElementById('closeAddBtn').onclick = () => toggleModal('addModal', false);
+        document.getElementById('cancelAddBtn').onclick = () => toggleModal('addModal', false);
+        document.getElementById('saveTaskBtn').onclick = saveTask;
+        
+        // Listeners
+        document.getElementById('searchInput').oninput = (e) => { searchQuery = e.target.value; renderTable(); };
+        document.getElementById('filterSelect').onchange = (e) => { currentFilter = e.target.value; renderTable(); };
+        document.getElementById('sortSelect').onchange = (e) => { currentSort = e.target.value; renderTable(); };
+        window.onclick = (e) => { if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); };
+
+        init();
+    </script>
+</body>
+</html>

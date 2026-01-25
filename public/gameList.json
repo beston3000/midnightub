@@ -1,0 +1,132 @@
+{
+  "games": [
+
+    {
+      "id": "drivemad",
+      "gameName": "Drive Mad",
+      "gameURL": "https://play.fancade.com/5F084A0BCE06B710?max_w=999999&max_h=9999999&istart=1",
+      "gameIcon": "./assets/images/drive-mad.jpg",
+      "gameType": "online"
+    },
+
+    {
+      "id": "fnfhex2",
+      "gameName": "Fnf VS Hex 2",
+      "gameURL": "https://fnf.kdata1.com/hex-weekend/2/",
+      "gameIcon": "./assets/images/fnfhex2.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "fnfvsagoti",
+      "gameName": "Fnf VS Agoti",
+      "gameURL": "https://fnf.run3.io/agoti/100/",
+      "gameIcon": "./assets/images/fnfvsagoti.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "fnfsillybilly",
+      "gameName": "Fnf VS Silly Billy",
+      "gameURL": "https://fnf.kdata1.com/2024/silly-billy-vs-yourself/1/",
+      "gameIcon": "./assets/images/sillybilly.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "fnfshaggy",
+      "gameName": "Fnf VS Shaggy",
+      "gameURL": "https://fnf.run3.io/shaggy/6.5/",
+      "gameIcon": "./assets/images/fnfshaggy.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "garfield2048",
+      "gameName": "Garfield 2048",
+      "gameURL": "https://all2048.com/garfield",
+      "gameIcon": "./assets/images/garfield.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "flappybird",
+      "gameName": "Flappybird",
+      "gameURL": "https://flappybird.io/",
+      "gameIcon": "./assets/images/flappybird.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "robloxobbyonline",
+      "gameName": "Roblox Obby frfr",
+      "gameURL": "https://html5.gamedistribution.com/rvvASMiM/7e150881bd90410391cd7efbe8e51d87/index.html?gd_sdk_referrer_url=https%3A%2F%2Fwww.miniplay.com%2Fgame%2Froblox-obby-parkour&mp_api_as3_url=https%3A%2F%2Fssl.minijuegosgratis.com%2Flechuck%2Fas3%2Flatest.swf&mp_api_as3_url_bck=https%3A%2F%2Fapi.minijuegos.com%2Flechuck%2Fclient-as%2F&mp_api_id=6820&mp_api_js_url=https%3A%2F%2Fssl.minijuegosgratis.com%2Flechuck%2Fjs%2Flatest.js&mp_api_js_url_bck=https%3A%2F%2Fapi.minijuegos.com%2Flechuck%2Fclient-js%2F&mp_assets=https%3A%2F%2Fs2.minijuegosgratis.com%2F&mp_embed=0&mp_game_id=248569&mp_game_uid=roblox-obby-parkour&mp_game_url=https%3A%2F%2Fwww.miniplay.com%2Fgame%2Froblox-obby-parkour&mp_int=1&mp_locale=en_US&mp_player_type=IFRAME&mp_site_https_url=https%3A%2F%2Fwww.miniplay.com%2F&mp_site_name=miniplay.com&mp_site_url=https%3A%2F%2Fwww.miniplay.com%2F&mp_timezone=America%2FLos_Angeles&mp_view_type=&mini_signature=23b1aa67d145ea9c21aeedbdc7b8dcda&xdm_e=https%3A%2F%2Fwww.miniplay.com&xdm_c=default4240&xdm_p=1&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5taW5pcGxheS5jb20vZ2FtZS9yb2Jsb3gtb2JieS1wYXJrb3VyIiwicGFyZW50RG9tYWluIjoibWluaXBsYXkuY29tIiwidG9wRG9tYWluIjoibWluaXBsYXkuY29tIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTgifQ%253D%253D",
+      "gameIcon": "./assets/images/robloxobbyonline.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "jetpackjoyride",
+      "gameName": "Jetpack Joyride",
+      "gameURL": "https://kdata1.com/2024/02/jetpack-joyride/",
+      "gameIcon": "./assets/images/jetpackjoyride.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "motox3m",
+      "gameName": "Moto X3M",
+      "gameURL": "https://www.coolmathgames.com/0-moto-x3m/play",
+      "gameIcon": "./assets/images/motox3m.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "driftboss",
+      "gameName": "Drift Boss",
+      "gameURL": "https://www.coolmathgames.com/0-drift-boss/play",
+      "gameIcon": "./assets/images/driftboss.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "run3",
+      "gameName": "Run 3",
+      "gameURL": "https://www.coolmathgames.com/0-run-3/play",
+      "gameIcon": "./assets/images/run3.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "minecraft",
+      "gameName": "Minecraft 1.12.2",
+      "gameURL": "https://eaglercraft.com/mc/1.12.2-wasm/?token=795f7f0d-0776-4282-a496-ae0db929b697&version=1.12.2-wasm",
+      "gameIcon": "./assets/images/minecraft.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "fnfvsbob",
+      "gameName": "Fnf VS Bob",
+      "gameURL": "https://w8.snokido.com/games/html5/friday-night-funkin/bob03/index.html",
+      "gameIcon": "./assets/images/fnfvsbob.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "fnfsonicexe",
+      "gameName": "Fnf VS Sonic.exe",
+      "gameURL": "https://w8.snokido.com/games/html5/friday-night-funkin/sonicexe39/index2.html",
+      "gameIcon": "./assets/images/fnfsonicexe.webp",
+      "gameType": "online"
+    },
+
+    {
+      "id": "subwaysurfers",
+      "gameName": "Subway Dash",
+      "gameURL": "https://g.igroutka.ru/games/164/Xm2W5MIcPqrF1Y90/12/subway_surfers_easter_edinburgh/",
+      "gameIcon": "./assets/images/geometrydash.webp",
+      "gameType": "online"
+    }
+  ]
+}

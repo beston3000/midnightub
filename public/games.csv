@@ -1,0 +1,53 @@
+﻿id,gameName,gameURL,gameType
+fnf,Friday Night Funkin',https://fnf.kdata1.com/2024/fnf/5201/,online
+clusterrush,Cluster Rush,https://cluster-rush.io/game/,online
+retrobowl,Retro Bowl,./games/retro-bowl/index.html,local
+drivemad,Drive Mad,https://play.fancade.com/5F084A0BCE06B710?max_w=999999&max_h=9999999&istart=1,online
+fnfhex2,Fnf VS Hex 2,https://fnf.kdata1.com/hex-weekend/2/,online
+fnfvsagoti,Fnf VS Agoti,https://fnf.run3.io/agoti/100/,online
+fnfsillybilly,Fnf VS Silly Billy,https://fnf.kdata1.com/2024/silly-billy-vs-yourself/1/,online
+fnfshaggy,Fnf VS Shaggy,https://fnf.run3.io/shaggy/6.5/,online
+garfield2048v1,Garfield 2048 V1,https://all2048.com/garfield,online
+flappybird,Flappybird,https://flappybird.io/,online
+jetpackjoyride,Jetpack Joyride,https://kdata1.com/2024/02/jetpack-joyride/,online
+motox3m,Moto X3M,https://www.coolmathgames.com/0-moto-x3m/play,online
+driftboss,Drift Boss,https://www.coolmathgames.com/0-drift-boss/play,online
+run3,Run 3,https://www.coolmathgames.com/0-run-3/play,online
+minecraft,Minecraft 1.12.2,https://eaglercraft.com/mc/1.12.2-wasm/?token=795f7f0d-0776-4282-a496-ae0db929b697&version=1.12.2-wasm,online
+fnfvsbob,Fnf VS Bob,https://w8.snokido.com/games/html5/friday-night-funkin/bob03/index.html,online
+fnfsonicexe,Fnf VS Sonic.exe,https://w8.snokido.com/games/html5/friday-night-funkin/sonicexe39/index2.html,online
+minesweeper,Mine Sweeper,https://minesweeperonline.com/,online
+tetris,Tetris,https://play.tetris.com/tetris-game-package/game/target-mobile/game.html,online
+dinorunner,Chrome Dino,https://a4e4a244-d11b-4d94-b1d8-deb2dbbaff02.poki-gdn.com/f13a6fb0-f29e-4ed2-8366-9468ffaeb504/index.html?country=US&ccpaApplies=1&url_referrer=https%3A%2F%2Fpoki.com%2F&tag=pg-0a7d7d6f60ce06edbf7e488272b8dc046ed109a7&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdinosaur-game&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=9%2C37%2C389%2C852%2C903%2C1140%2C1190%2C1193&special_condition=landing&game_id=a4e4a244-d11b-4d94-b1d8-deb2dbbaff02&game_version_id=f13a6fb0-f29e-4ed2-8366-9468ffaeb504&inspector=0&csp=1,online
+cookieclicker,Cookie Clicker,https://orteil.dashnet.org/cookieclicker/,online
+cuttherope,Cut The Rope,https://cut-the-rope-ebx.game-files.crazygames.com/cut-the-rope-ebx/2/index.html?czyExpWeb2App=enabled&czygamepageswitcher_20251217=ineligible&isNewUser=false,online
+watersortgame,Water Sort Game,https://cups---water-sort-puzzle.game-files.crazygames.com/unity/unity2020/cups---water-sort-puzzle.html?czyExpWeb2App=enabled&czygamepageswitcher_20251217=ineligible&isNewUser=false&v=1.347,online
+bitlife,Bit Life,https://html5.gamedistribution.com/rvvASMiM/ac6a950a44d144139dabe7837aa4aab9/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2JpdGxpZmUtZ2FtZS5pby8iLCJwYXJlbnREb21haW4iOiJiaXRsaWZlLWdhbWUuaW8iLCJ0b3BEb21haW4iOiJiaXRsaWZlLWdhbWUuaW8iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xOCJ9,online
+fnaf,Fnaf,https://run3.io/popgame/fnaf/fnaf1/,online
+ducklife,Duck Life,https://kdata1.com/2020/05/22948/,online
+subwaysurfers,Subway Surfers,./games/subwaysurfers/index.html,local
+tinyfishing,Tiny Fishing,https://www.coolmathgames.com/0-tiny-fishing/play,online
+bloxorz,Bloxorz,https://www.coolmathgames.com/0-bloxorz/play,online
+roblox,Roblox,https://now.gg/apps/a/19900/b.html,online
+granny,Granny,./games/granny/granny.html,local
+doodlejump,Doodle Jump,https://doodlejumponline.github.io/file/,online
+fruitninja,Fruit Ninja,https://www.coolmathgames.com/sites/default/files/public_games/50823/?gd_sdk_referrer_url=https%3A%2F%2Fwww.coolmathgames.com%2F0-fruit-ninja,online
+snowrider,Snow Rider 3D,https://html5.gamedistribution.com/3b79a8537ebc414fb4f9672a9b8c68c8/,online
+cuttheropett,Cut The Rope : Time Travel,https://smashkartsonlinegames.github.io/v88/cut-the-rope-time-travel/,online
+stealabrainrot,Steal A Brainrot,https://crazygames.cdn.msnfun.com/9pltx207s22g/v4/index.html?msstart_sdk_init=eyJwYXJlbnRPcmlnaW4iOiJodHRwczovL3d3dy5tc24uY29tIiwiY2xpZW50SWQiOiIxQTg0MjQyODBGMTA2NzMzMEVDNDMyQjEwRTgyNjYwOSIsImxvY2FsZSI6ImVuLXVzIiwiZW50cnlQb2ludElkIjoiIiwic3dpdGNoR2FtZVBheWxvYWQiOnsic3dpdGNoZWRUbyI6IjlwbHR4MjA3czIyZyIsInZhbHVlIjp7fX19,online
+granny2,Granny 2,https://badparentingame.io/play/granny-2/,online
+adofai,A Dance Of Fire And Ice,https://w8.snokido.com/games/unity-webgl/dance-fire-and-ice/index.html,online
+suikagame,Suika Game,https://playsuikagame.com/,online
+bullethellarena,Bullet Hell Arena,https://gx.games/games/bzwtqn/bullet-hell-arena/,online
+stickmanhook,Stickman Hook,https://stickmanhookgame.org/stickman-hook.embed,online
+fnfnonsense,Fnf VS Nonsense,https://w8.snokido.com/games/html5/friday-night-funkin/nonsense27/index.html,online
+fnftricky,Fnf VS Tricky,https://w8.snokido.com/games/html5/friday-night-funkin/tricky23/index.html,online
+fnfanimation,Fnf VS Animation V Animator,https://fnf.kdata1.com/animator-vs-animation/1.1/,online
+retrohaunt,Retro Haunt,./games/retrohaunt/index.html,local
+racer,Racer,./games/racer/index.html,local
+edgenotfound,Edge Not Found,./games/edgenotfound/index.html,local
+basketballstars,Basketball Stars,./games/basketballstars/index.html,local
+doge2048,Doge 2048,./games/doge2048/index.html,local
+edgesurf,Edge Surf,https://yell0wsuit.page/assets/games/edge-surf/index.html,online
+garfield2048v2,Garfield 2048 V2,./games/garfield2048/index.html,local
+spacewaves,Space Waves,https://space-waves.co/embed/space-waves,online

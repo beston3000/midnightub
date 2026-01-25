@@ -1,0 +1,8 @@
+﻿id,appName,appURL,gameType
+youtube,Youtube,https://youtube.com,online
+nealfun,Neal.Fun,https://neal.fun,online
+snokido,Snokido,https://www.snokido.com/,online
+coolmathgames,Cool Math Games,https://coolmathgames.com/,online
+linkjoint,Link Joint,./linkjoint.html,local
+bowenstudyguide,Bowen ACC Study Guide,./bowenstudy.html,local
+focusflow,FocusFlow,./focusflow.html,local

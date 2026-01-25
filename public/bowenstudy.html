@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vocab Study — 20 Words</title>
+  <style>
+    body{
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      margin:0;
+      background:#f5efe6;
+      color:#1f1b16;
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:16px}
+    .card{background:#fff;border:1px solid #d8cfc5;border-radius:12px;padding:16px;margin-top:12px}
+    .top{display:flex;gap:8px;flex-wrap:wrap}
+    button{
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid #d8cfc5;
+      background:#fff;
+      cursor:pointer;
+      font-weight:700;
+    }
+    button.primary{background:#7a4b2e;color:#fff}
+    button:hover{border-color:#7a4b2e}
+    .term{font-size:22px;font-weight:900}
+    .def{margin-top:8px;font-size:16px}
+    .choices{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+    .choice{
+      padding:10px;
+      border:1px solid #d8cfc5;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .choice.correct{border-color:#2f7d4a;background:rgba(47,125,74,.08)}
+    .choice.wrong{border-color:#b94a3d;background:rgba(185,74,61,.08)}
+    .muted{color:#6a5f55;font-size:13px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <button data-mode="cards">Flashcards</button>
+        <button data-mode="practice" class="primary">Practice</button>
+        <button data-mode="test">Test</button>
+      </div>
+      <div id="app"></div>
+    </div>
+  </div>
+
+<script>
+// =====================
+// Vocabulary Data
+// =====================
+const VOCAB = [
+  { term: "Loath", def: "Unwilling, reluctant" },
+  { term: "Solicit", def: "To beg, seek earnestly" },
+  { term: "Astute", def: "Keen, shrewd" },
+  { term: "Advocate", def: "To be in favor of, support" },
+  { term: "Ineffectual", def: "Unable to accomplish anything, not effective" },
+  { term: "Blatant", def: "Obvious, very showy" },
+  { term: "Entourage", def: "Group of attendants, followers" },
+  { term: "Virulent", def: "Full of hate, harmful" },
+  { term: "Venom", def: "Poison, spite, malice" },
+  { term: "Spew", def: "Spout, eject" },
+  { term: "Scrutinize", def: "To examine closely" },
+  { term: "Nefarious", def: "Villainous, vicious" },
+  { term: "Amicable", def: "Friendly, peaceful" },
+  { term: "Vexatious", def: "Annoying" },
+  { term: "Malady", def: "Disease" },
+  { term: "Impresario", def: "One who presents cultural series, organizer" },
+  { term: "Extortion", def: "Getting money by threats or favors" },
+  { term: "Adverse", def: "Unfavorable, harmful" },
+  { term: "Asset", def: "Valuable thing to have" },
+  { term: "Bigot", def: "Narrow-minded, prejudiced person" }
+];
+
+// =====================
+// App State
+// =====================
+let mode = "practice"; // cards | practice | test
+let index = 0;
+let score = 0;
+
+const app = document.getElementById("app");
+
+// =====================
+// Navigation
+// =====================
+document.querySelectorAll("button[data-mode]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    mode = btn.dataset.mode;
+    index = 0;
+    score = 0;
+    render();
+  });
+});
+
+// =====================
+// Utilities
+// =====================
+function shuffle(arr){
+  return arr.slice().sort(() => Math.random() - 0.5);
+}
+
+// =====================
+// Rendering
+// =====================
+function render(){
+  app.innerHTML = "";
+  if(mode === "cards") renderCard();
+  if(mode === "practice") renderQuiz(false);
+  if(mode === "test") renderQuiz(true);
+}
+
+function renderCard(){
+  const v = VOCAB[index];
+  app.innerHTML = `
+    <div class="term">${v.term}</div>
+    <div class="def">${v.def}</div>
+    <div class="top" style="margin-top:12px">
+      <button onclick="prev()">Prev</button>
+      <button onclick="next()">Next</button>
+    </div>
+    <div class="muted">${index + 1} / ${VOCAB.length}</div>
+  `;
+}
+
+function renderQuiz(isTest){
+  if(index >= VOCAB.length){
+    app.innerHTML = `
+      <h2>Finished!</h2>
+      <div class="muted">Score: ${score} / ${VOCAB.length}</div>
+    `;
+    return;
+  }
+
+  const current = VOCAB[index];
+  let choices = shuffle(VOCAB)
+    .filter(v => v.def !== current.def)
+    .slice(0,3)
+    .map(v => v.def);
+
+  choices.push(current.def);
+  choices = shuffle(choices);
+
+  app.innerHTML = `
+    <div class="term">${current.term}</div>
+    <div class="choices">
+      ${choices.map(c => `<div class="choice">${c}</div>`).join("")}
+    </div>
+    <div class="muted">${index + 1} / ${VOCAB.length}</div>
+  `;
+
+  document.querySelectorAll(".choice").forEach(choice => {
+    choice.addEventListener("click", () => {
+      const correct = choice.textContent === current.def;
+      choice.classList.add(correct ? "correct" : "wrong");
+      if(correct) score++;
+      setTimeout(() => {
+        index++;
+        render();
+      }, isTest ? 0 : 500);
+    });
+  });
+}
+
+// =====================
+// Card Controls
+// =====================
+function next(){
+  index = (index + 1) % VOCAB.length;
+  render();
+}
+
+function prev(){
+  index = (index - 1 + VOCAB.length) % VOCAB.length;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
