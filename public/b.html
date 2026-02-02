@@ -9,12 +9,13 @@
 	<link rel="shortcut icon" href="favicon.webp" />
 	<link rel="stylesheet" href="index.css" />
 
-	<!-- Fonts: Orbitron, Rajdhani, Space Grotesk -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link
 		href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap"
 		rel="stylesheet">
+
+    <script type="module" src="midnight-core.js"></script>
 
 	<script src="/scram/scramjet.all.js"></script>
 	<script src="baremux/index.js" defer></script>
@@ -45,7 +46,25 @@
 			color: var(--text-main);
 			font-family: 'Rajdhani', sans-serif;
 			overflow: hidden;
+            display: flex;
+            flex-direction: column;
 		}
+
+        /* --- AUTH STATE STYLES (Midnight Core) --- */
+        .app { 
+            transition: filter 0.3s; 
+            display: flex;
+			flex-direction: column;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+        }
+        
+        body.logged-out .app { 
+            filter: blur(8px) brightness(0.4); 
+            pointer-events: none; 
+        }
+        /* ----------------------------------------- */
 
 		/* Background Effects */
 		#starfield {
@@ -77,14 +96,6 @@
 			background: radial-gradient(circle, transparent 50%, #000000 150%);
 			pointer-events: none;
 			z-index: -1;
-		}
-
-		.app {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-			position: relative;
-			z-index: 1;
 		}
 
 		/* Global Navigation (Top) */
@@ -368,13 +379,11 @@
 	</style>
 </head>
 
-<body data-mode="browser">
-	<!-- Background -->
+<body class="logged-out" data-mode="browser">
 	<canvas id="starfield"></canvas>
 	<div class="scanlines"></div>
 	<div class="vignette"></div>
 
-	<!-- Main App -->
 	<div class="app">
 		<div class="topbar">
 			<a href="index.html" class="brand">Midnight</a>
@@ -383,6 +392,7 @@
 				<a href="b.html" class="nav-link active">Browser</a>
 				<a href="g.html" class="nav-link">Games</a>
 				<a href="apps.html" class="nav-link">Apps</a>
+                <a href="chat.html" class="nav-link">Chat</a>
 				<a href="shows.html" class="nav-link">Tv Shows</a>
 				<a href="movies.html" class="nav-link">Movies</a>
 				<a href="music.html" class="nav-link">Music</a>
@@ -428,7 +438,6 @@
 		<pre id="sj-error-code"></pre>
 	</div>
 
-	<!-- Starfield Script -->
 	<script>
 		const canvas = document.getElementById('starfield');
 		const ctx = canvas.getContext('2d');

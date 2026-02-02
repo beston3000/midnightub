@@ -15,6 +15,8 @@
 		href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap"
 		rel="stylesheet">
 
+    <script type="module" src="midnight-core.js"></script>
+
 	<script src="/scram/scramjet.all.js"></script>
 	<script src="baremux/index.js" defer></script>
 	<script src="epoxy/index.js" defer></script>
@@ -44,7 +46,20 @@
 			color: var(--text-main);
 			font-family: 'Rajdhani', sans-serif;
 			overflow: hidden;
+            display: flex;
+            flex-direction: column;
 		}
+
+        /* --- AUTH STATE STYLES (Midnight Core) --- */
+        .app { 
+            transition: filter 0.3s; 
+        }
+        
+        body.logged-out .app { 
+            filter: blur(8px) brightness(0.4); 
+            pointer-events: none; 
+        }
+        /* ----------------------------------------- */
 
 		/* Background Effects */
 		#starfield {
@@ -86,7 +101,7 @@
 			z-index: 1;
 		}
 
-		/* --- NEW NAVIGATION STYLES (From index.html) --- */
+		/* --- NAVIGATION STYLES --- */
 		.topbar {
 			height: 70px;
 			display: flex;
@@ -452,8 +467,7 @@
 	</style>
 </head>
 
-<body data-mode="browser">
-
+<body class="logged-out" data-mode="browser">
 
 	<canvas id="starfield"></canvas>
 	<div class="scanlines"></div>
@@ -467,6 +481,7 @@
 				<a href="b.html" class="nav-link">Browser</a>
 				<a href="g.html" class="nav-link">Games</a>
 				<a href="apps.html" class="nav-link">Apps</a>
+                <a href="chat.html" class="nav-link">Chat</a>
 				<a href="shows.html" class="nav-link">Tv Shows</a>
 				<a href="movies.html" class="nav-link active">Movies</a>
 				<a href="music.html" class="nav-link">Music</a>
@@ -710,70 +725,102 @@
 		fetchTrending();
 	</script>
 
-    <script>
-		// --- IFRAME POPUP BLOCKER AND SANDBOX ---
-		const iframeObserver = new MutationObserver((mutations) => {
-			mutations.forEach((mutation) => {
-				mutation.addedNodes.forEach((node) => {
-					if (node.tagName === 'IFRAME') {
-						
-						// 1. STRICT SANDBOXING
-						// Notice 'allow-popups' and 'allow-top-navigation' are MISSING.
-						// This tells the browser to block window.open and target="_blank".
-						const permissions = [
-							'allow-forms',
-							'allow-scripts',
-							'allow-same-origin',
-							'allow-presentation',
-							'allow-orientation-lock',
-							'allow-pointer-lock'
-						];
-						
-						node.setAttribute('sandbox', permissions.join(' '));
-						
-						// 2. INTERNAL JS INJECTION (Deep Popup Killer)
-						// Because you are using a proxy (baremux), the iframe origin is often the same as this page.
-						// This allows us to reach inside and kill the popup functions directly.
-						node.addEventListener('load', () => {
-							try {
-								const doc = node.contentDocument || node.contentWindow.document;
-								
-								// A. Overwrite window.open to do nothing
-								const script = doc.createElement('script');
-								script.textContent = `
-									window.open = function() { console.log('🚫 Popup blocked by Midnight'); return null; };
-									window.alert = console.log;
-									window.confirm = function(){return true;};
-								`;
-								doc.head.appendChild(script);
+	<script>
+		// --- SUPPLY CHAIN INTERDICTION BLOCKER ---
+		// This script hooks into the browser's creation engine to neutralize 
+		// ad-generated iframes before they are even attached to the DOM.
 
-								// B. Continuously strip target="_blank" from links inside the iframe
-								const linkFixer = () => {
-									doc.querySelectorAll('a[target="_blank"]').forEach(a => {
-										a.removeAttribute('target');
-										a.onclick = (e) => { e.preventDefault(); console.log('🚫 Link blocked'); };
-									});
-								};
-								
-								// Run once and observe changes inside iframe (for dynamic ads)
-								linkFixer();
-								const innerObserver = new MutationObserver(linkFixer);
-								innerObserver.observe(doc.body, { childList: true, subtree: true });
+		(function() {
+			const elementToObserve = document.querySelector('.viewport') || document.body;
 
-								console.log('🔒 Security: Popup killer injected successfully.');
-							} catch (e) {
-								console.log('⚠️ Security: Cross-origin restrictions prevented deep injection (Sandbox still active).');
-							}
+			// 1. THE POISON PILL
+			// This function neuters any window object it touches
+			const poisonWindow = (win) => {
+				if (!win) return;
+				try {
+					// Hard overwrite of window.open
+					Object.defineProperty(win, 'open', {
+						value: function() { console.log('💣 Malware attempted window.open - BLOCKED'); return null; },
+						writable: false,
+						configurable: false
+					});
+					
+					// Disable executing arbitrary scripts via location
+					Object.defineProperty(win, 'location', {
+						get: function() { return window.location; },
+						set: function(val) { console.log('💣 Malware attempted location redirect - BLOCKED'); },
+						configurable: false
+					});
+				} catch(e) {}
+			};
+
+			// 2. NATIVE HOOK: document.createElement
+			// The ad script creates iframes to bypass blocks. We intercept that request.
+			const originalCreateElement = document.createElement;
+			document.createElement = function(tagName) {
+				const element = originalCreateElement.apply(document, arguments);
+				
+				if (tagName.toLowerCase() === 'iframe') {
+					// We immediately lock the sandbox of the new iframe
+					// We purposefully exclude 'allow-popups'
+					element.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-pointer-lock');
+					
+					// We also hook the 'contentWindow' getter to poison it immediately upon access
+					// This stops the script from grabbing the clean window.open inside
+					try {
+						Object.defineProperty(element, 'contentWindow', {
+							get: function() {
+								const win = HTMLIFrameElement.prototype.contentWindow; // access real window if needed internally
+								// But usually, we just want to poison the one they get
+								poisonWindow(this.contentDocument ? this.contentDocument.defaultView : null);
+								return this.contentDocument ? this.contentDocument.defaultView : null;
+							},
+							configurable: true
 						});
+					} catch(e) {}
+					
+					console.log('🛡️ Intercepted creation of malicious iframe');
+				}
+				return element;
+			};
 
-						console.log('🔒 Security: Iframe sandbox applied.');
-					}
+			// 3. EVENT SUFFOCATION (The "Black Hole")
+			// The ad script listens for clicks on the document. We stop them here.
+			const suffocate = (e) => {
+				// If the target is an ad link or disguised overlay
+				const target = e.target;
+				const link = target.closest('a');
+				
+				// Block suspicious external links or invisible elements
+				if (link && link.target === '_blank') {
+					e.preventDefault();
+					e.stopPropagation();
+					e.stopImmediatePropagation(); // Stops the ad script from seeing the click
+					console.log('🚫 Click event suffocated.');
+				}
+			};
+
+			// Capture phase (true) ensures we run BEFORE the ad script
+			window.addEventListener('click', suffocate, true);
+			window.addEventListener('mousedown', suffocate, true);
+			window.addEventListener('mouseup', suffocate, true);
+			window.addEventListener('pointerup', suffocate, true);
+
+			// 4. OBSERVER BACKUP (For iframes injected via innerHTML)
+			const observer = new MutationObserver((mutations) => {
+				mutations.forEach((mutation) => {
+					mutation.addedNodes.forEach((node) => {
+						if (node.tagName === 'IFRAME') {
+							node.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-pointer-lock');
+							poisonWindow(node.contentWindow);
+						}
+					});
 				});
 			});
-		});
+			observer.observe(elementToObserve, { childList: true, subtree: true });
 
-		const observerTarget = document.querySelector('.app') || document.body;
-		iframeObserver.observe(observerTarget, { childList: true, subtree: true });
+			console.log('🔒 System: Native Hooks & Supply Chain Interdiction Active.');
+		})();
 	</script>
 </body>
 </html>

@@ -8,7 +8,6 @@ fnfvsagoti,Fnf VS Agoti,https://fnf.run3.io/agoti/100/,online
 fnfsillybilly,Fnf VS Silly Billy,https://fnf.kdata1.com/2024/silly-billy-vs-yourself/1/,online
 fnfshaggy,Fnf VS Shaggy,https://fnf.run3.io/shaggy/6.5/,online
 garfield2048v1,Garfield 2048 V1,https://all2048.com/garfield,online
-flappybird,Flappybird,https://flappybird.io/,online
 jetpackjoyride,Jetpack Joyride,https://kdata1.com/2024/02/jetpack-joyride/,online
 motox3m,Moto X3M,https://www.coolmathgames.com/0-moto-x3m/play,online
 driftboss,Drift Boss,https://www.coolmathgames.com/0-drift-boss/play,online
@@ -34,7 +33,6 @@ doodlejump,Doodle Jump,https://doodlejumponline.github.io/file/,online
 fruitninja,Fruit Ninja,https://www.coolmathgames.com/sites/default/files/public_games/50823/?gd_sdk_referrer_url=https%3A%2F%2Fwww.coolmathgames.com%2F0-fruit-ninja,online
 snowrider,Snow Rider 3D,https://html5.gamedistribution.com/3b79a8537ebc414fb4f9672a9b8c68c8/,online
 cuttheropett,Cut The Rope : Time Travel,https://smashkartsonlinegames.github.io/v88/cut-the-rope-time-travel/,online
-stealabrainrot,Steal A Brainrot,https://crazygames.cdn.msnfun.com/9pltx207s22g/v4/index.html?msstart_sdk_init=eyJwYXJlbnRPcmlnaW4iOiJodHRwczovL3d3dy5tc24uY29tIiwiY2xpZW50SWQiOiIxQTg0MjQyODBGMTA2NzMzMEVDNDMyQjEwRTgyNjYwOSIsImxvY2FsZSI6ImVuLXVzIiwiZW50cnlQb2ludElkIjoiIiwic3dpdGNoR2FtZVBheWxvYWQiOnsic3dpdGNoZWRUbyI6IjlwbHR4MjA3czIyZyIsInZhbHVlIjp7fX19,online
 granny2,Granny 2,https://badparentingame.io/play/granny-2/,online
 adofai,A Dance Of Fire And Ice,https://w8.snokido.com/games/unity-webgl/dance-fire-and-ice/index.html,online
 suikagame,Suika Game,https://playsuikagame.com/,online
@@ -48,6 +46,9 @@ racer,Racer,./games/racer/index.html,local
 edgenotfound,Edge Not Found,./games/edgenotfound/index.html,local
 basketballstars,Basketball Stars,./games/basketballstars/index.html,local
 doge2048,Doge 2048,./games/doge2048/index.html,local
-edgesurf,Edge Surf,https://yell0wsuit.page/assets/games/edge-surf/index.html,online
+edgesurf,Edge Surf,./games/edgesurf/index.html,local
 garfield2048v2,Garfield 2048 V2,./games/garfield2048/index.html,local
-spacewaves,Space Waves,https://space-waves.co/embed/space-waves,online
+spacewaves,Space Waves,./games/spacewaves/index.html,local
+survivalrace,Survival Race,https://survivalrace2.io/embed/survival-race,online
+geometrydashlite,Geometry Dash : Lite,./games/geometrydashlight/index.html,local
+getyoked,Get Yoked,./games/getyoked/index.html,local

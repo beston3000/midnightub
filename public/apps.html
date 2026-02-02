@@ -7,11 +7,12 @@
   <title>Apps // Midnight</title>
   <link rel="shortcut icon" href="/assets/images/logo.png" />
 
+  <!-- IMPORT CORE (Handles Login, Security, Admin Button) -->
+  <script type="module" src="midnight-core.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -23,9 +24,7 @@
       --text-muted: #627c85;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -37,37 +36,30 @@
       flex-direction: column;
     }
 
-    #starfield {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -2;
-    }
+    /* Core Blur Logic */
+    .app-container { flex: 1; display: flex; flex-direction: column; height: 100%; transition: filter 0.3s; }
+    body.logged-out .app-container { filter: blur(8px) brightness(0.4); pointer-events: none; }
 
+    /* Backgrounds */
+    #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
     .scanlines {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
-      pointer-events: none;
-      z-index: -1;
+      pointer-events: none; z-index: -1;
     }
 
+    /* Topbar */
     .topbar {
-			height: 70px;
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 0 40px;
-			background: rgba(5, 8, 16, 0.8);
-			border-bottom: 1px solid rgba(0, 243, 255, 0.2);
-			backdrop-filter: blur(10px);
-			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-		}
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: rgba(5, 8, 16, 0.85);
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+    }
 
     .brand {
       font-family: "Orbitron", sans-serif;
@@ -80,113 +72,61 @@
       text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
     }
 
-    .nav {
-      display: flex;
-      gap: 4px;
-    }
-
+    .nav { display: flex; gap: 4px; }
     .nav-link {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-decoration: none;
-      padding: 8px 16px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: all 0.3s ease;
-      position: relative;
+      font-size: 16px; font-weight: 600; color: var(--text-muted);
+      text-decoration: none; padding: 8px 16px;
+      text-transform: uppercase; letter-spacing: 1px;
+      transition: all 0.3s ease; position: relative;
+      display: flex; align-items: center;
     }
-
-    .nav-link:hover,
-    .nav-link.active {
-      color: var(--text-main);
-      background: rgba(0, 243, 255, 0.05);
-    }
-
+    .nav-link:hover, .nav-link.active { color: var(--text-main); background: rgba(0, 243, 255, 0.05); }
     .nav-link::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 0%;
-      height: 2px;
-      background: var(--accent-primary);
-      transition: width 0.3s ease;
+      content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px;
+      background: var(--accent-primary); transition: width 0.3s ease;
     }
+    .nav-link:hover::after, .nav-link.active::after { width: 100%; }
 
-    .nav-link:hover::after,
-    .nav-link.active::after {
-      width: 100%;
-    }
-
-    main {
-      flex: 1;
-      display: block;
-      z-index: 1;
-    }
-
-    .wrap {
-      width: min(1200px, 92vw);
-      margin: 30px auto;
-    }
+    /* Main Content */
+    main { flex: 1; display: block; z-index: 1; }
+    .wrap { width: min(1200px, 92vw); margin: 30px auto; }
 
     .header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 16px; margin-bottom: 30px; flex-wrap: wrap;
       border-bottom: 1px solid rgba(0, 243, 255, 0.2);
       padding-bottom: 20px;
     }
 
     .header h1 {
-      margin: 0;
-      font-family: "Orbitron", sans-serif;
-      font-size: 40px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      margin: 0; font-family: "Orbitron", sans-serif; font-size: 40px;
+      letter-spacing: 2px; text-transform: uppercase;
       text-shadow: 0 0 10px rgba(188, 19, 254, 0.6);
     }
 
-    .header p {
-      margin: 5px 0 0;
-      color: var(--accent-primary);
-      opacity: 0.8;
-      letter-spacing: 1px;
-    }
+    .header p { margin: 5px 0 0; color: var(--accent-primary); opacity: 0.8; letter-spacing: 1px; }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .search,
-    .sort {
+    .search, .sort {
       height: 44px;
       background: rgba(0, 0, 0, 0.6);
       border: 1px solid var(--text-muted);
       color: #fff;
       padding: 0 16px;
       font-family: 'Rajdhani', sans-serif;
-      font-size: 16px;
-      text-transform: uppercase;
+      font-size: 16px; text-transform: uppercase;
       outline: none;
       clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
       transition: all 0.3s;
     }
-
-    .search:focus,
-    .sort:focus {
+    .search:focus, .sort:focus {
       border-color: var(--accent-primary);
       box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 20px;
     }
 
@@ -194,24 +134,16 @@
       display: block;
       background: rgba(10, 15, 30, 0.6);
       border: 1px solid rgba(0, 243, 255, 0.1);
-      text-decoration: none;
-      color: inherit;
-      position: relative;
-      overflow: hidden;
+      text-decoration: none; color: inherit;
+      position: relative; overflow: hidden;
       transition: all 0.3s ease;
       backdrop-filter: blur(5px);
     }
 
     .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
       background: var(--accent-primary);
-      transform: scaleY(0);
-      transition: transform 0.3s ease;
+      transform: scaleY(0); transition: transform 0.3s ease;
     }
 
     .card:hover {
@@ -219,151 +151,102 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       border-color: var(--accent-primary);
     }
-
-    .card:hover::before {
-      transform: scaleY(1);
-    }
+    .card:hover::before { transform: scaleY(1); }
 
     .thumb {
-      width: 100%;
-      aspect-ratio: 16 / 10;
+      width: 100%; aspect-ratio: 16 / 10;
       background: radial-gradient(circle, #1a2035 0%, #05060d 100%);
-      display: grid;
-      place-items: center;
+      display: grid; place-items: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
+    .thumb img { width: 80%; height: 80%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5)); }
 
-    .thumb img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
-    }
-
-    .meta {
-      padding: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .name {
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: 0.5px;
-    }
-
+    .meta { padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+    .name { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; }
     .pill {
-      font-size: 11px;
-      color: #000;
-      background: var(--accent-primary);
-      padding: 4px 10px;
-      font-weight: 700;
-      text-transform: uppercase;
+      font-size: 11px; color: #000; background: var(--accent-primary);
+      padding: 4px 10px; font-weight: 700; text-transform: uppercase;
       clip-path: polygon(5px 0, 100% 0, 100% 100%, 0 100%, 0 5px);
     }
 
     .empty {
-      padding: 40px;
-      text-align: center;
-      border: 1px dashed var(--text-muted);
-      color: var(--text-muted);
+      padding: 40px; text-align: center;
+      border: 1px dashed var(--text-muted); color: var(--text-muted);
       background: rgba(0, 0, 0, 0.3);
     }
 
     footer {
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      background: rgba(0, 0, 0, 0.8);
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      height: 50px; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--text-muted); background: rgba(0, 0, 0, 0.8);
+      border-top: 1px solid rgba(255, 255, 255, 0.05); text-transform: uppercase; letter-spacing: 2px;
     }
 
     @media (max-width: 768px) {
-      .topbar {
-        padding: 0 15px;
-        height: 60px;
-      }
-
-      .nav-link {
-        font-size: 13px;
-        padding: 8px 10px;
-      }
+      .topbar { padding: 0 15px; height: 60px; }
+      .nav-link { font-size: 13px; padding: 8px 10px; }
     }
   </style>
 </head>
 
-<body>
+<body class="logged-out">
   <canvas id="starfield"></canvas>
   <div class="scanlines"></div>
 
-  <div class="topbar">
-    <a href="index.html" class="brand">Midnight</a>
-    <nav class="nav">
-				<a href="index.html" class="nav-link">Home</a>
-				<a href="b.html" class="nav-link">Browser</a>
-				<a href="g.html" class="nav-link">Games</a>
-				<a href="apps.html" class="nav-link active">Apps</a>
-				<a href="shows.html" class="nav-link">Tv Shows</a>
-				<a href="movies.html" class="nav-link">Movies</a>
-				<a href="music.html" class="nav-link">Music</a>
-				<a href="settings.html" class="nav-link">Settings</a>
-			</nav>
+  <!-- Main Content Container -->
+  <div class="app-container">
+    <div class="topbar">
+      <a href="index.html" class="brand">Midnight</a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="b.html" class="nav-link">Browser</a>
+        <a href="g.html" class="nav-link">Games</a>
+        <a href="apps.html" class="nav-link active">Apps</a>
+        <a href="chat.html" class="nav-link">Chat</a>
+        <a href="shows.html" class="nav-link">Tv Shows</a>
+        <a href="movies.html" class="nav-link">Movies</a>
+        <a href="music.html" class="nav-link">Music</a>
+        <a href="settings.html" class="nav-link">Settings</a>
+      </nav>
+    </div>
+
+    <main>
+      <div class="wrap">
+        <div class="header">
+          <div>
+            <h1>Application Database</h1>
+            <p>Select application for launch...</p>
+          </div>
+
+          <div class="controls">
+            <input id="filter" class="search" placeholder="SEARCH APPS..." autocomplete="off" />
+            <select id="sort" class="sort" aria-label="Sort apps">
+              <option value="name-asc" selected>A-Z</option>
+              <option value="name-desc">Z-A</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="grid" class="grid" aria-live="polite"></div>
+        <div id="empty" class="empty" hidden>NO APPS FOUND</div>
+      </div>
+    </main>
+
+    <footer>System Online // Powered by Scramjet</footer>
   </div>
 
-  <main>
-    <div class="wrap">
-      <div class="header">
-        <div>
-          <h1>Application Database</h1>
-          <p>Select application for launch...</p>
-        </div>
-
-        <div class="controls">
-          <input id="filter" class="search" placeholder="SEARCH APPS..." autocomplete="off" />
-          <select id="sort" class="sort" aria-label="Sort apps">
-            <option value="name-asc" selected>A-Z</option>
-            <option value="name-desc">Z-A</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="grid" class="grid" aria-live="polite"></div>
-      <div id="empty" class="empty" hidden>NO APPS FOUND</div>
-    </div>
-  </main>
-
-  <footer>System Online // Powered by Scramjet</footer>
-
   <script>
-    // Starfield
+    // --- Starfield Animation ---
     const canvas = document.getElementById('starfield');
     const ctx = canvas.getContext('2d');
     let width, height, stars = [];
     function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
     window.addEventListener('resize', resize); resize();
-    class Star {
-      constructor() { this.init(); }
-      init() { this.x = (Math.random() - 0.5) * width * 2; this.y = (Math.random() - 0.5) * height * 2; this.z = Math.random() * width; this.color = Math.random() > 0.8 ? '#bc13fe' : '#00f3ff'; }
-      update() { this.z -= 2; if (this.z <= 0) { this.init(); this.z = width; } }
-      draw() {
-        const sx = (this.x / this.z) * width + width / 2; const sy = (this.y / this.z) * height + height / 2;
-        const r = (1 - this.z / width) * 2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
-      }
-    }
+    class Star { constructor() { this.init(); } init() { this.x = (Math.random() - 0.5) * width * 2; this.y = (Math.random() - 0.5) * height * 2; this.z = Math.random() * width; this.color = Math.random() > 0.8 ? '#bc13fe' : '#00f3ff'; } update() { this.z -= 2; if (this.z <= 0) { this.init(); this.z = width; } } draw() { const sx = (this.x / this.z) * width + width / 2; const sy = (this.y / this.z) * height + height / 2; const r = (1 - this.z / width) * 2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0, r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); } }
     for (let i = 0; i < 100; i++) stars.push(new Star());
-    function animate() {
-      ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height);
-      stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animate);
-    }
+    function animate() { ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height); stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animate); }
     animate();
 
-    // App Logic
+    // --- App Logic ---
     (async () => {
       const grid = document.getElementById("grid");
       const empty = document.getElementById("empty");

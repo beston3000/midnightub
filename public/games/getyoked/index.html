@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Geometry Dash Lite</title>
+    <style>
+      body { margin: 0; padding: 0; background: #000; overflow: hidden; width: 100vw; height: 100vh; }
+      #game-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; }
+      canvas { width: 100%; height: 100%; display: block; }
+      /* Simple Loading Bar */
+      #loading-cover { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99; font-family: sans-serif; }
+      #progress-bar { width: 200px; height: 10px; background: #333; margin-top: 20px; border-radius: 5px; overflow: hidden; }
+      #progress-fill { width: 0%; height: 100%; background: #00e0ff; transition: width 0.2s; }
+    </style>
+  </head>
+  <body>
+    
+    <div id="loading-cover">
+      <h1>Loading Game...</h1>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <div id="game-container">
+      <canvas id="unity-canvas"></canvas>
+    </div>
+
+    <script src="Build/Web.loader.js"></script>
+
+    <script>
+      var container = document.querySelector("#game-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingCover = document.querySelector("#loading-cover");
+      var progressBar = document.querySelector("#progress-fill");
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/Web.loader.js";
+      
+      var config = {
+        dataUrl: buildUrl + "/Web.data",
+        frameworkUrl: buildUrl + "/Web.framework.js",
+        codeUrl: buildUrl + "/Web.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Geometry Dash Lite",
+        productVersion: "1.0",
+      };
+
+      // Check if the browser supports the game
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+      }
+
+      // Launch the Game
+      createUnityInstance(canvas, config, (progress) => {
+        progressBar.style.width = 100 * progress + "%";
+      }).then((unityInstance) => {
+        loadingCover.style.display = "none";
+      }).catch((message) => {
+        alert(message);
+      });
+    </script>
+  </body>
+</html>

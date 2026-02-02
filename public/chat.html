@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Midnight TERMINAL // CHAT LINK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+
+    <script type="module" src="midnight-core.js"></script>
+
+    <style>
+        :root { --bg-color: #030508; --accent-primary: #00f3ff; --accent-secondary: #bc13fe; --text-main: #e0f7fa; --text-muted: #627c85; --error: #ff2a2a; --grid-color: rgba(0, 243, 255, 0.15); }
+        * { box-sizing: border-box; }
+        body { margin: 0; height: 100vh; overflow: hidden; font-family: 'Rajdhani', sans-serif; background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; }
+        
+        .app-container { display: flex; flex-direction: column; height: 100%; transition: filter 0.3s; }
+        body.logged-out .app-container { filter: blur(8px) brightness(0.4); pointer-events: none; }
+
+        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        .scanlines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: -1; }
+        
+        /* Topbar */
+        .topbar { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; background: rgba(5, 8, 16, 0.8); border-bottom: 1px solid rgba(0, 243, 255, 0.2); backdrop-filter: blur(10px); }
+        .brand { font-family: "Orbitron"; font-weight: 900; font-size: 20px; color: var(--accent-primary); text-decoration: none; padding-left: 15px; position: relative; }
+        .nav { display: flex; gap: 4px; }
+        .nav-link { font-size: 16px; font-weight: 600; color: var(--text-muted); text-decoration: none; padding: 8px 16px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; display: flex; align-items: center; }
+        .nav-link:hover, .nav-link.active { color: var(--text-main); background: rgba(0, 243, 255, 0.05); }
+        
+        /* Layout */
+        .center-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+        .glass-panel { width: min(1000px, 95vw); height: 80vh; display: flex; flex-direction: row; background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)); border: 1px solid rgba(0, 243, 255, 0.15); backdrop-filter: blur(12px); border-radius: 4px; position: relative; }
+        
+        /* Sidebar */
+        .chat-sidebar { width: 250px; border-right: 1px solid rgba(0, 243, 255, 0.15); display: flex; flex-direction: column; background: rgba(0,0,0,0.2); }
+        
+        .section-header { padding: 15px 15px 5px; font-family:'Orbitron'; color:var(--text-muted); font-size: 12px; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+        .add-btn { background: none; border: 1px solid var(--text-muted); color: var(--text-muted); border-radius: 4px; cursor: pointer; font-size: 12px; padding: 0 6px; }
+        .add-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+        .channel-list { flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 2px; }
+        .channel-item { padding: 8px 15px; color: var(--text-muted); cursor: pointer; transition: 0.2s; font-size: 14px; border-radius: 4px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .channel-item:hover { background: rgba(0, 243, 255, 0.05); color: var(--text-main); }
+        .channel-item.active { background: rgba(0, 243, 255, 0.1); color: var(--accent-primary); border-left: 3px solid var(--accent-primary); }
+        
+        /* Chat Area */
+        .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .chat-header { padding: 15px 25px; border-bottom: 1px solid rgba(0, 243, 255, 0.1); display: flex; justify-content: space-between; align-items: center; min-height: 60px; }
+        .header-controls { display: flex; gap: 10px; }
+        .header-btn { background: rgba(0,243,255,0.1); border: 1px solid var(--accent-primary); color: var(--accent-primary); padding: 5px 10px; cursor: pointer; font-family: 'Rajdhani'; font-weight: bold; font-size: 12px; }
+        .header-btn:hover { background: var(--accent-primary); color: #000; }
+        .header-btn.danger { border-color: var(--error); color: var(--error); background: rgba(255, 42, 42, 0.1); }
+        .header-btn.danger:hover { background: var(--error); color: #000; }
+
+        .messages-container { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; }
+        
+        /* Input */
+        .input-area { padding: 20px; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(0, 243, 255, 0.1); display: flex; gap: 10px; align-items: center; }
+        .app-input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--text-muted); color: var(--accent-primary); font-family: 'Space Grotesk'; padding: 10px; outline: none; }
+        .send-btn { background: var(--accent-primary); border: none; padding: 0 30px; height: 42px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; }
+        .gif-btn { background: transparent; border: 1px solid var(--accent-secondary); color: var(--accent-secondary); padding: 0 15px; height: 42px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; }
+        .gif-btn:hover { background: var(--accent-secondary); color: #000; }
+        
+        /* Poll Button */
+        .poll-btn { background: transparent; border: 1px solid #bc13fe; color: #bc13fe; padding: 0 15px; height: 42px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; display: none; }
+        .poll-btn:hover { background: #bc13fe; color: #000; }
+
+        /* Messages */
+        .message-group { margin-bottom: 15px; display: flex; flex-direction: column; width: 100%; position: relative; }
+        .message-content { max-width: 80%; padding: 6px 15px; margin-bottom: 2px; color: #d1d5db; border-radius: 4px; background: rgba(255, 255, 255, 0.03); border-left: 2px solid var(--text-muted); position: relative; }
+        .message-group.self .message-content { background: rgba(0, 243, 255, 0.05); border-right: 2px solid var(--accent-primary); border-left: none; align-self: flex-end; text-align: right; }
+        .detected-image { max-width: 100%; max-height: 300px; border-radius: 4px; margin-top: 5px; }
+
+        /* POLL STYLES */
+        .poll-container { min-width: 300px; }
+        .poll-title { font-weight: bold; color: var(--accent-secondary); margin-bottom: 10px; font-size: 16px; font-family: 'Orbitron'; }
+        .poll-option { margin-bottom: 8px; cursor: pointer; position: relative; }
+        .poll-bar-bg { height: 30px; background: rgba(255,255,255,0.05); border: 1px solid var(--text-muted); border-radius: 4px; overflow: hidden; position: relative; }
+        .poll-bar-fill { height: 100%; background: rgba(188, 19, 254, 0.3); width: 0%; transition: width 0.5s ease; }
+        .poll-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px; z-index: 2; pointer-events: none; }
+        .poll-option:hover .poll-bar-bg { border-color: var(--accent-secondary); }
+        .poll-option.voted .poll-bar-fill { background: var(--accent-secondary); }
+        .poll-option.voted .poll-text { color: #fff; font-weight: bold; }
+
+        /* Actions */
+        .msg-actions { position: absolute; top: -12px; right: 0; background: #000; border: 1px solid var(--text-muted); border-radius: 4px; padding: 2px 5px; display: none; gap: 8px; z-index: 10; align-items: center; }
+        .message-content:hover .msg-actions { display: flex; }
+        .reaction-btn { cursor: pointer; font-size: 14px; opacity: 0.7; }
+        .reaction-btn:hover { opacity: 1; transform: scale(1.2); }
+        .delete-msg-btn { color: var(--error); cursor: pointer; font-weight: bold; font-size: 12px; border-left: 1px solid #333; padding-left: 8px; }
+        .delete-msg-btn:hover { text-shadow: 0 0 5px var(--error); }
+
+        .reactions-display { display: flex; gap: 5px; margin-top: 2px; flex-wrap: wrap; justify-content: flex-end; }
+        .message-group:not(.self) .reactions-display { justify-content: flex-start; }
+        .reaction-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 2px 6px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 3px; }
+        .reaction-pill:hover { border-color: var(--accent-primary); }
+        .reaction-pill.active { background: rgba(0, 243, 255, 0.2); border-color: var(--accent-primary); }
+
+        /* Modal */
+        .modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal.open { display: flex; }
+        .modal-box { width: 500px; background: #080c15; border: 1px solid var(--accent-secondary); padding: 30px; position: relative; box-shadow: 0 0 30px rgba(188, 19, 254, 0.2); display: flex; flex-direction: column; max-height: 80vh; }
+        .modal-box h2 { margin: 0 0 20px; font-family: "Orbitron"; color: var(--accent-secondary); font-size: 20px; }
+        .close-modal { position: absolute; top: 10px; right: 15px; background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+        .close-modal:hover { color: #fff; }
+
+        /* User Selection List */
+        .user-select-container { flex: 1; overflow-y: auto; border: 1px solid var(--text-muted); margin-bottom: 15px; background: rgba(0,0,0,0.3); }
+        .user-select-item { display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
+        .user-select-item:hover { background: rgba(255,255,255,0.05); }
+        .user-select-item.selected { background: rgba(0, 243, 255, 0.1); border-left: 3px solid var(--accent-primary); }
+        .usi-name { flex: 1; color: var(--text-main); font-size: 14px; }
+        .usi-role { font-size: 10px; color: var(--accent-secondary); text-transform: uppercase; margin-right: 10px; }
+        .usi-check { width: 16px; height: 16px; border: 1px solid var(--text-muted); display: flex; align-items: center; justify-content: center; }
+        .user-select-item.selected .usi-check::after { content: '✓'; color: var(--accent-primary); font-size: 12px; }
+
+        /* GIF Grid */
+        .gif-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; overflow-y: auto; max-height: 400px; margin-top: 10px; }
+        .gif-item { width: 100%; height: 100px; object-fit: cover; cursor: pointer; border-radius: 4px; border: 1px solid transparent; }
+        .gif-item:hover { border-color: var(--accent-secondary); opacity: 0.8; }
+
+    </style>
+</head>
+
+<body class="logged-out">
+    <canvas id="starfield"></canvas>
+    <div class="scanlines"></div>
+
+    <div class="app-container">
+        <div class="topbar">
+            <a href="index.html" class="brand">Midnight</a>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="b.html" class="nav-link">Browser</a>
+                <a href="g.html" class="nav-link">Games</a>
+                <a href="apps.html" class="nav-link">Apps</a>
+                <a href="chat.html" class="nav-link active">Chat</a>
+                <a href="shows.html" class="nav-link">Tv Shows</a>
+                <a href="movies.html" class="nav-link">Movies</a>
+                <a href="music.html" class="nav-link">Music</a>
+                <a href="settings.html" class="nav-link">Settings</a>
+            </nav>
+        </div>
+
+        <div class="center-stage">
+            <div class="glass-panel">
+                <div class="chat-sidebar">
+                    <div class="section-header">PUBLIC</div>
+                    <div class="channel-list" style="flex: 0 0 auto; min-height: 40px;">
+                        <div class="channel-item active" id="btnGlobal" onclick="switchChat('global', 'GLOBAL CHAT', 'global')"># GLOBAL</div>
+                    </div>
+
+                    <div class="section-header">
+                        GROUPS
+                        <button class="add-btn" id="btnAddGroup" style="display:none;" onclick="openModal('group')">+</button>
+                    </div>
+                    <div class="channel-list" id="groupList"></div>
+
+                    <div class="section-header">
+                        DIRECT MESSAGES
+                        <button class="add-btn" onclick="openModal('dm')">+</button>
+                    </div>
+                    <div class="channel-list" id="dmList"></div>
+                </div>
+
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <span id="currentChannelName" style="color:var(--accent-primary); font-family:'Orbitron';">GLOBAL CHAT</span>
+                        <div class="header-controls" id="headerControls" style="display:none;">
+                            <button class="header-btn" onclick="openModal('addMember')">+ MEMBER</button>
+                            <button class="header-btn danger" id="btnDeleteGroup" onclick="deleteCurrentGroup()">DELETE</button>
+                        </div>
+                    </div>
+                    <div class="messages-container" id="messagesList"></div>
+                    
+                    <form class="input-area" id="chatForm">
+                        <button type="button" class="poll-btn" id="btnCreatePoll" onclick="openModal('poll')">POLL</button>
+                        <button type="button" class="gif-btn" onclick="openModal('gif')">GIF</button>
+                        <input type="text" class="app-input" id="messageInput" placeholder="ENTER TRANSMISSION..." autocomplete="off">
+                        <button type="submit" class="send-btn">SEND</button>
+                    </form>
+                </div>
+
+                <div class="modal" id="modalOverlay">
+                    <div class="modal-box">
+                        <button class="close-modal" onclick="closeModal()">×</button>
+                        <h2 id="modalTitle">INITIATE</h2>
+                        
+                        <input type="text" class="app-input" id="modalInput" placeholder="..." style="margin-bottom: 10px;">
+                        <input type="text" class="app-input" id="searchBarAux" placeholder="SEARCH..." style="margin-bottom: 10px; font-size: 12px; border-color: var(--accent-secondary); display:none;" onkeyup="handleAuxSearch()">
+                        
+                        <div id="pollInputs" style="display:none; width:100%;">
+                            <input type="text" class="app-input" id="pollOption1" placeholder="Option 1" style="margin-bottom:5px;">
+                            <input type="text" class="app-input" id="pollOption2" placeholder="Option 2" style="margin-bottom:5px;">
+                            <input type="text" class="app-input" id="pollOption3" placeholder="Option 3 (Optional)" style="margin-bottom:5px;">
+                            <input type="text" class="app-input" id="pollOption4" placeholder="Option 4 (Optional)" style="margin-bottom:5px;">
+                        </div>
+
+                        <div id="userSelectionList" class="user-select-container" style="display:none;"></div>
+                        <div id="gifContainer" class="gif-grid" style="display:none;"></div>
+
+                        <button class="send-btn" id="modalSubmitBtn" onclick="submitModal()" style="width:100%; margin-top:10px;">EXECUTE</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer>System Online // Powered by Scramjet</footer>
+    </div>
+
+    <script type="module">
+        import { db, auth, serverTimestamp } from './midnight-core.js';
+        import { collection, addDoc, updateDoc, deleteDoc, arrayUnion, query, orderBy, where, limit, onSnapshot, getDoc, getDocs, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        let currentUser = null;
+        let currentUserData = null;
+        let currentChatId = 'global';
+        let currentChatData = null; 
+        let chatUnsub = null; 
+        let modalMode = null; 
+        let allUsersCache = [];
+        let selectedUserIds = new Set();
+        
+        const GIPHY_KEY = "TQPgEOeJbtiaLkWq2nFTgEsfzLKTtFlv";
+
+        // 1. AUTH STATE
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    currentUserData = snap.data();
+                    if (currentUserData.role === 'admin') {
+                        document.getElementById('btnAddGroup').style.display = 'inline-block';
+                        document.getElementById('btnCreatePoll').style.display = 'inline-block';
+                    }
+                }
+                
+                fetchAllUsers();
+                startChatListener(); 
+                startSidebarListener(); 
+            }
+        });
+
+        // 2. DATA UTILS
+        async function fetchAllUsers() {
+            try {
+                const snap = await getDocs(collection(db, "users"));
+                allUsersCache = [];
+                snap.forEach(d => {
+                    allUsersCache.push({ uid: d.id, ...d.data() });
+                });
+            } catch(e) { console.error("User fetch error:", e); }
+        }
+
+        function getUserRole(uid) {
+            const u = allUsersCache.find(x => x.uid === uid);
+            return u ? u.role : 'user';
+        }
+
+        // 3. SIDEBAR LISTENER
+        function startSidebarListener() {
+            const q = query(collection(db, "chats"), where("members", "array-contains", currentUser.uid));
+            
+            onSnapshot(q, (snapshot) => {
+                const groupList = document.getElementById('groupList');
+                const dmList = document.getElementById('dmList');
+                groupList.innerHTML = '';
+                dmList.innerHTML = '';
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    const el = document.createElement('div');
+                    
+                    if (data.type === 'group') {
+                        el.className = `channel-item ${currentChatId === id ? 'active' : ''}`;
+                        el.innerText = `# ${data.name || 'Unknown Group'}`;
+                        el.onclick = () => switchChat(id, data.name, 'group');
+                        groupList.appendChild(el);
+                    } else if (data.type === 'dm') {
+                        let displayName = "DM";
+                        if (data.memberNames && Array.isArray(data.memberNames)) {
+                           const otherName = data.memberNames.find(n => n !== currentUserData.displayName);
+                           displayName = otherName || "Unknown User";
+                        }
+                        
+                        el.className = `channel-item ${currentChatId === id ? 'active' : ''}`;
+                        el.innerText = `@ ${displayName}`;
+                        el.onclick = () => switchChat(id, displayName, 'dm');
+                        dmList.appendChild(el);
+                    }
+                });
+            });
+        }
+
+        // 4. CHAT SWITCHING & DELETION
+        window.switchChat = async function(id, name, type) {
+            document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+            
+            if(id === 'global') document.getElementById('btnGlobal').classList.add('active');
+
+            document.getElementById('currentChannelName').innerText = type === 'dm' ? `@ ${name}` : (id === 'global' ? 'GLOBAL CHAT' : `# ${name}`);
+            
+            currentChatId = id;
+            
+            const controls = document.getElementById('headerControls');
+            const deleteBtn = document.getElementById('btnDeleteGroup');
+            
+            controls.style.display = 'none';
+            deleteBtn.style.display = 'none';
+
+            if (type === 'group') {
+                controls.style.display = 'flex';
+                try {
+                    const docSnap = await getDoc(doc(db, "chats", id));
+                    if(docSnap.exists()) {
+                        currentChatData = docSnap.data();
+                        if (currentChatData.createdBy === currentUser.uid || currentUserData.role === 'admin') {
+                            deleteBtn.style.display = 'block';
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            startChatListener();
+        }
+
+        window.deleteCurrentGroup = async () => {
+            if(!confirm("DELETE CHANNEL? THIS ACTION IS PERMANENT.")) return;
+            try {
+                await deleteDoc(doc(db, "chats", currentChatId));
+                switchChat('global', 'GLOBAL CHAT', 'global');
+            } catch(e) {
+                alert("Delete Failed: " + e.message);
+            }
+        }
+
+        // 5. MESSAGE LISTENER & ACTIONS
+        function startChatListener() {
+            if (chatUnsub) chatUnsub(); 
+
+            const list = document.getElementById('messagesList');
+            list.innerHTML = '<div style="padding:20px; color:#555;">Connecting...</div>';
+
+            let q;
+            let colRef;
+            if (currentChatId === 'global') {
+                colRef = collection(db, "global_chat");
+                q = query(colRef, orderBy("createdAt", "desc"), limit(50));
+            } else {
+                colRef = collection(db, "chats", currentChatId, "messages");
+                q = query(colRef, orderBy("createdAt", "desc"), limit(50));
+            }
+
+            chatUnsub = onSnapshot(q, (snap) => {
+                list.innerHTML = '';
+                const msgs = [];
+                snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+                
+                msgs.reverse().forEach(m => {
+                    const isSelf = m.senderId === currentUser.uid;
+                    const isAdmin = currentUserData?.role === 'admin';
+                    const canDelete = isSelf || isAdmin;
+                    const role = getUserRole(m.senderId);
+                    const nameColor = role === 'admin' ? 'var(--error)' : 'var(--accent-primary)';
+                    
+                    const div = document.createElement('div');
+                    div.className = `message-group ${isSelf ? 'self' : 'others'}`;
+                    
+                    let contentHtml = "";
+
+                    // POLL RENDERING
+                    if (m.type === 'poll') {
+                        let totalVotes = 0;
+                        if(m.votes) Object.values(m.votes).forEach(arr => totalVotes += arr.length);
+
+                        let optionsHtml = '';
+                        if(m.options && Array.isArray(m.options)) {
+                            m.options.forEach((opt, idx) => {
+                                const votes = m.votes && m.votes[idx] ? m.votes[idx] : [];
+                                const count = votes.length;
+                                const percent = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
+                                const isVoted = votes.includes(currentUser.uid) ? 'voted' : '';
+                                
+                                optionsHtml += `
+                                    <div class="poll-option ${isVoted}" onclick="votePoll('${m.id}', ${idx})">
+                                        <div class="poll-bar-bg">
+                                            <div class="poll-bar-fill" style="width:${percent}%"></div>
+                                            <div class="poll-text">
+                                                <span>${opt}</span>
+                                                <span>${count} (${Math.round(percent)}%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        contentHtml = `
+                            <div class="poll-container">
+                                <div class="poll-title">POLL: ${m.text}</div>
+                                ${optionsHtml}
+                                <div style="font-size:10px; color:#666; margin-top:5px; text-align:right;">Total Votes: ${totalVotes}</div>
+                            </div>
+                        `;
+                    
+                    } else {
+                        // STANDARD TEXT / GIF
+                        const imageRegex = /(https?:\/\/[^\s]+?\.(?:png|jpg|jpeg|gif|webp)(?:\?[^\s]*)?)/gi;
+                        const parts = (m.text || "").split(imageRegex);
+                        parts.forEach((part, i) => {
+                            if (i % 2 === 1) {
+                                contentHtml += `<img src="${part}" class="detected-image" onerror="this.style.display='none'">`;
+                            } else if (part.length > 0) {
+                                contentHtml += `<span>${part}</span>`;
+                            }
+                        });
+                    }
+
+                    // Reactions
+                    let reactionHtml = "";
+                    if (m.reactions) {
+                        Object.keys(m.reactions).forEach(emoji => {
+                            const users = m.reactions[emoji] || [];
+                            if (users.length > 0) {
+                                const isActive = users.includes(currentUser.uid) ? 'active' : '';
+                                reactionHtml += `<div class="reaction-pill ${isActive}" onclick="toggleReaction('${m.id}', '${emoji}')">${emoji} ${users.length}</div>`;
+                            }
+                        });
+                    }
+
+                    div.innerHTML = `
+                        ${!isSelf ? `<div style="color:${nameColor}; font-size:10px; margin-left:10px; font-weight:bold;">${m.senderName} ${role==='admin'?'[ADMIN]':''}</div>` : ''}
+                        <div class="message-content">
+                            ${contentHtml}
+                            <div class="msg-actions">
+                                <span class="reaction-btn" onclick="toggleReaction('${m.id}', '👍')">👍</span>
+                                <span class="reaction-btn" onclick="toggleReaction('${m.id}', '❤️')">❤️</span>
+                                <span class="reaction-btn" onclick="toggleReaction('${m.id}', '😂')">😂</span>
+                                <span class="reaction-btn" onclick="toggleReaction('${m.id}', '🔥')">🔥</span>
+                                ${canDelete ? `<span class="delete-msg-btn" onclick="deleteMessage('${m.id}')">✕</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="reactions-display">${reactionHtml}</div>
+                    `;
+                    list.appendChild(div);
+                });
+                list.scrollTop = list.scrollHeight;
+            }, (error) => {
+                console.error("Chat Error:", error);
+                list.innerHTML = '<div style="padding:20px; color:var(--error);">ACCESS DENIED // RESTRICTED CHANNEL</div>';
+            });
+        }
+
+        window.votePoll = async (msgId, optIdx) => {
+            const collectionPath = currentChatId === 'global' ? "global_chat" : `chats/${currentChatId}/messages`;
+            const msgRef = doc(db, collectionPath, msgId);
+
+            try {
+                // We need to read the doc to remove user from OTHER options (Single Choice)
+                const snap = await getDoc(msgRef);
+                if(snap.exists()) {
+                    const data = snap.data();
+                    let votes = data.votes || {};
+                    
+                    // Remove user from all options
+                    Object.keys(votes).forEach(key => {
+                        votes[key] = votes[key].filter(u => u !== currentUser.uid);
+                    });
+
+                    // Add to selected option
+                    if (!votes[optIdx]) votes[optIdx] = [];
+                    votes[optIdx].push(currentUser.uid);
+
+                    await updateDoc(msgRef, { votes: votes });
+                }
+            } catch(e) { console.error("Vote failed", e); }
+        }
+
+        window.toggleReaction = async (msgId, emoji) => {
+            const collectionPath = currentChatId === 'global' ? "global_chat" : `chats/${currentChatId}/messages`;
+            const msgRef = doc(db, collectionPath, msgId);
+            try {
+                const snap = await getDoc(msgRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    let reactions = data.reactions || {};
+                    let users = reactions[emoji] || [];
+                    if (users.includes(currentUser.uid)) {
+                        users = users.filter(u => u !== currentUser.uid);
+                    } else {
+                        users.push(currentUser.uid);
+                    }
+                    reactions[emoji] = users;
+                    await updateDoc(msgRef, { reactions: reactions });
+                }
+            } catch (e) { console.error("Reaction failed", e); }
+        }
+
+        window.deleteMessage = async (msgId) => {
+            if(!confirm("DELETE MESSAGE?")) return;
+            const collectionPath = currentChatId === 'global' ? "global_chat" : `chats/${currentChatId}/messages`;
+            try {
+                await deleteDoc(doc(db, collectionPath, msgId));
+            } catch(e) { alert("Delete failed: " + e.message); }
+        }
+
+        // 6. MODALS & UI LOGIC
+        window.openModal = (mode) => {
+            modalMode = mode;
+            const title = document.getElementById('modalTitle');
+            const input = document.getElementById('modalInput');
+            const overlay = document.getElementById('modalOverlay');
+            const userList = document.getElementById('userSelectionList');
+            const searchAux = document.getElementById('searchBarAux');
+            const gifGrid = document.getElementById('gifContainer');
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            const pollInputs = document.getElementById('pollInputs');
+
+            selectedUserIds.clear();
+            userList.innerHTML = '';
+            gifGrid.innerHTML = '';
+            
+            // Reset Vis
+            input.style.display = 'block';
+            userList.style.display = 'none';
+            searchAux.style.display = 'none';
+            gifGrid.style.display = 'none';
+            pollInputs.style.display = 'none';
+            submitBtn.style.display = 'block';
+
+            if (mode === 'group') {
+                title.innerText = "INITIALIZE GROUP";
+                input.placeholder = "ENTER GROUP NAME";
+                userList.style.display = 'block';
+                searchAux.style.display = 'block';
+                searchAux.placeholder = "SEARCH USERS...";
+                renderUserList(); 
+            } else if (mode === 'dm') {
+                title.innerText = "DIRECT LINK";
+                input.style.display = 'none'; // Hide text input
+                userList.style.display = 'block';
+                searchAux.style.display = 'block';
+                searchAux.placeholder = "SEARCH USERS...";
+                renderUserList(); 
+            } else if (mode === 'addMember') {
+                title.innerText = "ADD MEMBER";
+                input.style.display = 'none';
+                userList.style.display = 'block';
+                searchAux.style.display = 'block';
+                searchAux.placeholder = "SEARCH USERS...";
+                renderUserList(); 
+            } else if (mode === 'gif') {
+                title.innerText = "GIF SEARCH";
+                input.style.display = 'none';
+                searchAux.style.display = 'block';
+                searchAux.placeholder = "SEARCH GIPHY...";
+                searchAux.focus();
+                gifGrid.style.display = 'grid';
+                submitBtn.style.display = 'none'; 
+            } else if (mode === 'poll') {
+                title.innerText = "CREATE POLL";
+                input.placeholder = "POLL QUESTION...";
+                pollInputs.style.display = 'block';
+            }
+
+            if(mode !== 'addMember' && mode !== 'gif' && mode !== 'dm') input.value = '';
+            overlay.classList.add('open');
+            if(input.style.display !== 'none') input.focus();
+        }
+
+        window.renderUserList = () => {
+            const list = document.getElementById('userSelectionList');
+            list.innerHTML = '';
+            allUsersCache.forEach(u => {
+                if(u.uid === currentUser.uid) return;
+                const div = document.createElement('div');
+                div.className = 'user-select-item';
+                div.dataset.uid = u.uid;
+                div.dataset.username = (u.username || "").toLowerCase();
+                
+                div.innerHTML = `
+                    <div class="usi-check"></div>
+                    <div style="flex:1; margin-left:10px;">
+                        <div class="usi-name">${u.displayName}</div>
+                        <div style="font-size:10px; color:#666;">@${u.username}</div>
+                    </div>
+                    <div class="usi-role">${u.role}</div>
+                `;
+
+                div.onclick = () => {
+                    if (modalMode === 'dm') {
+                        // Single Select
+                        selectedUserIds.clear();
+                        selectedUserIds.add(u.uid);
+                        renderUserList(); 
+                    } else {
+                        // Multi Select
+                        if (selectedUserIds.has(u.uid)) selectedUserIds.delete(u.uid);
+                        else selectedUserIds.add(u.uid);
+                        // Visual update without re-render for speed? No, re-render safe here.
+                        if (selectedUserIds.has(u.uid)) div.classList.add('selected');
+                        else div.classList.remove('selected');
+                    }
+                };
+                
+                if (selectedUserIds.has(u.uid)) div.classList.add('selected');
+                list.appendChild(div);
+            });
+        }
+
+        window.handleAuxSearch = async () => {
+            const term = document.getElementById('searchBarAux').value.toLowerCase();
+            
+            if (modalMode === 'gif') {
+                if(term.length < 2) return;
+                try {
+                    const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(term)}&limit=12`);
+                    const data = await res.json();
+                    const grid = document.getElementById('gifContainer');
+                    grid.innerHTML = '';
+                    
+                    data.data.forEach(gif => {
+                        const img = document.createElement('img');
+                        img.src = gif.images.fixed_height_small.url;
+                        img.className = 'gif-item';
+                        img.onclick = () => {
+                            sendGif(gif.images.original.url);
+                            closeModal();
+                        };
+                        grid.appendChild(img);
+                    });
+                } catch(e) { console.error(e); }
+
+            } else {
+                const items = document.querySelectorAll('.user-select-item');
+                items.forEach(el => {
+                    const username = el.dataset.username;
+                    if(username.includes(term)) el.style.display = 'flex';
+                    else el.style.display = 'none';
+                });
+            }
+        }
+
+        async function sendGif(url) {
+            const payload = {
+                text: url,
+                senderId: currentUser.uid,
+                senderName: currentUserData ? currentUserData.displayName : "Unknown",
+                createdAt: serverTimestamp()
+            };
+            try {
+                if (currentChatId === 'global') {
+                    await addDoc(collection(db, "global_chat"), payload);
+                } else {
+                    await addDoc(collection(db, "chats", currentChatId, "messages"), payload);
+                }
+            } catch(e) { alert("GIF Failed: " + e.message); }
+        }
+
+        window.closeModal = () => {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+
+        window.submitModal = async () => {
+            const val = document.getElementById('modalInput').value.trim();
+            
+            // Validation
+            if (modalMode === 'group' && !val) return;
+            if (modalMode === 'poll' && !val) return;
+            if ((modalMode === 'dm' || modalMode === 'addMember') && selectedUserIds.size === 0) {
+                alert("PLEASE SELECT A USER");
+                return;
+            }
+
+            closeModal();
+
+            if (modalMode === 'group') {
+                try {
+                    const members = [currentUser.uid, ...selectedUserIds];
+                    await addDoc(collection(db, "chats"), {
+                        name: val,
+                        type: 'group',
+                        createdBy: currentUser.uid,
+                        members: members,
+                        createdAt: serverTimestamp()
+                    });
+                } catch(e) { alert("Access Denied: " + e.message); }
+
+            } else if (modalMode === 'addMember') {
+                if (selectedUserIds.size === 0) return;
+                try {
+                    const chatRef = doc(db, "chats", currentChatId);
+                    await updateDoc(chatRef, {
+                        members: arrayUnion(...selectedUserIds)
+                    });
+                } catch(e) { alert("Update Failed: " + e.message); }
+
+            } else if (modalMode === 'dm') {
+                if(selectedUserIds.size !== 1) { alert("SELECT EXACTLY ONE TARGET"); return; }
+                const targetUid = [...selectedUserIds][0];
+                const targetUser = allUsersCache.find(u => u.uid === targetUid);
+                
+                if (!targetUser) return;
+                if (targetUid === currentUser.uid) { alert("CANNOT LINK SELF"); return; }
+
+                try {
+                    await addDoc(collection(db, "chats"), {
+                        type: 'dm',
+                        members: [currentUser.uid, targetUid],
+                        memberNames: [currentUserData.displayName, targetUser.displayName],
+                        createdAt: serverTimestamp()
+                    });
+                } catch(e) { alert("Link Failed: " + e.message); }
+
+            } else if (modalMode === 'poll') {
+                const opt1 = document.getElementById('pollOption1').value.trim();
+                const opt2 = document.getElementById('pollOption2').value.trim();
+                const opt3 = document.getElementById('pollOption3').value.trim();
+                const opt4 = document.getElementById('pollOption4').value.trim();
+                
+                if(!opt1 || !opt2) { alert("POLL NEEDS 2 OPTIONS"); return; }
+                const options = [opt1, opt2];
+                if(opt3) options.push(opt3);
+                if(opt4) options.push(opt4);
+
+                const payload = {
+                    type: 'poll',
+                    text: val, // Question
+                    options: options,
+                    votes: {}, // Map of index -> array of UIDs
+                    senderId: currentUser.uid,
+                    senderName: currentUserData.displayName,
+                    createdAt: serverTimestamp()
+                };
+
+                try {
+                    if (currentChatId === 'global') {
+                        await addDoc(collection(db, "global_chat"), payload);
+                    } else {
+                        await addDoc(collection(db, "chats", currentChatId, "messages"), payload);
+                    }
+                } catch(e) { alert("Poll Failed: " + e.message); }
+            }
+        }
+
+        // Standard Send
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !currentUser) return;
+            input.value = '';
+            
+            const payload = {
+                text: text,
+                senderId: currentUser.uid,
+                senderName: currentUserData ? currentUserData.displayName : "Unknown",
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                if (currentChatId === 'global') {
+                    await addDoc(collection(db, "global_chat"), payload);
+                } else {
+                    await addDoc(collection(db, "chats", currentChatId, "messages"), payload);
+                }
+            } catch (err) { alert("Transmission Failed: " + err.message); }
+        });
+
+        // Starfield
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+        function res() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+        window.onresize = res; res();
+        class S { constructor() { this.init(); } init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; } update() { this.z -= 2; if(this.z <= 0) this.init(); } draw() { const sx = (this.x/this.z)*width + width/2; const sy = (this.y/this.z)*height + height/2; const r = (1-this.z/width)*3; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0,r), 0, Math.PI*2); ctx.fillStyle = '#00f3ff'; ctx.fill(); } }
+        for(let i=0; i<100; i++) stars.push(new S());
+        function anim() { ctx.fillStyle = 'rgba(3,5,8,0.4)'; ctx.fillRect(0,0,width,height); stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(anim); }
+        anim();
+    </script>
+</body>
+</html>

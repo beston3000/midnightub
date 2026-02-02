@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 
+  <script type="module" src="midnight-core.js"></script>
+
   <style>
 		:root {
 			--bg-color: #030508;
@@ -29,9 +31,22 @@
       font-family: 'Rajdhani', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
     }
+
+    /* --- AUTH STATE STYLES (Midnight Core) --- */
+    .app { 
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        transition: filter 0.3s; 
+    }
+    
+    body.logged-out .app { 
+        filter: blur(8px) brightness(0.4); 
+        pointer-events: none; 
+    }
+    /* ----------------------------------------- */
 
     /* Backgrounds */
 		#starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
@@ -51,7 +66,7 @@
 			background: rgba(5, 8, 16, 0.85);
 			border-bottom: 1px solid rgba(0, 243, 255, 0.2);
 			backdrop-filter: blur(10px);
-      position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 100;
 		}
 
 		.brand {
@@ -177,6 +192,7 @@
       height: 50px; display: flex; align-items: center; justify-content: center;
       font-size: 12px; color: var(--text-muted); background: rgba(0,0,0,0.8);
       border-top: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 2px;
+      margin-top: auto;
     }
     
     @media (max-width: 768px) {
@@ -186,47 +202,50 @@
   </style>
 </head>
 
-<body>
+<body class="logged-out">
   <canvas id="starfield"></canvas>
   <div class="scanlines"></div>
 
-  <div class="topbar">
-    <a href="index.html" class="brand">Midnight</a>
-    <nav class="nav">
-				<a href="index.html" class="nav-link">Home</a>
-				<a href="b.html" class="nav-link">Browser</a>
-				<a href="g.html" class="nav-link active">Games</a>
-				<a href="apps.html" class="nav-link">Apps</a>
-				<a href="shows.html" class="nav-link">Tv Shows</a>
-				<a href="movies.html" class="nav-link">Movies</a>
-				<a href="music.html" class="nav-link">Music</a>
-				<a href="settings.html" class="nav-link">Settings</a>
-			</nav>
-  </div>
-
-  <main>
-    <div class="wrap">
-      <div class="header">
-        <div>
-          <h1>Game Database</h1>
-          <p>Accessing Entertainment Archives...</p>
-        </div>
-
-        <div class="controls">
-          <input id="filter" class="search" placeholder="SEARCH PROTOCOL..." autocomplete="off" />
-          <select id="sort" class="sort" aria-label="Sort games">
-            <option value="name-asc" selected>A-Z</option>
-            <option value="name-desc">Z-A</option>
-          </select>
-        </div>
+  <div class="app">
+      <div class="topbar">
+        <a href="index.html" class="brand">Midnight</a>
+        <nav class="nav">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="b.html" class="nav-link">Browser</a>
+            <a href="g.html" class="nav-link active">Games</a>
+            <a href="apps.html" class="nav-link">Apps</a>
+            <a href="chat.html" class="nav-link">Chat</a>
+            <a href="shows.html" class="nav-link">Tv Shows</a>
+            <a href="movies.html" class="nav-link">Movies</a>
+            <a href="music.html" class="nav-link">Music</a>
+            <a href="settings.html" class="nav-link">Settings</a>
+        </nav>
       </div>
 
-      <div id="grid" class="grid" aria-live="polite"></div>
-      <div id="empty" class="empty" hidden>NO DATA FOUND</div>
-    </div>
-  </main>
+      <main>
+        <div class="wrap">
+          <div class="header">
+            <div>
+              <h1>Game Database</h1>
+              <p>Accessing Entertainment Archives...</p>
+            </div>
 
-  <footer>System Online // Powered by Scramjet</footer>
+            <div class="controls">
+              <input id="filter" class="search" placeholder="SEARCH PROTOCOL..." autocomplete="off" />
+              <select id="sort" class="sort" aria-label="Sort games">
+                <option value="name-asc" selected>A-Z</option>
+                <option value="name-desc">Z-A</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="grid" class="grid" aria-live="polite"></div>
+          <div id="empty" class="empty" hidden>NO DATA FOUND</div>
+        </div>
+      </main>
+
+      <footer>System Online // Powered by Scramjet</footer>
+  </div>
 
   <script>
     // --- Starfield Animation ---

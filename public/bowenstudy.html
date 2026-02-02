@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vocab Study — 20 Words</title>
+  <title>New Vocab & Idioms Quiz</title>
   <style>
     body{
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
@@ -53,29 +53,35 @@
 
 <script>
 // =====================
-// Vocabulary Data
+// Vocabulary Data (New Items Only)
 // =====================
 const VOCAB = [
-  { term: "Loath", def: "Unwilling, reluctant" },
-  { term: "Solicit", def: "To beg, seek earnestly" },
-  { term: "Astute", def: "Keen, shrewd" },
-  { term: "Advocate", def: "To be in favor of, support" },
-  { term: "Ineffectual", def: "Unable to accomplish anything, not effective" },
-  { term: "Blatant", def: "Obvious, very showy" },
-  { term: "Entourage", def: "Group of attendants, followers" },
-  { term: "Virulent", def: "Full of hate, harmful" },
-  { term: "Venom", def: "Poison, spite, malice" },
-  { term: "Spew", def: "Spout, eject" },
-  { term: "Scrutinize", def: "To examine closely" },
-  { term: "Nefarious", def: "Villainous, vicious" },
-  { term: "Amicable", def: "Friendly, peaceful" },
-  { term: "Vexatious", def: "Annoying" },
-  { term: "Malady", def: "Disease" },
-  { term: "Impresario", def: "One who presents cultural series, organizer" },
-  { term: "Extortion", def: "Getting money by threats or favors" },
-  { term: "Adverse", def: "Unfavorable, harmful" },
-  { term: "Asset", def: "Valuable thing to have" },
-  { term: "Bigot", def: "Narrow-minded, prejudiced person" }
+  // IMG_3947
+  { term: "Inert", def: "Without power to move" },
+  { term: "Salient", def: "Important, prominent" },
+  { term: "Imminent", def: "Likely to happen, threatening" },
+  { term: "Squeamish", def: "Easily shocked, over sensitive" },
+  { term: "Engrossed", def: "Absorbed" },
+
+  // IMG_3945
+  { term: "Histrionics", def: "Display of emotions" },
+  { term: "Elusive", def: "Hard to grasp" },
+  { term: "Frustrate", def: "To counteract, foil, thwart" },
+  { term: "Symptomatic", def: "Having to do with signs or symptoms, indicative" },
+  { term: "Interject", def: "To insert, interrupt" },
+
+  // IMG_3943
+  { term: "Pertinent", def: "To the point, appropriate" },
+  { term: "Mastiff", def: "Large dog" },
+  { term: "Obsess", def: "To haunt, preoccupy" },
+  { term: "Doleful", def: "Sad, melancholy" },
+  { term: "Wan", def: "Sickly pale" },
+
+  // Idioms
+  { term: "Tilt at windmills", def: "To fight imaginary enemies" },
+  { term: "Show one's hand", def: "To reveal one's intentions" },
+  { term: "Call on the carpet", def: "To scold" },
+  { term: "Pay the piper", def: "To bear the consequences" }
 ];
 
 // =====================
@@ -134,11 +140,13 @@ function renderQuiz(isTest){
     app.innerHTML = `
       <h2>Finished!</h2>
       <div class="muted">Score: ${score} / ${VOCAB.length}</div>
+      <button onclick="location.reload()" style="margin-top:10px">Restart</button>
     `;
     return;
   }
 
   const current = VOCAB[index];
+  // Generate choices excluding current, take 3, add correct, then shuffle
   let choices = shuffle(VOCAB)
     .filter(v => v.def !== current.def)
     .slice(0,3)
@@ -157,13 +165,17 @@ function renderQuiz(isTest){
 
   document.querySelectorAll(".choice").forEach(choice => {
     choice.addEventListener("click", () => {
+      // Disable further clicks
+      document.querySelectorAll(".choice").forEach(c => c.style.pointerEvents = "none");
+      
       const correct = choice.textContent === current.def;
       choice.classList.add(correct ? "correct" : "wrong");
       if(correct) score++;
+      
       setTimeout(() => {
         index++;
         render();
-      }, isTest ? 0 : 500);
+      }, isTest ? 400 : 1200); // Faster transition for test mode
     });
   });
 }
@@ -181,6 +193,7 @@ function prev(){
   render();
 }
 
+// Start app
 render();
 </script>
 </body>
