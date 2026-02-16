@@ -2,7 +2,7 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ "main" ] # Or "master", check your branch name!
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -14,8 +14,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # This must match your secret name!
+          password: ${{ secrets.DOCKERHUB_TOKEN }}     # This must match your secret name!
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
