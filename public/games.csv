@@ -1,6 +1,6 @@
 ﻿id,gameName,gameURL,gameType
 fnf,Friday Night Funkin',https://fnf.kdata1.com/2024/fnf/5201/,online
-clusterrush,Cluster Rush,https://cluster-rush.io/game/,online
+clusterrush,Cluster Rush,./games/clusterrush/index.html,local
 retrobowl,Retro Bowl,./games/retro-bowl/index.html,local
 drivemad,Drive Mad,https://play.fancade.com/5F084A0BCE06B710?max_w=999999&max_h=9999999&istart=1,online
 fnfhex2,Fnf VS Hex 2,https://fnf.kdata1.com/hex-weekend/2/,online
@@ -52,3 +52,4 @@ spacewaves,Space Waves,./games/spacewaves/index.html,local
 survivalrace,Survival Race,https://survivalrace2.io/embed/survival-race,online
 geometrydashlite,Geometry Dash : Lite,./games/geometrydashlight/index.html,local
 getyoked,Get Yoked,./games/getyoked/index.html,local
+fnae,Five Nights At Epstien's,./games/fnae/index.html,local
