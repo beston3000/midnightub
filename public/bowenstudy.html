@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>New Vocab & Idioms Quiz</title>
+  <title>Vocab, Idioms & And Then There Were None Quiz</title>
   <style>
     body{
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
@@ -24,7 +24,7 @@
     }
     button.primary{background:#7a4b2e;color:#fff}
     button:hover{border-color:#7a4b2e}
-    .term{font-size:22px;font-weight:900}
+    .term{font-size:22px;font-weight:900; line-height:1.3;}
     .def{margin-top:8px;font-size:16px}
     .choices{display:flex;flex-direction:column;gap:8px;margin-top:12px}
     .choice{
@@ -33,6 +33,7 @@
       border-radius:10px;
       cursor:pointer;
       font-weight:700;
+      line-height:1.3;
     }
     .choice.correct{border-color:#2f7d4a;background:rgba(47,125,74,.08)}
     .choice.wrong{border-color:#b94a3d;background:rgba(185,74,61,.08)}
@@ -53,35 +54,46 @@
 
 <script>
 // =====================
-// Vocabulary Data (New Items Only)
+// Vocabulary, Idioms, and Book Trivia
 // =====================
 const VOCAB = [
-  // IMG_3947
-  { term: "Inert", def: "Without power to move" },
-  { term: "Salient", def: "Important, prominent" },
-  { term: "Imminent", def: "Likely to happen, threatening" },
-  { term: "Squeamish", def: "Easily shocked, over sensitive" },
-  { term: "Engrossed", def: "Absorbed" },
+  // Vocabulary from images
+  { term: "Poignant", def: "Moving, painful to the feelings" },
+  { term: "Inundate", def: "To flood, to swamp" },
+  { term: "Fruitless", def: "Useless" },
+  { term: "Garbled", def: "Confused, mixed up" },
+  { term: "Sanguine", def: "Optimistic, hopeful" },
+  { term: "Phlegmatic", def: "Calm, hard to rouse to action, sluggish" },
+  { term: "Corroborate", def: "To confirm, support" },
+  { term: "Comprehensive", def: "Thorough" },
+  { term: "Zealous", def: "Overly enthusiastic" },
+  { term: "Coerce", def: "To force" },
+  { term: "Elapse", def: "To slip by (time), to pass by" },
+  { term: "Meticulous", def: "Careful" },
+  { term: "Domicile", def: "Home" },
+  { term: "Lax", def: "Careless, negligent" },
+  { term: "Sporadic", def: "Occasional" },
+  { term: "Rash", def: "Too hasty, reckless" },
+  { term: "Conjecture", def: "Guesswork" },
+  { term: "Obviate", def: "Do away with, eliminate" },
+  { term: "Lurid", def: "Sensational" },
+  { term: "Quip", def: "To joke" },
 
-  // IMG_3945
-  { term: "Histrionics", def: "Display of emotions" },
-  { term: "Elusive", def: "Hard to grasp" },
-  { term: "Frustrate", def: "To counteract, foil, thwart" },
-  { term: "Symptomatic", def: "Having to do with signs or symptoms, indicative" },
-  { term: "Interject", def: "To insert, interrupt" },
+  // Idioms from images
+  { term: "Feather one's nest", def: "To grow rich by taking advantage of circumstances" },
+  { term: "Fair-weather friends", def: "Unreliable, they fail one in times of distress" },
+  { term: "Sow one's wild oats", def: "To lead a wild, carefree life" },
+  { term: "Windfall", def: "Unexpected financial gain" },
 
-  // IMG_3943
-  { term: "Pertinent", def: "To the point, appropriate" },
-  { term: "Mastiff", def: "Large dog" },
-  { term: "Obsess", def: "To haunt, preoccupy" },
-  { term: "Doleful", def: "Sad, melancholy" },
-  { term: "Wan", def: "Sickly pale" },
-
-  // Idioms
-  { term: "Tilt at windmills", def: "To fight imaginary enemies" },
-  { term: "Show one's hand", def: "To reveal one's intentions" },
-  { term: "Call on the carpet", def: "To scold" },
-  { term: "Pay the piper", def: "To bear the consequences" }
+  // And Then There Were None (Ch 1-4)
+  { term: "Book: Who sent the letter inviting Justice Wargrave to Soldier Island?", def: "Constance Culmington" },
+  { term: "Book: What alias does William Blore use when he first introduces himself to the other guests?", def: "Mr. Davis from Natal, South Africa" },
+  { term: "Book: What is the title of the terrifying record played on the gramophone?", def: "Swan Song" },
+  { term: "Book: Who is the first guest to die at the end of Chapter 4?", def: "Anthony Marston" },
+  { term: "Book: What specifically does the voice on the gramophone accuse every person in the room of doing?", def: "Committing murder" },
+  { term: "Book: Who is hired supposedly as a secretarial assistant for Mrs. U.N. Owen?", def: "Vera Claythorne" },
+  { term: "Book: Who operates the motorboat that ferries the guests from the mainland to Soldier Island?", def: "Fred Narracott" },
+  { term: "Book: What peculiar centerpiece is sitting on the dining room table?", def: "Ten china soldier figures" }
 ];
 
 // =====================
@@ -98,6 +110,10 @@ const app = document.getElementById("app");
 // =====================
 document.querySelectorAll("button[data-mode]").forEach(btn => {
   btn.addEventListener("click", () => {
+    // Update active button styling
+    document.querySelectorAll("button[data-mode]").forEach(b => b.classList.remove("primary"));
+    btn.classList.add("primary");
+    
     mode = btn.dataset.mode;
     index = 0;
     score = 0;
@@ -194,6 +210,8 @@ function prev(){
 }
 
 // Start app
+// Shuffle the array initially so the quiz is randomized
+VOCAB.splice(0, VOCAB.length, ...shuffle(VOCAB));
 render();
 </script>
 </body>

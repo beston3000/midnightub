@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="stylesheet" href="index.css" />
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+	
+    <script src="/scram/scramjet.all.js"></script>
+	<script src="search.js" defer></script>
+	<script src="index.js" defer></script>
+
+	<style>
+		:root {
+			--accent-primary: #00f3ff;
+			--accent-secondary: #bc13fe;
+			--text-main: #e0f7fa;
+			--text-muted: #8aa3ac;
+		}
+
+		* { box-sizing: border-box; }
+        
+        /* Bubbly OS Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.5); }
+
+		body {
+			margin: 0; height: 100vh;
+			background-color: transparent;
+			color: var(--text-main); font-family: 'Rajdhani', sans-serif;
+			overflow: hidden; display: flex; flex-direction: column;
+		}
+
+		/* Hidden elements required by Scramjet logic */
+		.browser-controls, .tabs-bar { display: none !important; }
+		#sj-error, #sj-error-code { display: none; }
+
+		/* Viewport Overlay */
+		.viewport { display: none; position: fixed; inset: 0; z-index: 100; background: #000; overflow: hidden; }
+		.view { position: absolute; inset: 0; display: none; }
+		.view.active { display: block; }
+		.frame-host { width: 100%; height: 100%; border: none; background: #000; }
+
+		#player-close {
+			display: none; position: fixed; top: 15px; right: 15px; z-index: 101;
+			background: rgba(255, 42, 42, 0.1); border: 1px solid #ff4a4a; color: #ff4a4a;
+			padding: 8px 16px; cursor: pointer; border-radius: 20px; font-family: 'Rajdhani'; font-weight: bold; transition: 0.2s;
+		}
+		#player-close:hover { background: #ff4a4a; color: #000; box-shadow: 0 0 15px #ff4a4a; }
+
+		/* UI Layout */
+		#trending-movies {
+			flex: 1; 
+            padding: 20px 20px 0 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            min-height: 0; 
+            overflow: hidden;
+		}
+
+		.tm-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;}
+		.tm-header h2 { margin: 0; font-family: 'Orbitron'; font-size: 24px; color: var(--accent-primary); }
+
+		#movie-search {
+			background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+			padding: 10px 15px; font-family: 'Space Grotesk'; font-size: 14px; width: 250px;
+			outline: none; border-radius: 20px; transition: 0.3s;
+		}
+		#movie-search:focus { border-color: var(--accent-primary); background: rgba(0, 0, 0, 0.8); }
+
+		/* FIXED SCROLLING GRID */
+		.tm-scroll { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, 160px); 
+            justify-content: center;
+            gap: 20px; 
+            overflow-y: auto; 
+            padding-bottom: 40px; 
+            flex: 1;
+            align-content: start;
+        }
+
+		/* Bubbly Cards - Forced Dimensions */
+		.movie-card {
+			position: relative; background: rgba(15,20,30,0.5); border: 1px solid rgba(255,255,255,0.05);
+			border-radius: 16px; transition: all 0.3s; display: flex; flex-direction: column; cursor: pointer; overflow: hidden;
+            width: 160px;
+            height: 300px;
+		}
+		.movie-card:hover { border-color: var(--accent-primary); box-shadow: 0 10px 25px rgba(0,0,0,0.5); transform: translateY(-5px); background: rgba(20,25,40,0.8); }
+
+		.poster-wrapper { 
+            height: 240px; 
+            width: 100%; 
+            position: relative; 
+            background: rgba(0,0,0,0.5); 
+            flex-shrink: 0;
+        }
+		.poster-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s;}
+        .movie-card:hover .poster-wrapper img { transform: scale(1.05); }
+
+		.movie-rating {
+			position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+			border: 1px solid var(--accent-secondary); border-radius: 8px; color: var(--accent-secondary);
+			font-weight: bold; padding: 2px 8px; font-size: 12px;
+		}
+		.movie-info { 
+            padding: 10px 12px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            flex: 1;
+        }
+		.movie-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; color: #fff; font-family: 'Space Grotesk'; }
+		.movie-date { font-size: 11px; color: var(--text-muted); font-weight: 600;}
+	</style>
+</head>
+<body>
+    <form id="sj-form" style="display:none;">
+        <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
+        <input id="sj-address" type="text" />
+    </form>
+
+    <button id="player-close">✕ Close Player</button>
+
+    <div class="viewport" id="views">
+        <div class="view active" data-id="1">
+            <div class="frame-host" hidden></div>
+        </div>
+    </div>
+
+    <div id="trending-movies">
+        <div class="tm-header">
+            <h2>CINE_DB</h2>
+            <input type="text" id="movie-search" placeholder="Search database..." autocomplete="off">
+        </div>
+        <div class="tm-scroll" id="tmdb-list">
+            <div style="color:var(--text-muted); padding:20px; grid-column:1/-1; text-align:center;">INITIALIZING DATA STREAM...</div>
+        </div>
+    </div>
+
+	<script>
+		const TMDB_API_KEY = '1d776c7ac6fbdaea19620e1d667b0670';
+		const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w200';
+
+		const viewport = document.querySelector('.viewport');
+		const closeBtn = document.getElementById('player-close');
+		const addressBar = document.getElementById('sj-address');
+		const searchForm = document.getElementById('sj-form');
+
+		closeBtn.onclick = () => {
+			viewport.style.display = 'none';
+			closeBtn.style.display = 'none';
+			const frameHost = document.querySelector('.frame-host');
+			if (frameHost) { frameHost.innerHTML = ''; frameHost.hidden = true; }
+		};
+
+		function renderMovies(movies) {
+			const container = document.getElementById('tmdb-list');
+			if (movies && movies.length > 0) {
+				container.innerHTML = '';
+				movies.forEach(movie => {
+					const card = document.createElement('div');
+					card.className = 'movie-card';
+					const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+					const title = movie.title || 'Unknown';
+					const date = movie.release_date ? movie.release_date.split('-')[0] : 'Unknown';
+					
+					let poster = 'https://via.placeholder.com/160x240/000000/00f3ff?text=No+Image';
+					if (movie.poster_path) poster = `/api/image?url=${encodeURIComponent(TMDB_IMAGE_BASE + movie.poster_path)}`;
+
+					card.onclick = () => {
+						viewport.style.display = 'block';
+						closeBtn.style.display = 'block';
+						addressBar.value = `https://player.videasy.net/movie/${movie.id}`;
+						searchForm.dispatchEvent(new Event('submit', { cancelable: true }));
+					};
+
+					card.innerHTML = `
+						<div class="poster-wrapper">
+							<img src="${poster}" alt="${title}" loading="lazy">
+							<div class="movie-rating">${rating}</div>
+						</div>
+						<div class="movie-info">
+							<div class="movie-title" title="${title}">${title}</div>
+							<div class="movie-date">${date}</div>
+						</div>
+					`;
+					container.appendChild(card);
+				});
+			} else {
+				container.innerHTML = '<div style="padding:20px; color:var(--text-muted); grid-column:1/-1; text-align:center;">NO SAFE RESULTS FOUND</div>';
+			}
+		}
+
+        async function checkRatingIsSafe(movieId) {
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/release_dates?api_key=${TMDB_API_KEY}`);
+                const data = await res.json();
+                const usRelease = data.results?.find(r => r.iso_3166_1 === 'US');
+                if (!usRelease) return true; 
+                for (let release of usRelease.release_dates) {
+                    if (release.certification === 'R' || release.certification === 'NC-17') {
+                        return false; 
+                    }
+                }
+                return true; 
+            } catch (e) {
+                return true; 
+            }
+        }
+
+		async function fetchTrending() {
+			const container = document.getElementById('tmdb-list');
+            container.innerHTML = '<div style="padding:20px; color:var(--text-muted); grid-column:1/-1; text-align:center;">FETCHING SAFE CONTENT...</div>';
+			try {
+				const response = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&certification_country=US&certification.lte=PG-13&sort_by=popularity.desc&include_adult=false`);
+				const data = await response.json();
+				renderMovies(data.results);
+			} catch (error) { container.innerHTML = '<div style="padding:20px; color:#ff4a4a; grid-column:1/-1; text-align:center;">CONNECTION FAILED</div>'; }
+		}
+
+		async function searchMovies(query) {
+			const container = document.getElementById('tmdb-list');
+			if (!query) { fetchTrending(); return; }
+			container.innerHTML = '<div style="padding:20px; color:var(--accent-primary); grid-column:1/-1; text-align:center;">SEARCHING & FILTERING EXPLICIT CONTENT...</div>';
+			try {
+				const response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&include_adult=false`);
+				const data = await response.json();
+                
+                const ratingChecks = await Promise.all(data.results.map(m => checkRatingIsSafe(m.id)));
+                const safeMovies = data.results.filter((m, index) => ratingChecks[index]);
+
+				renderMovies(safeMovies);
+			} catch (error) { container.innerHTML = '<div style="padding:20px; color:#ff4a4a; grid-column:1/-1; text-align:center;">SEARCH FAILED</div>'; }
+		}
+
+		const searchInput = document.getElementById('movie-search');
+		searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchMovies(searchInput.value); });
+		searchInput.addEventListener('input', (e) => { if (e.target.value === '') fetchTrending(); });
+
+		fetchTrending();
+	</script>
+</body>
+</html>

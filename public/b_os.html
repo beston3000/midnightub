@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Midnight BR0WSER // OS</title>
+	<link rel="stylesheet" href="index.css" />
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" src="midnight-core.js"></script>
+	<script src="/scram/scramjet.all.js"></script>
+	<script src="baremux/index.js" defer></script>
+	<script src="epoxy/index.js" defer></script>
+	<script src="register-sw.js" defer></script>
+	<script src="search.js" defer></script>
+	<script src="index.js" defer></script>
+
+	<style>
+		:root {
+			--accent-primary: #00f3ff;
+			--text-main: #e0f7fa;
+			--text-muted: #627c85;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			height: 100vh;
+			background-color: transparent;
+			color: var(--text-main);
+			font-family: 'Rajdhani', sans-serif;
+			overflow: hidden;
+            display: flex;
+            flex-direction: column;
+		}
+
+        .app { transition: filter 0.3s; display: flex; flex-direction: column; height: 100%; }
+        body.logged-out .app { filter: blur(8px) brightness(0.4); pointer-events: none; }
+
+		/* Browser Controls */
+		.browser-controls {
+			padding: 10px 15px;
+			background: rgba(10, 15, 30, 0.8);
+			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+			display: flex; gap: 10px; align-items: center;
+            backdrop-filter: blur(10px);
+		}
+
+		.navbtns { display: flex; gap: 5px; }
+		.navbtn {
+			width: 36px; height: 36px; display: grid; place-items: center;
+			background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.2);
+			color: var(--accent-primary); border-radius: 50%; /* Bubbly */
+			cursor: pointer; transition: all 0.2s; font-size: 18px;
+		}
+		.navbtn:hover { background: rgba(0, 243, 255, 0.15); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
+
+		#sj-form { flex: 1; display: flex; }
+		#sj-address {
+			width: 100%; height: 36px;
+			background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1);
+			color: #fff; font-family: 'Space Grotesk', monospace; padding: 0 20px;
+			border-radius: 18px; /* Bubbly Pill */
+			outline: none; transition: all 0.3s;
+		}
+		#sj-address:focus { border-color: var(--accent-primary); box-shadow: 0 0 15px rgba(0, 243, 255, 0.15); }
+
+		/* Tabs */
+		.tabs-bar {
+			display: flex; align-items: center; gap: 5px;
+			padding: 5px 15px; background: rgba(10, 15, 30, 0.8);
+			border-bottom: 1px solid rgba(0, 243, 255, 0.15); overflow-x: auto;
+		}
+
+		.tab {
+			display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+			background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+			color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer;
+			border-radius: 12px; transition: all 0.2s;
+		}
+		.tab:hover { background: rgba(255, 255, 255, 0.08); }
+		.tab.active { background: rgba(0, 243, 255, 0.1); border-color: var(--accent-primary); color: var(--accent-primary); }
+		.tab .close { font-size: 10px; margin-left: auto; opacity: 0.7; }
+		.tab .close:hover { opacity: 1; color: #fff; }
+		.tab.add { width: 30px; padding: 0; justify-content: center; font-size: 16px; color: var(--accent-primary); border-radius: 50%; }
+
+		/* Viewport */
+		.viewport { flex: 1; position: relative; background: transparent; }
+		.view { position: absolute; inset: 0; display: none; }
+		.view.active { display: block; }
+		.frame-host { width: 100%; height: 100%; border: none; background: #fff; }
+
+		/* New Tab Page */
+		.newtab { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+		.nt-card {
+			width: min(600px, 90vw); padding: 40px;
+			background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(255,255,255,0.05);
+			backdrop-filter: blur(15px); text-align: center; border-radius: 24px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+		}
+		.nt-card h1 { font-family: 'Orbitron'; color: var(--accent-primary); margin: 0 0 10px; font-size: 32px; text-shadow: 0 0 10px rgba(0,243,255,0.3);}
+		.nt-card p { color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; font-size: 16px; }
+		#sj-error, #sj-error-code { display: none; }
+	</style>
+</head>
+<body class="logged-out" data-mode="browser">
+	<div class="app">
+		<div class="browser-controls">
+			<div class="navbtns" aria-label="Navigation controls">
+				<button class="navbtn" id="navBack" title="Back">⟵</button>
+				<button class="navbtn" id="navForward" title="Forward">⟶</button>
+				<button class="navbtn" id="navReload" title="Reload">⟳</button>
+			</div>
+			<form id="sj-form">
+				<input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
+				<input id="sj-address" type="text" placeholder="Search or enter URL..." autocomplete="off" />
+			</form>
+		</div>
+
+		<div class="tabs-bar" id="tabs">
+			<div class="tab active" data-id="1">
+				<span class="label">New Tab</span>
+				<span class="close" title="Close">✕</span>
+			</div>
+			<div class="tab add" id="addTab" title="New Tab">+</div>
+		</div>
+
+		<div class="viewport" id="views">
+			<div class="view active" data-id="1">
+				<div class="newtab">
+					<div class="nt-card">
+						<h1>Midnight Proxy</h1>
+						<p>Secure connection established. Tabs are isolated.</p>
+					</div>
+				</div>
+				<div class="frame-host" hidden></div>
+			</div>
+		</div>
+		<p id="sj-error"></p>
+		<pre id="sj-error-code"></pre>
+	</div>
+</body>
+</html>

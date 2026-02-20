@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+    <title>Midnight OS // v1.1</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+
+    <script type="module" src="midnight-core.js"></script>
+
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="baremux/index.js" defer></script>
+    <script src="epoxy/index.js" defer></script>
+    <script src="register-sw.js" defer></script>
+
+    <style>
+        :root {
+            --bg-color: #030508;
+            --accent-primary: #00f3ff;
+            --accent-secondary: #bc13fe;
+            --text-main: #e0f7fa;
+            --text-muted: #627c85;
+            --window-bg: rgba(10, 15, 30, 0.85);
+            --taskbar-bg: rgba(5, 8, 16, 0.95);
+            --error: #ff4a4a;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND FX --- */
+        #starfield { position: fixed; inset: 0; z-index: -2; }
+        .scanlines { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: -1; }
+
+        /* OS BLUR WHEN LOGGED OUT */
+        #desktop, #taskbar { transition: filter 0.5s; }
+        body.logged-out #desktop, body.logged-out #taskbar { filter: blur(10px) brightness(0.3); pointer-events: none; }
+
+        /* --- DESKTOP AREA --- */
+        #desktop { flex: 1; position: relative; overflow: hidden; }
+
+        /* --- OS WINDOW SYSTEM --- */
+        .os-window {
+            position: absolute; top: 50px; left: 50px;
+            width: 800px; height: 500px;
+            background: var(--window-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            display: flex; flex-direction: column;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 243, 255, 0.1);
+            border-radius: 16px; 
+            overflow: hidden;
+            min-width: 350px; min-height: 250px;
+        }
+
+        .window-header {
+            height: 40px; background: rgba(0, 0, 0, 0.6);
+            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; cursor: grab;
+        }
+        .window-header:active { cursor: grabbing; }
+
+        .window-title { font-family: "Orbitron", sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--accent-primary); pointer-events: none; text-shadow: 0 0 5px rgba(0,243,255,0.5);}
+
+        .window-controls { display: flex; gap: 8px; }
+        .win-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
+        .win-close { background: #ff4a4a; opacity: 0.7; }
+        .win-close:hover { opacity: 1; box-shadow: 0 0 10px #ff4a4a; }
+
+        .window-body { flex: 1; position: relative; background: transparent; }
+        .window-body iframe { width: 100%; height: 100%; border: none; background: transparent; }
+
+        /* RESIZE HANDLE */
+        .resize-handle {
+            position: absolute; bottom: 0; right: 0;
+            width: 20px; height: 20px; cursor: se-resize; z-index: 20;
+        }
+        .resize-handle::after {
+            content: ''; position: absolute; bottom: 6px; right: 6px;
+            width: 8px; height: 8px;
+            border-right: 2px solid rgba(255,255,255,0.3);
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        .resize-handle:hover::after { border-color: var(--accent-primary); }
+
+        /* App-specific default sizes */
+        .os-window[data-app="chat"] { width: 400px; height: 650px; }
+        .os-window[data-app="music"] { width: 900px; height: 650px; }
+        .os-window[data-app="settings"] { width: 500px; height: 400px; }
+
+        /* --- TASKBAR --- */
+        #taskbar {
+            height: 60px; background: var(--taskbar-bg);
+            border-top: 1px solid rgba(0, 243, 255, 0.2);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; backdrop-filter: blur(20px); z-index: 9999;
+        }
+
+        .taskbar-left, .taskbar-center, .taskbar-right { display: flex; align-items: center; gap: 15px; }
+        .taskbar-center { position: absolute; left: 50%; transform: translateX(-50%); gap: 8px; }
+
+        .sys-logo { font-family: "Orbitron", sans-serif; font-weight: 900; font-size: 18px; color: var(--accent-secondary); text-shadow: 0 0 10px var(--accent-secondary); cursor: pointer; }
+
+        .app-icon {
+            width: 45px; height: 45px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent; border-radius: 12px;
+            display: grid; place-items: center; cursor: pointer; transition: 0.2s;
+            color: var(--text-muted); font-family: 'Orbitron'; font-size: 10px; text-transform: uppercase;
+        }
+        .app-icon:hover { background: rgba(0, 243, 255, 0.1); border-color: var(--accent-primary); color: var(--accent-primary); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,243,255,0.2);}
+
+        .sys-clock { font-family: 'Space Grotesk', monospace; font-size: 14px; color: var(--accent-primary); text-align: right; }
+    </style>
+</head>
+<body class="logged-out">
+
+    <canvas id="starfield"></canvas>
+    <div class="scanlines"></div>
+    <div id="desktop"></div>
+
+    <div id="taskbar">
+        <div class="taskbar-left">
+            <div class="sys-logo" onclick="window.doCoreLogout()" title="Disconnect Session">M_OS</div>
+        </div>
+
+        <div class="taskbar-center">
+            <div class="app-icon" onclick="WindowManager.launch('browser', 'BR0WSER', 'b_os.html')">WEB</div>
+            <div class="app-icon" onclick="WindowManager.launch('games', 'GAMES DB', 'g_os.html')">GAME</div>
+            <div class="app-icon" onclick="WindowManager.launch('apps', 'APPS DB', 'apps_os.html')">APPS</div>
+            <div class="app-icon" onclick="WindowManager.launch('movies', 'TMDB CINE', 'movies_os.html')">CINE</div>
+            <div class="app-icon" onclick="WindowManager.launch('shows', 'TMDB TV', 'shows_os.html')">TV</div>
+            <div class="app-icon" onclick="WindowManager.launch('music', 'SONIC UPLINK', 'music_os.html')">AUDIO</div>
+            <div class="app-icon" onclick="WindowManager.launch('chat', 'TERMINAL', 'chat_os.html')">CHAT</div>
+            <div class="app-icon" onclick="WindowManager.launch('settings', 'CONFIG', 'settings_os.html')" style="border-color: var(--text-muted)">CFG</div>
+            
+            <div class="app-icon" id="adminBtn" onclick="WindowManager.launch('admin', 'SYS ADMIN', 'admin_os.html')" style="display: none; border-color: var(--error); color: var(--error);">ADM</div>
+        </div>
+
+        <div class="taskbar-right">
+            <div class="sys-clock" id="sysClock">00:00:00<br><span style="font-size:10px; color:var(--text-muted)">SYS.ONLINE</span></div>
+        </div>
+    </div>
+
+    <script>
+        const WindowManager = {
+            desktop: document.getElementById('desktop'),
+            zIndex: 100,
+            activeWindows: {},
+
+            launch: function(appId, title, url) {
+                if (this.activeWindows[appId]) {
+                    this.bringToFront(this.activeWindows[appId]);
+                    return;
+                }
+
+                const win = document.createElement('div');
+                win.className = 'os-window';
+                win.dataset.app = appId;
+                this.zIndex++;
+                win.style.zIndex = this.zIndex;
+                
+                const offset = Object.keys(this.activeWindows).length * 30;
+                win.style.top = `${50 + offset}px`;
+                win.style.left = `${100 + offset}px`;
+
+                win.innerHTML = `
+                    <div class="window-header" onmousedown="WindowManager.startDrag(event, this.parentElement)">
+                        <div class="window-title">${title}</div>
+                        <div class="window-controls">
+                            <button class="win-btn win-close" onmousedown="event.stopPropagation()" onclick="WindowManager.close('${appId}')"></button>
+                        </div>
+                    </div>
+                    <div class="window-body">
+                        <iframe src="${url}"></iframe>
+                        <div class="resize-handle" onmousedown="WindowManager.startResize(event, this.parentElement.parentElement)"></div>
+                    </div>
+                `;
+
+                win.addEventListener('mousedown', () => this.bringToFront(win));
+                this.desktop.appendChild(win);
+                this.activeWindows[appId] = win;
+            },
+
+            close: function(appId) {
+                if (this.activeWindows[appId]) {
+                    this.activeWindows[appId].remove();
+                    delete this.activeWindows[appId];
+                }
+            },
+
+            bringToFront: function(winElement) {
+                this.zIndex++;
+                winElement.style.zIndex = this.zIndex;
+            },
+
+            action: null, 
+            target: null,
+            startX: 0, startY: 0,
+            startW: 0, startH: 0,
+
+            createGlass: function(cursorType) {
+                const glass = document.createElement('div');
+                glass.id = 'action-glass';
+                glass.style.cssText = `position:fixed; inset:0; z-index:99999; cursor:${cursorType};`;
+                document.body.appendChild(glass);
+            },
+
+            removeGlass: function() {
+                const glass = document.getElementById('action-glass');
+                if (glass) glass.remove();
+            },
+
+            startDrag: function(e, winElement) {
+                this.action = 'drag';
+                this.target = winElement;
+                this.bringToFront(winElement);
+                
+                const rect = winElement.getBoundingClientRect();
+                this.startX = e.clientX - rect.left;
+                this.startY = e.clientY - rect.top;
+                this.createGlass('grabbing');
+            },
+
+            startResize: function(e, winElement) {
+                e.stopPropagation(); 
+                this.action = 'resize';
+                this.target = winElement;
+                this.bringToFront(winElement);
+                
+                this.startX = e.clientX;
+                this.startY = e.clientY;
+                const rect = winElement.getBoundingClientRect();
+                this.startW = rect.width;
+                this.startH = rect.height;
+                this.createGlass('se-resize');
+            },
+
+            doAction: function(e) {
+                if (!this.action || !this.target) return;
+                
+                if (this.action === 'drag') {
+                    let newX = e.clientX - this.startX;
+                    let newY = e.clientY - this.startY;
+                    if (newY < 0) newY = 0; 
+                    this.target.style.left = `${newX}px`;
+                    this.target.style.top = `${newY}px`;
+                } 
+                else if (this.action === 'resize') {
+                    let newW = this.startW + (e.clientX - this.startX);
+                    let newH = this.startH + (e.clientY - this.startY);
+                    if (newW < 350) newW = 350;
+                    if (newH < 250) newH = 250;
+                    this.target.style.width = `${newW}px`;
+                    this.target.style.height = `${newH}px`;
+                }
+            },
+
+            stopAction: function() {
+                this.action = null;
+                this.target = null;
+                this.removeGlass();
+            }
+        };
+
+        document.addEventListener('mousemove', (e) => WindowManager.doAction(e));
+        document.addEventListener('mouseup', () => WindowManager.stopAction());
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('sysClock').innerHTML = `${now.toLocaleTimeString('en-US', { hour12: false })}<br><span style="font-size:10px; color:var(--text-muted)">SYS.ONLINE</span>`;
+        }, 1000);
+
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+        function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+        window.addEventListener('resize', resize); resize();
+        class Star {
+            constructor() { this.init(); }
+            init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; this.color = Math.random()>0.8?'#bc13fe':'#00f3ff'; }
+            update() { this.z -= 2; if(this.z <= 0) { this.init(); this.z = width; } }
+            draw() {
+                const sx = (this.x/this.z)*width + width/2; const sy = (this.y/this.z)*height + height/2;
+                const r = (1 - this.z/width)*2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0,r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+            }
+        }
+        for(let i=0; i<100; i++) stars.push(new Star());
+        function animate() {
+            ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height);
+            stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
