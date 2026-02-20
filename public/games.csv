@@ -49,7 +49,7 @@ doge2048,Doge 2048,./games/doge2048/index.html,local
 edgesurf,Edge Surf,./games/edgesurf/index.html,local
 garfield2048v2,Garfield 2048 V2,./games/garfield2048/index.html,local
 spacewaves,Space Waves,./games/spacewaves/index.html,local
-survivalrace,Survival Race,https://survivalrace2.io/embed/survival-race,online
+survivalrace,Survival Race,./games/survivalrace/index.html,local
 geometrydashlite,Geometry Dash : Lite,./games/geometrydashlight/index.html,local
 getyoked,Get Yoked,./games/getyoked/index.html,local
 fnae,Five Nights At Epstien's,./games/fnae/index.html,local
