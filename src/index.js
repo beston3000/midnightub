@@ -4,8 +4,8 @@ import { hostname } from "node:os";
 import { spawn } from "node:child_process";
 import https from "node:https";
 import http from "node:http";
-import fs from "node:fs";       // Added for Wallpaper Scanner
-import path from "node:path";   // Added for Wallpaper Scanner
+import fs from "node:fs";       
+import path from "node:path";   
 import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
@@ -33,7 +33,8 @@ const fastify = Fastify({
 		return createServer()
 			.on("request", (req, res) => {
 				res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-				res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+				// FIXED: Swapped 'require-corp' to 'credentialless' so Firebase isn't blocked!
+				res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
 				handler(req, res);
 			})
 			.on("upgrade", (req, socket, head) => {
