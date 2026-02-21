@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0, shrink-to-fit=no" />
+  <title>Player // Midnight OS</title>
+
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="baremux/index.js" defer></script>
+  <script src="epoxy/index.js" defer></script>
+  <script src="register-sw.js" defer></script>
+  <script src="search.js" defer></script>
+  
+  <script>
+    (() => {
+      const p = new URLSearchParams(location.search);
+      const hasLegacy = p.has("game") || p.has("app");
+      const hasNew = p.has("type") && p.has("id");
+      if (!hasLegacy && hasNew) {
+        const type = (p.get("type") || "games").toLowerCase();
+        const id = p.get("id") || "";
+        const np = new URLSearchParams();
+        if (type === "apps") np.set("app", id);
+        else np.set("game", id);
+        history.replaceState(null, "", location.pathname + "?" + np.toString());
+      }
+    })();
+  </script>
+  
+  <script src="play.js" defer></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent-primary: #00f3ff;
+      --accent-secondary: #bc13fe;
+      --text-main: #e0f7fa;
+      --text-muted: #627c85;
+      --error: #ff4a4a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text-main);
+      background-color: transparent;
+      overflow: hidden;
+    }
+
+    /* GHOST UI: Hidden elements required by play.js so it doesn't crash */
+    #ghost-ui { display: none !important; }
+
+    /* The main container for the proxy iframe */
+    #gameHost {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      position: relative;
+    }
+
+    /* Loading Screen (Bubbly Theme) */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 8, 16, 0.95);
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .loading-card {
+      padding: 40px;
+      text-align: center;
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      background: rgba(10, 15, 30, 0.8);
+      border-radius: 24px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 243, 255, 0.1);
+    }
+
+    .loading-card h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--accent-primary);
+      margin: 0 0 10px;
+      animation: pulse 1.5s infinite;
+      letter-spacing: 2px;
+    }
+
+    .loading-card p {
+        color: var(--text-muted);
+        margin: 0;
+        font-family: 'Space Grotesk';
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; text-shadow: 0 0 15px var(--accent-primary); }
+      50% { opacity: 0.5; text-shadow: none; }
+    }
+
+    /* Error Display */
+    #sj-error { color: var(--error); font-family: 'Orbitron'; font-weight: bold; font-size: 18px; text-align: center; margin-top: 20px;}
+    #sj-error-code { color: var(--text-muted); font-family: monospace; text-align: center; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;}
+
+    /* Bottom Control Dock */
+    .control-dock {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(10, 15, 30, 0.85);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 30px;
+        padding: 8px 15px;
+        display: flex;
+        gap: 10px;
+        backdrop-filter: blur(15px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        z-index: 20;
+        opacity: 0.3;
+        transition: opacity 0.3s ease;
+    }
+
+    .control-dock:hover {
+        opacity: 1;
+    }
+
+    .pillBtn {
+      height: 36px;
+      padding: 0 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 18px;
+    }
+
+    .pillBtn:hover {
+      background: rgba(0, 243, 255, 0.1);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+  </style>
+</head>
+
+<body>
+  
+  <div id="ghost-ui">
+      <img id="gameIcon" src="sj.png" alt="Icon" />
+      <span id="gameTitle">SYSTEM</span>
+      <button id="navBack"></button>
+      <button id="navForward"></button>
+      <form id="sj-form">
+          <input id="sj-search-engine" value="https://www.google.com/search?q=%s" />
+          <input id="sj-address" />
+      </form>
+  </div>
+
+  <div id="gameHost"></div>
+
+  <div class="overlay" id="loading">
+    <div class="loading-card">
+      <h1>INITIALIZING</h1>
+      <p>Bypassing firewalls & securing connection...</p>
+      <p id="sj-error"></p>
+      <pre id="sj-error-code"></pre>
+    </div>
+  </div>
+
+  <div class="control-dock">
+    <button id="navGamesOS" class="pillBtn">⟵ BACK</button>
+    <button id="navReload" class="pillBtn">RELOAD</button>
+    <button id="navFull" class="pillBtn" style="border-color: var(--accent-primary); color: var(--accent-primary);">FULLSCREEN</button>
+  </div>
+
+  <script>
+    // Custom OS Back Button Logic (Replaces the legacy gamesBtn logic)
+    document.getElementById('navGamesOS').addEventListener('click', () => {
+        const p = new URLSearchParams(location.search);
+        // Navigate back to the OS-ified database files!
+        location.href = p.has('app') ? 'apps_os.html' : 'g_os.html';
+    });
+  </script>
+
+</body>
+</html>

@@ -188,7 +188,7 @@
         for (const g of list) {
           const a = document.createElement("a");
           a.className = "card";
-          a.href = `play.html?type=games&id=${encodeURIComponent(g.id)}`;
+          a.href = `play_os.html?type=games&id=${encodeURIComponent(g.id)}`;
           a.title = `Initialize ${g.gameName}`;
           a.innerHTML = `
             <div class="thumb"><img alt="${esc(g.gameName)}" src="${esc(g.gameIcon || "")}"></div>

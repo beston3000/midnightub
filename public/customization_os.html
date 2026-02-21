@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Customization // Midnight OS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script type="module" src="midnight-core.js"></script>
+
+    <style>
+        :root {
+            --accent-primary: #00f3ff;
+            --accent-secondary: #bc13fe;
+            --text-main: #e0f7fa;
+            --text-muted: #627c85;
+        }
+
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.2); border-radius: 10px; }
+
+        body { 
+            margin: 0; height: 100vh; font-family: 'Rajdhani', sans-serif; 
+            background-color: transparent; color: var(--text-main); 
+            overflow-y: auto; overflow-x: hidden;
+        }
+
+        main { padding: 30px; transition: filter 0.3s; max-width: 800px; margin: 0 auto; }
+        body.logged-out main { filter: blur(8px); pointer-events: none; }
+
+        .header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 30px; }
+        h1 { margin: 0 0 5px; font-family: "Orbitron"; font-size: 28px; color: var(--accent-primary); letter-spacing: 1px; }
+        p { margin: 0; color: var(--text-muted); font-size: 15px; font-weight: 600;}
+
+        .card {
+            background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 25px; margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: all 0.3s;
+        }
+        .card:hover { background: rgba(15, 20, 35, 0.8); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .card h2 { margin: 0 0 15px; font-family: 'Orbitron'; font-size: 18px; letter-spacing: 1px; color: var(--accent-secondary); }
+
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 15px; }
+        .theme-btn {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--text-muted); border-radius: 12px;
+            padding: 15px; color: var(--text-main); font-family: 'Orbitron'; font-size: 11px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .theme-btn:hover { border-color: var(--accent-primary); background: rgba(255,255,255,0.05); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        .theme-preview { display: flex; gap: 5px; }
+        .theme-dot { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 2;}
+
+        .static-btn { height: 100px; padding: 0; justify-content: center; border-color: rgba(255,255,255,0.1); }
+        .static-btn .img-label {
+            background: rgba(0,0,0,0.7); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
+            z-index: 2; backdrop-filter: blur(2px); transition: 0.3s; padding: 5px; word-break: break-word;
+        }
+        .static-btn:hover .img-label { background: rgba(0,0,0,0.4); backdrop-filter: none; }
+    </style>
+</head>
+<body class="logged-out">
+    <main>
+        <div class="header">
+            <h1>APPEARANCE</h1>
+            <p>Customize your operating system visuals.</p>
+        </div>
+
+        <div class="card">
+            <h2>DYNAMIC WALLPAPERS</h2>
+            <p style="color:var(--text-muted);">Select a live-rendered canvas to run on your desktop. Reacts to Theme changes.</p>
+            <div class="theme-grid">
+                <button class="theme-btn" onclick="window.top.setWallpaper('geometric')" style="border-color: var(--accent-primary);">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:var(--accent-primary);">hub</span>PLEXUS NETWORK
+                </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('starfield')" style="border-color: var(--accent-secondary);">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:var(--accent-secondary);">star</span>DEEP SPACE
+                </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('matrix')" style="border-color: #00ff41;">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#00ff41;">data_object</span>DIGITAL RAIN
+                </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('waves')" style="border-color: #ff00c8;">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#ff00c8;">waves</span>NEON WAVES
+                </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('hyperspace')" style="border-color: #ffffff;">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#ffffff;">fast_forward</span>HYPERSPACE
+                </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('synthwave')" style="border-color: #ffd700;">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#ffd700;">grid_on</span>SYNTHWAVE
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>STATIC WALLPAPERS</h2>
+            <p style="color:var(--text-muted);">Automatically scanning /wallpapers/ directory...</p>
+            <div class="theme-grid" id="staticGrid">
+                </div>
+        </div>
+
+        <div class="card">
+            <h2>ENVIRONMENT THEMES</h2>
+            <p style="color:var(--text-muted);">Select a color protocol to update the entire OS and live wallpaper instantly.</p>
+            <div class="theme-grid">
+                <button class="theme-btn" onclick="window.applyMidnightTheme('midnight')"><div class="theme-preview"><div class="theme-dot" style="background: #00f3ff;"></div><div class="theme-dot" style="background: #bc13fe;"></div></div>MIDNIGHT</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('matrix')"><div class="theme-preview"><div class="theme-dot" style="background: #00ff41;"></div><div class="theme-dot" style="background: #008f11;"></div></div>MATRIX</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('bloodmoon')"><div class="theme-preview"><div class="theme-dot" style="background: #ff2a2a;"></div><div class="theme-dot" style="background: #ff8c00;"></div></div>BLOOD MOON</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('vaporwave')"><div class="theme-preview"><div class="theme-dot" style="background: #ff00c8;"></div><div class="theme-dot" style="background: #00f3ff;"></div></div>VAPORWAVE</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('solar')"><div class="theme-preview"><div class="theme-dot" style="background: #ffd700;"></div><div class="theme-dot" style="background: #ff8c00;"></div></div>SOLAR FLARE</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('frost')"><div class="theme-preview"><div class="theme-dot" style="background: #ffffff;"></div><div class="theme-dot" style="background: #00f3ff;"></div></div>FROSTBITE</button>
+                
+                <button class="theme-btn" onclick="window.applyMidnightTheme('camden')"><div class="theme-preview"><div class="theme-dot" style="background: #ff9ebd;"></div><div class="theme-dot" style="background: #4a2511;"></div></div>CAMDEN BACON</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('cyberpunk')"><div class="theme-preview"><div class="theme-dot" style="background: #fcee0a;"></div><div class="theme-dot" style="background: #ff003c;"></div></div>CYBERPUNK</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('dracula')"><div class="theme-preview"><div class="theme-dot" style="background: #ff79c6;"></div><div class="theme-dot" style="background: #bd93f9;"></div></div>DRACULA</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('ocean')"><div class="theme-preview"><div class="theme-dot" style="background: #00b4d8;"></div><div class="theme-dot" style="background: #03045e;"></div></div>DEEP OCEAN</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('forest')"><div class="theme-preview"><div class="theme-dot" style="background: #aacc00;"></div><div class="theme-dot" style="background: #2d6a4f;"></div></div>FOREST</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('outrun')"><div class="theme-preview"><div class="theme-dot" style="background: #ea00d9;"></div><div class="theme-dot" style="background: #711c91;"></div></div>OUTRUN</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('gold')"><div class="theme-preview"><div class="theme-dot" style="background: #ffb703;"></div><div class="theme-dot" style="background: #fb8500;"></div></div>ROYAL GOLD</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('monochrome')"><div class="theme-preview"><div class="theme-dot" style="background: #ffffff;"></div><div class="theme-dot" style="background: #666666;"></div></div>MONOCHROME</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('toxic')"><div class="theme-preview"><div class="theme-dot" style="background: #ccff00;"></div><div class="theme-dot" style="background: #00ff00;"></div></div>TOXIC</button>
+                <button class="theme-btn" onclick="window.applyMidnightTheme('sunset')"><div class="theme-preview"><div class="theme-dot" style="background: #ff7f50;"></div><div class="theme-dot" style="background: #6a0572;"></div></div>SUNSET</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Scanner System: Fetches from the backend API, falls back if it fails
+        async function loadWallpapers() {
+            const grid = document.getElementById('staticGrid');
+            let files = ["1.png", "Paper.jpeg"]; // Hardcoded fallbacks
+            
+            try {
+                const res = await fetch('/api/wallpapers');
+                if (res.ok) {
+                    const data = await res.json();
+                    if(data.length > 0) files = data; // Overwrite fallback if API worked
+                }
+            } catch (e) {
+                console.log("No backend folder scanner found. Using defaults.");
+            }
+
+            grid.innerHTML = '';
+            files.forEach(img => {
+                const btn = document.createElement('button');
+                btn.className = 'theme-btn static-btn';
+                btn.style.backgroundImage = `url('wallpapers/${img}')`;
+                btn.style.backgroundSize = 'cover';
+                btn.style.backgroundPosition = 'center';
+                btn.onclick = () => window.top.setWallpaper(`image:${img}`);
+                
+                btn.innerHTML = `<div class="img-label">${img}</div>`;
+                grid.appendChild(btn);
+            });
+        }
+
+        loadWallpapers();
+    </script>
+</body>
+</html>

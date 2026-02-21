@@ -4,6 +4,8 @@ import { hostname } from "node:os";
 import { spawn } from "node:child_process";
 import https from "node:https";
 import http from "node:http";
+import fs from "node:fs";       // Added for Wallpaper Scanner
+import path from "node:path";   // Added for Wallpaper Scanner
 import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
@@ -46,6 +48,24 @@ fastify.register(fastifyStatic, { root: publicPath, decorateReply: true });
 fastify.register(fastifyStatic, { root: scramjetPath, prefix: "/scram/", decorateReply: false });
 fastify.register(fastifyStatic, { root: epoxyPath, prefix: "/epoxy/", decorateReply: false });
 fastify.register(fastifyStatic, { root: baremuxPath, prefix: "/baremux/", decorateReply: false });
+
+
+// --- API: WALLPAPERS ---
+fastify.get("/api/wallpapers", async (request, reply) => {
+    // Points to the "wallpapers" folder inside your public directory
+    const dir = path.join(publicPath, 'wallpapers'); 
+    
+    try {
+        const files = await fs.promises.readdir(dir);
+        // Filter for all image types (png, jpg, jpeg, gif, webp)
+        const images = files.filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f));
+        return images;
+    } catch (err) {
+        console.error("Wallpaper directory not found:", err.message);
+        return ["1.png", "Paper.jpeg"]; // Fallback if folder doesn't exist yet
+    }
+});
+
 
 // --- API: MOVIES (TMDb) ---
 

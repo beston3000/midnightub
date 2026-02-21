@@ -144,7 +144,7 @@
           a.className = "card";
           // Links to play.html. Note: play.html will load taking over the WHOLE browser tab, 
           // which is probably what you want for full-screen games/apps.
-          a.href = `play.html?app=${encodeURIComponent(a0.id || a0.appName || "")}`;
+          a.href = `play_os.html?app=${encodeURIComponent(a0.id || a0.appName || "")}`;
           a.title = `Run ${a0.appName}`;
           a.innerHTML = `
             <div class="thumb"><img alt="${esc(a0.appName)}" src="${esc(a0.appIcon || "")}"></div>

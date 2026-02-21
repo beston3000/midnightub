@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Settings // Midnight OS</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" src="midnight-core.js"></script>
+
     <style>
         :root {
             --accent-primary: #00f3ff;
@@ -16,60 +19,88 @@
 
         * { box-sizing: border-box; }
 
-        body { margin: 0; height: 100vh; font-family: 'Rajdhani', sans-serif; background-color: transparent; color: var(--text-main); overflow: hidden; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.2); border-radius: 10px; }
 
-        main { padding: 40px; transition: filter 0.3s; height: 100%; overflow-y: auto;}
+        body { 
+            margin: 0; 
+            height: 100vh; 
+            font-family: 'Rajdhani', sans-serif; 
+            background-color: transparent; 
+            color: var(--text-main); 
+            overflow-y: auto; 
+            overflow-x: hidden;
+        }
+
+        main { padding: 30px; transition: filter 0.3s; max-width: 800px; margin: 0 auto; }
         body.logged-out main { filter: blur(8px); pointer-events: none; }
 
-        h1 { margin: 0 0 10px; font-family: "Orbitron"; font-size: 32px; color: var(--accent-primary); }
-        p { margin: 0 0 30px; color: var(--text-muted); font-size: 16px;}
+        .header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 30px; }
+        h1 { margin: 0 0 5px; font-family: "Orbitron"; font-size: 28px; color: var(--accent-primary); letter-spacing: 1px; }
+        p { margin: 0; color: var(--text-muted); font-size: 15px; font-weight: 600;}
 
         .card {
-            background: rgba(15, 20, 30, 0.5); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px; padding: 30px; margin-bottom: 20px;
+            background: rgba(10, 15, 30, 0.6); 
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 25px; margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: all 0.3s;
         }
+        .card:hover { background: rgba(15, 20, 35, 0.8); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .card h2 { margin: 0 0 15px; font-family: 'Orbitron'; font-size: 18px; letter-spacing: 1px; }
 
         .btn {
-            height: 44px; padding: 0 25px; border-radius: 22px; border: none;
-            background: rgba(0, 243, 255, 0.1); color: var(--accent-primary);
-            font-family: 'Rajdhani'; font-weight: 700; font-size: 16px;
-            cursor: pointer; transition: 0.3s; border: 1px solid var(--accent-primary);
+            height: 40px; padding: 0 25px; border-radius: 20px; border: none;
+            font-family: 'Orbitron'; font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: 0.3s; border: 1px solid transparent; letter-spacing: 1px;
         }
-        .btn:hover { background: var(--accent-primary); color: #000; box-shadow: 0 0 15px var(--accent-primary); }
+        .btn-stealth { background: rgba(188, 19, 254, 0.1); color: var(--accent-secondary); border-color: var(--accent-secondary); }
+        .btn-stealth:hover { background: var(--accent-secondary); color: #000; box-shadow: 0 0 15px var(--accent-secondary); transform: scale(1.05); }
 
-        /* AUTH OVERLAY (Bubbly) */
-        #authOverlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); }
-        #authOverlay.hidden { opacity: 0; pointer-events: none; }
-        .auth-content { width: 380px; padding: 40px; background: rgba(10, 15, 25, 0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; display: flex; flex-direction: column; gap: 15px; }
-        .auth-view { display: none; }
-        .auth-view.active { display: block; }
-        .auth-content h2 { font-family: 'Orbitron'; color: var(--accent-primary); margin: 0 0 20px; }
-        .app-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; outline: none; font-family: 'Space Grotesk'; }
-        .app-input:focus { border-color: var(--accent-primary); }
-        .btn-auth { width: 100%; padding: 12px; border-radius: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-primary { background: var(--accent-primary); color: #000; }
-        .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; }
+        .btn-danger { background: rgba(255, 74, 74, 0.1); color: var(--error); border-color: var(--error); }
+        .btn-danger:hover { background: var(--error); color: #000; box-shadow: 0 0 15px var(--error); transform: scale(1.05); }
     </style>
 </head>
 <body class="logged-out">
 
     <main>
-        <h1>System Config</h1>
-        <p>Manage connection parameters and session state.</p>
-
-        <div class="card">
-            <h2 style="color:var(--accent-secondary); font-family: Orbitron; margin-top:0;">STEALTH MODE</h2>
-            <button class="btn" onclick="openGame()">Launch in Cloaked Tab</button>
+        <div class="header">
+            <h1>SYSTEM SECURITY</h1>
+            <p>Manage connection parameters and privacy settings.</p>
         </div>
 
         <div class="card">
-            <h2 style="color:var(--error); font-family: Orbitron; margin-top:0;">SESSION</h2>
-            <button class="btn" style="border-color:var(--error); color:var(--error);" onclick="doLogout()">Disconnect</button>
+            <h2 style="color:var(--accent-secondary);">STEALTH MODE</h2>
+            <p style="color:var(--text-muted); margin-bottom: 20px;">Deploy the OS interface into a hidden about:blank tab to evade history logging and monitoring. The current tab will self-destruct.</p>
+            <button class="btn btn-stealth" onclick="activateCloak()">ENGAGE CLOAKING</button>
+        </div>
+
+        <div class="card">
+            <h2 style="color:var(--error);">SESSION CONTROL</h2>
+            <p style="color:var(--text-muted); margin-bottom: 20px;">Sever connection to the Midnight server and clear local authentication tokens.</p>
+            <button class="btn btn-danger" onclick="disconnectSession()">DISCONNECT</button>
         </div>
     </main>
 
     <script type="module">
-        // Paste your Firebase Auth JS logic here
+        window.activateCloak = () => {
+            let win = window.open('about:blank', '_blank');
+            if(!win) { alert("Popup blocker prevented stealth mode. Please allow popups."); return; }
+            let iframe = win.document.createElement('iframe');
+            iframe.style.border = 'none'; iframe.style.width = '100%'; iframe.style.height = '100vh'; iframe.style.margin = '0';
+            iframe.src = window.top.location.href; 
+            win.document.body.style.margin = '0'; win.document.body.style.overflow = 'hidden'; win.document.body.appendChild(iframe);
+            win.document.title = "Classes";
+            let link = win.document.createElement('link'); link.rel = 'icon'; link.href = 'https://ssl.gstatic.com/classroom/favicon.png';
+            win.document.head.appendChild(link);
+            window.top.location.replace('https://classroom.google.com');
+        };
+
+        window.disconnectSession = () => {
+            if(confirm("TERMINATE SESSION?")) {
+                window.top.doCoreLogout();
+            }
+        };
     </script>
 </body>
 </html>

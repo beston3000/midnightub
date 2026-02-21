@@ -7,6 +7,9 @@
 	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
 	
     <script src="/scram/scramjet.all.js"></script>
+	<script src="baremux/index.js" defer></script>
+	<script src="epoxy/index.js" defer></script>
+	<script src="register-sw.js" defer></script>
 	<script src="search.js" defer></script>
 	<script src="index.js" defer></script>
 
@@ -33,7 +36,7 @@
 			overflow: hidden; display: flex; flex-direction: column;
 		}
 
-		/* Hidden elements required by Scramjet logic */
+		/* GHOST UI: HIDDEN BUT REQUIRED BY INDEX.JS */
 		.browser-controls, .tabs-bar { display: none !important; }
 		#sj-error, #sj-error-code { display: none; }
 
@@ -119,11 +122,26 @@
 	</style>
 </head>
 <body>
-    <form id="sj-form" style="display:none;">
-        <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
-        <input id="sj-address" type="text" />
-    </form>
 
+    <div class="browser-controls">
+        <div class="navbtns">
+            <button class="navbtn" id="navBack"></button>
+            <button class="navbtn" id="navForward"></button>
+            <button class="navbtn" id="navReload"></button>
+        </div>
+        <form id="sj-form">
+            <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
+            <input id="sj-address" type="text" />
+        </form>
+    </div>
+
+    <div class="tabs-bar" id="tabs">
+        <div class="tab active" data-id="1">
+            <span class="label">Proxy</span>
+            <span class="close">✕</span>
+        </div>
+        <div class="tab add" id="addTab">+</div>
+    </div>
     <button id="player-close">✕ Close Player</button>
 
     <div class="viewport" id="views">
@@ -154,7 +172,7 @@
 		closeBtn.onclick = () => {
 			viewport.style.display = 'none';
 			closeBtn.style.display = 'none';
-			const frameHost = document.querySelector('.frame-host');
+			const frameHost = document.querySelector('.view.active .frame-host');
 			if (frameHost) { frameHost.innerHTML = ''; frameHost.hidden = true; }
 		};
 
@@ -243,6 +261,43 @@
 		searchInput.addEventListener('input', (e) => { if (e.target.value === '') fetchTrending(); });
 
 		fetchTrending();
+	</script>
+
+    <script>
+		(function() {
+			const elementToObserve = document.querySelector('.viewport') || document.body;
+			const poisonWindow = (win) => {
+				if (!win) return;
+				try {
+					Object.defineProperty(win, 'open', { value: function() { return null; }, writable: false, configurable: false });
+					Object.defineProperty(win, 'location', { get: function() { return window.location; }, set: function(val) {}, configurable: false });
+				} catch(e) {}
+			};
+			const originalCreateElement = document.createElement;
+			document.createElement = function(tagName) {
+				const element = originalCreateElement.apply(document, arguments);
+				if (tagName.toLowerCase() === 'iframe') {
+					element.setAttribute('sandbox', 'allow-forms allow-scripts allow-same-origin allow-pointer-lock');
+					try {
+						Object.defineProperty(element, 'contentWindow', {
+							get: function() {
+								poisonWindow(this.contentDocument ? this.contentDocument.defaultView : null);
+								return this.contentDocument ? this.contentDocument.defaultView : null;
+							}, configurable: true
+						});
+					} catch(e) {}
+				}
+				return element;
+			};
+			const suffocate = (e) => {
+				const link = e.target.closest('a');
+				if (link && link.target === '_blank') { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }
+			};
+			window.addEventListener('click', suffocate, true);
+			window.addEventListener('mousedown', suffocate, true);
+			window.addEventListener('mouseup', suffocate, true);
+			window.addEventListener('pointerup', suffocate, true);
+		})();
 	</script>
 </body>
 </html>

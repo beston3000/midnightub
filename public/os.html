@@ -3,18 +3,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-    <title>Midnight OS // v1.1</title>
+    <title>Midnight OS // v1.2</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <script type="module" src="midnight-core.js"></script>
-
-    <script src="/scram/scramjet.all.js"></script>
-    <script src="baremux/index.js" defer></script>
-    <script src="epoxy/index.js" defer></script>
-    <script src="register-sw.js" defer></script>
 
     <style>
         :root {
@@ -42,14 +38,14 @@
         }
 
         /* --- BACKGROUND FX --- */
-        #starfield { position: fixed; inset: 0; z-index: -2; }
+        #static-bg { position: fixed; inset: 0; z-index: -3; background-size: cover; background-position: center; transition: background-image 0.5s ease-in-out; }
+        #bg-canvas { position: fixed; inset: 0; z-index: -2; }
         .scanlines { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: -1; }
 
         /* OS BLUR WHEN LOGGED OUT */
         #desktop, #taskbar { transition: filter 0.5s; }
         body.logged-out #desktop, body.logged-out #taskbar { filter: blur(10px) brightness(0.3); pointer-events: none; }
 
-        /* --- DESKTOP AREA --- */
         #desktop { flex: 1; position: relative; overflow: hidden; }
 
         /* --- OS WINDOW SYSTEM --- */
@@ -57,10 +53,10 @@
             position: absolute; top: 50px; left: 50px;
             width: 800px; height: 500px;
             background: var(--window-bg);
-            border: 1px solid rgba(0, 243, 255, 0.3);
+            border: 1px solid var(--accent-primary);
             display: flex; flex-direction: column;
             backdrop-filter: blur(15px);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 243, 255, 0.1);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 10px var(--accent-primary);
             border-radius: 16px; 
             overflow: hidden;
             min-width: 350px; min-height: 250px;
@@ -68,13 +64,13 @@
 
         .window-header {
             height: 40px; background: rgba(0, 0, 0, 0.6);
-            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; cursor: grab;
         }
         .window-header:active { cursor: grabbing; }
 
-        .window-title { font-family: "Orbitron", sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--accent-primary); pointer-events: none; text-shadow: 0 0 5px rgba(0,243,255,0.5);}
+        .window-title { font-family: "Orbitron", sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--accent-primary); pointer-events: none; text-shadow: 0 0 5px var(--accent-primary);}
 
         .window-controls { display: flex; gap: 8px; }
         .win-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
@@ -84,7 +80,6 @@
         .window-body { flex: 1; position: relative; background: transparent; }
         .window-body iframe { width: 100%; height: 100%; border: none; background: transparent; }
 
-        /* RESIZE HANDLE */
         .resize-handle {
             position: absolute; bottom: 0; right: 0;
             width: 20px; height: 20px; cursor: se-resize; z-index: 20;
@@ -98,39 +93,63 @@
         }
         .resize-handle:hover::after { border-color: var(--accent-primary); }
 
-        /* App-specific default sizes */
+        /* App Default Sizes */
         .os-window[data-app="chat"] { width: 400px; height: 650px; }
         .os-window[data-app="music"] { width: 900px; height: 650px; }
         .os-window[data-app="settings"] { width: 500px; height: 400px; }
+        .os-window[data-app="customization"] { width: 750px; height: 500px; }
 
         /* --- TASKBAR --- */
         #taskbar {
-            height: 60px; background: var(--taskbar-bg);
-            border-top: 1px solid rgba(0, 243, 255, 0.2);
+            height: 75px; 
+            background: var(--taskbar-bg);
+            border-top: 1px solid var(--accent-primary);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 20px; backdrop-filter: blur(20px); z-index: 9999;
         }
 
         .taskbar-left, .taskbar-center, .taskbar-right { display: flex; align-items: center; gap: 15px; }
-        .taskbar-center { position: absolute; left: 50%; transform: translateX(-50%); gap: 8px; }
+        .taskbar-center { position: absolute; left: 50%; transform: translateX(-50%); gap: 12px; }
 
-        .sys-logo { font-family: "Orbitron", sans-serif; font-weight: 900; font-size: 18px; color: var(--accent-secondary); text-shadow: 0 0 10px var(--accent-secondary); cursor: pointer; }
+        .sys-logo { font-family: "Orbitron", sans-serif; font-weight: 900; font-size: 20px; color: var(--accent-secondary); text-shadow: 0 0 10px var(--accent-secondary); cursor: pointer; }
 
         .app-icon {
-            width: 45px; height: 45px; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid transparent; border-radius: 12px;
+            width: 55px; height: 55px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent; border-radius: 14px;
             display: grid; place-items: center; cursor: pointer; transition: 0.2s;
-            color: var(--text-muted); font-family: 'Orbitron'; font-size: 10px; text-transform: uppercase;
+            color: var(--text-muted); 
         }
-        .app-icon:hover { background: rgba(0, 243, 255, 0.1); border-color: var(--accent-primary); color: var(--accent-primary); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,243,255,0.2);}
+        .app-icon .material-symbols-outlined { font-size: 28px; transition: text-shadow 0.2s; }
+        .app-icon:hover { 
+            background: rgba(0, 243, 255, 0.1); border-color: var(--accent-primary); 
+            color: var(--accent-primary); transform: translateY(-4px); box-shadow: 0 5px 15px var(--accent-primary);
+        }
+        .app-icon:hover .material-symbols-outlined { text-shadow: 0 0 10px var(--accent-primary); }
 
-        .sys-clock { font-family: 'Space Grotesk', monospace; font-size: 14px; color: var(--accent-primary); text-align: right; }
+        .sys-clock { font-family: 'Space Grotesk', monospace; font-size: 15px; color: var(--accent-primary); text-align: right; }
+
+        /* --- CHANGELOG MODAL --- */
+        .changelog-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(3, 5, 8, 0.8); backdrop-filter: blur(10px); transition: opacity 0.3s; }
+        .changelog-overlay.hidden { opacity: 0; pointer-events: none; }
+        .changelog-card { width: 500px; max-width: 90vw; background: var(--window-bg); border: 1px solid var(--accent-primary); border-radius: 16px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0, 243, 255, 0.1); font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; gap: 20px; transform: translateY(0); transition: transform 0.3s; }
+        .changelog-overlay.hidden .changelog-card { transform: translateY(20px); }
+        .changelog-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .changelog-header h2 { margin: 0; font-family: 'Orbitron'; font-size: 20px; color: var(--accent-primary); text-shadow: 0 0 10px var(--accent-primary); }
+        .version-badge { background: rgba(188, 19, 254, 0.2); color: var(--accent-secondary); border: 1px solid var(--accent-secondary); padding: 4px 8px; border-radius: 8px; font-weight: bold; font-family: 'Orbitron'; font-size: 12px; }
+        .changelog-body ul { margin: 0; padding-left: 20px; color: var(--text-main); font-size: 15px; line-height: 1.6; }
+        .changelog-body li { margin-bottom: 10px; }
+        .changelog-body strong { color: var(--accent-secondary); }
+        .changelog-btn { background: rgba(0, 243, 255, 0.1); color: var(--accent-primary); border: 1px solid var(--accent-primary); padding: 10px; border-radius: 12px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; outline: none;}
+        .changelog-btn:hover { background: var(--accent-primary); color: #000; box-shadow: 0 0 15px var(--accent-primary); }
+
     </style>
 </head>
 <body class="logged-out">
 
-    <canvas id="starfield"></canvas>
+    <div id="static-bg"></div>
+    <canvas id="bg-canvas"></canvas>
     <div class="scanlines"></div>
+    
     <div id="desktop"></div>
 
     <div id="taskbar">
@@ -139,16 +158,18 @@
         </div>
 
         <div class="taskbar-center">
-            <div class="app-icon" onclick="WindowManager.launch('browser', 'BR0WSER', 'b_os.html')">WEB</div>
-            <div class="app-icon" onclick="WindowManager.launch('games', 'GAMES DB', 'g_os.html')">GAME</div>
-            <div class="app-icon" onclick="WindowManager.launch('apps', 'APPS DB', 'apps_os.html')">APPS</div>
-            <div class="app-icon" onclick="WindowManager.launch('movies', 'TMDB CINE', 'movies_os.html')">CINE</div>
-            <div class="app-icon" onclick="WindowManager.launch('shows', 'TMDB TV', 'shows_os.html')">TV</div>
-            <div class="app-icon" onclick="WindowManager.launch('music', 'SONIC UPLINK', 'music_os.html')">AUDIO</div>
-            <div class="app-icon" onclick="WindowManager.launch('chat', 'TERMINAL', 'chat_os.html')">CHAT</div>
-            <div class="app-icon" onclick="WindowManager.launch('settings', 'CONFIG', 'settings_os.html')" style="border-color: var(--text-muted)">CFG</div>
+            <div class="app-icon" onclick="WindowManager.launch('browser', 'BR0WSER', 'b_os.html')" title="Web Browser"><span class="material-symbols-outlined">explore</span></div>
+            <div class="app-icon" onclick="WindowManager.launch('games', 'GAMES DB', 'g_os.html')" title="Games Database"><span class="material-symbols-outlined">sports_esports</span></div>
+            <div class="app-icon" onclick="WindowManager.launch('apps', 'APPS DB', 'apps_os.html')" title="Applications"><span class="material-symbols-outlined">grid_view</span></div>
+            <div class="app-icon" onclick="WindowManager.launch('movies', 'TMDB CINE', 'movies_os.html')" title="Movies (Cine_DB)"><span class="material-symbols-outlined">movie</span></div>
+            <div class="app-icon" onclick="WindowManager.launch('shows', 'TMDB TV', 'shows_os.html')" title="TV Shows"><span class="material-symbols-outlined">tv</span></div>
+            <div class="app-icon" onclick="WindowManager.launch('music', 'SONIC UPLINK', 'music_os.html')" title="Sonic Uplink (Music)"><span class="material-symbols-outlined">headphones</span></div>
+            <div class="app-icon" onclick="WindowManager.launch('chat', 'TERMINAL', 'chat_os.html')" title="Global Terminal"><span class="material-symbols-outlined">forum</span></div>
             
-            <div class="app-icon" id="adminBtn" onclick="WindowManager.launch('admin', 'SYS ADMIN', 'admin_os.html')" style="display: none; border-color: var(--error); color: var(--error);">ADM</div>
+            <div class="app-icon" onclick="WindowManager.launch('customization', 'APPEARANCE', 'customization_os.html')" title="Appearance & Wallpapers"><span class="material-symbols-outlined">palette</span></div>
+            
+            <div class="app-icon" onclick="WindowManager.launch('settings', 'CONFIG', 'settings_os.html')" style="border-color: rgba(255,255,255,0.1);" title="System Settings"><span class="material-symbols-outlined">settings</span></div>
+            <div class="app-icon" id="adminBtn" onclick="WindowManager.launch('admin', 'SYS ADMIN', 'admin_os.html')" style="display: none; border-color: var(--error); color: var(--error);" title="Admin Panel"><span class="material-symbols-outlined">admin_panel_settings</span></div>
         </div>
 
         <div class="taskbar-right">
@@ -156,125 +177,84 @@
         </div>
     </div>
 
+    <div id="changelogOverlay" class="changelog-overlay hidden">
+        <div class="changelog-card">
+            <div class="changelog-header">
+                <h2>SYSTEM UPDATE</h2>
+                <div class="version-badge">v1.2</div>
+            </div>
+            <div class="changelog-body">
+                <ul>
+                    <li><strong>Dynamic Wallpapers:</strong> Real-time rendered Plexus Network, Digital Rain, Neon Waves, and Hyperspace backgrounds.</li>
+                    <li><strong>Global Theming:</strong> Added 10+ new system-wide color protocols including <em>Camden Crispy Bacon</em>.</li>
+                    <li><strong>Customization App:</strong> A dedicated hub for managing UI appearance and background imagery.</li>
+                    <li><strong>Interface Upgrades:</strong> Expanded taskbar with Google Material Icons, perfectly centered hitboxes, and 12-hour clock formatting.</li>
+                    <li><strong>Performance:</strong> Resolved recursive proxy loops and stabilized frame initialization logic.</li>
+                </ul>
+            </div>
+            <button class="changelog-btn" onclick="closeChangelog()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
     <script>
-        const WindowManager = {
-            desktop: document.getElementById('desktop'),
-            zIndex: 100,
-            activeWindows: {},
+        // --- CHANGELOG LOGIC ---
+        const CURRENT_VERSION = 'v1.2'; // Change this number in the future to show a new changelog!
+        const changelogOverlay = document.getElementById('changelogOverlay');
 
-            launch: function(appId, title, url) {
-                if (this.activeWindows[appId]) {
-                    this.bringToFront(this.activeWindows[appId]);
-                    return;
+        window.closeChangelog = function() {
+            localStorage.setItem(`midnight_changelog_${CURRENT_VERSION}`, 'true');
+            changelogOverlay.classList.add('hidden');
+        };
+
+        // Watch the body class to see when the user successfully logs in
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    if (!document.body.classList.contains('logged-out')) {
+                        // User is logged in. Check if they need to see the changelog.
+                        if (!localStorage.getItem(`midnight_changelog_${CURRENT_VERSION}`)) {
+                            changelogOverlay.classList.remove('hidden');
+                        }
+                        observer.disconnect(); // Stop watching once handled
+                    }
                 }
+            });
+        });
+        observer.observe(document.body, { attributes: true });
 
+        // --- WINDOW MANAGER ---
+        const WindowManager = {
+            desktop: document.getElementById('desktop'), zIndex: 100, activeWindows: {},
+            launch: function(appId, title, url) {
+                if (this.activeWindows[appId]) { this.bringToFront(this.activeWindows[appId]); return; }
                 const win = document.createElement('div');
-                win.className = 'os-window';
-                win.dataset.app = appId;
-                this.zIndex++;
-                win.style.zIndex = this.zIndex;
-                
+                win.className = 'os-window'; win.dataset.app = appId;
+                this.zIndex++; win.style.zIndex = this.zIndex;
                 const offset = Object.keys(this.activeWindows).length * 30;
-                win.style.top = `${50 + offset}px`;
-                win.style.left = `${100 + offset}px`;
-
+                win.style.top = `${50 + offset}px`; win.style.left = `${100 + offset}px`;
                 win.innerHTML = `
                     <div class="window-header" onmousedown="WindowManager.startDrag(event, this.parentElement)">
                         <div class="window-title">${title}</div>
-                        <div class="window-controls">
-                            <button class="win-btn win-close" onmousedown="event.stopPropagation()" onclick="WindowManager.close('${appId}')"></button>
-                        </div>
+                        <div class="window-controls"><button class="win-btn win-close" onmousedown="event.stopPropagation()" onclick="WindowManager.close('${appId}')"></button></div>
                     </div>
-                    <div class="window-body">
-                        <iframe src="${url}"></iframe>
-                        <div class="resize-handle" onmousedown="WindowManager.startResize(event, this.parentElement.parentElement)"></div>
-                    </div>
+                    <div class="window-body"><iframe src="${url}"></iframe><div class="resize-handle" onmousedown="WindowManager.startResize(event, this.parentElement.parentElement)"></div></div>
                 `;
-
                 win.addEventListener('mousedown', () => this.bringToFront(win));
-                this.desktop.appendChild(win);
-                this.activeWindows[appId] = win;
+                this.desktop.appendChild(win); this.activeWindows[appId] = win;
             },
-
-            close: function(appId) {
-                if (this.activeWindows[appId]) {
-                    this.activeWindows[appId].remove();
-                    delete this.activeWindows[appId];
-                }
-            },
-
-            bringToFront: function(winElement) {
-                this.zIndex++;
-                winElement.style.zIndex = this.zIndex;
-            },
-
-            action: null, 
-            target: null,
-            startX: 0, startY: 0,
-            startW: 0, startH: 0,
-
-            createGlass: function(cursorType) {
-                const glass = document.createElement('div');
-                glass.id = 'action-glass';
-                glass.style.cssText = `position:fixed; inset:0; z-index:99999; cursor:${cursorType};`;
-                document.body.appendChild(glass);
-            },
-
-            removeGlass: function() {
-                const glass = document.getElementById('action-glass');
-                if (glass) glass.remove();
-            },
-
-            startDrag: function(e, winElement) {
-                this.action = 'drag';
-                this.target = winElement;
-                this.bringToFront(winElement);
-                
-                const rect = winElement.getBoundingClientRect();
-                this.startX = e.clientX - rect.left;
-                this.startY = e.clientY - rect.top;
-                this.createGlass('grabbing');
-            },
-
-            startResize: function(e, winElement) {
-                e.stopPropagation(); 
-                this.action = 'resize';
-                this.target = winElement;
-                this.bringToFront(winElement);
-                
-                this.startX = e.clientX;
-                this.startY = e.clientY;
-                const rect = winElement.getBoundingClientRect();
-                this.startW = rect.width;
-                this.startH = rect.height;
-                this.createGlass('se-resize');
-            },
-
+            close: function(appId) { if (this.activeWindows[appId]) { this.activeWindows[appId].remove(); delete this.activeWindows[appId]; } },
+            bringToFront: function(winElement) { this.zIndex++; winElement.style.zIndex = this.zIndex; },
+            action: null, target: null, startX: 0, startY: 0, startW: 0, startH: 0,
+            createGlass: function(cursorType) { const glass = document.createElement('div'); glass.id = 'action-glass'; glass.style.cssText = `position:fixed; inset:0; z-index:99999; cursor:${cursorType};`; document.body.appendChild(glass); },
+            removeGlass: function() { const glass = document.getElementById('action-glass'); if (glass) glass.remove(); },
+            startDrag: function(e, winElement) { this.action = 'drag'; this.target = winElement; this.bringToFront(winElement); const rect = winElement.getBoundingClientRect(); this.startX = e.clientX - rect.left; this.startY = e.clientY - rect.top; this.createGlass('grabbing'); },
+            startResize: function(e, winElement) { e.stopPropagation(); this.action = 'resize'; this.target = winElement; this.bringToFront(winElement); this.startX = e.clientX; this.startY = e.clientY; const rect = winElement.getBoundingClientRect(); this.startW = rect.width; this.startH = rect.height; this.createGlass('se-resize'); },
             doAction: function(e) {
                 if (!this.action || !this.target) return;
-                
-                if (this.action === 'drag') {
-                    let newX = e.clientX - this.startX;
-                    let newY = e.clientY - this.startY;
-                    if (newY < 0) newY = 0; 
-                    this.target.style.left = `${newX}px`;
-                    this.target.style.top = `${newY}px`;
-                } 
-                else if (this.action === 'resize') {
-                    let newW = this.startW + (e.clientX - this.startX);
-                    let newH = this.startH + (e.clientY - this.startY);
-                    if (newW < 350) newW = 350;
-                    if (newH < 250) newH = 250;
-                    this.target.style.width = `${newW}px`;
-                    this.target.style.height = `${newH}px`;
-                }
+                if (this.action === 'drag') { let newX = e.clientX - this.startX; let newY = e.clientY - this.startY; if (newY < 0) newY = 0; this.target.style.left = `${newX}px`; this.target.style.top = `${newY}px`; } 
+                else if (this.action === 'resize') { let newW = this.startW + (e.clientX - this.startX); let newH = this.startH + (e.clientY - this.startY); if (newW < 350) newW = 350; if (newH < 250) newH = 250; this.target.style.width = `${newW}px`; this.target.style.height = `${newH}px`; }
             },
-
-            stopAction: function() {
-                this.action = null;
-                this.target = null;
-                this.removeGlass();
-            }
+            stopAction: function() { this.action = null; this.target = null; this.removeGlass(); }
         };
 
         document.addEventListener('mousemove', (e) => WindowManager.doAction(e));
@@ -282,27 +262,198 @@
 
         setInterval(() => {
             const now = new Date();
-            document.getElementById('sysClock').innerHTML = `${now.toLocaleTimeString('en-US', { hour12: false })}<br><span style="font-size:10px; color:var(--text-muted)">SYS.ONLINE</span>`;
+            document.getElementById('sysClock').innerHTML = `${now.toLocaleTimeString('en-US', { hour12: true })}<br><span style="font-size:10px; color:var(--text-muted)">SYS.ONLINE</span>`;
         }, 1000);
 
-        const canvas = document.getElementById('starfield');
+        // --- DYNAMIC MULTI-WALLPAPER ENGINE ---
+        const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
-        let width, height, stars = [];
-        function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
-        window.addEventListener('resize', resize); resize();
+        const staticBg = document.getElementById('static-bg');
+        let width, height, particles = [];
+        
+        let matrixColumns = [];
+        let waveTime = 0;
+        
+        let themeColors = ['#00f3ff', '#bc13fe'];
+        setInterval(() => {
+            const style = getComputedStyle(document.documentElement);
+            themeColors[0] = style.getPropertyValue('--accent-primary').trim() || '#00f3ff';
+            themeColors[1] = style.getPropertyValue('--accent-secondary').trim() || '#bc13fe';
+        }, 500); 
+
+        function resize() { 
+            width = window.innerWidth; height = window.innerHeight; 
+            canvas.width = width; canvas.height = height; 
+            initBackground(); 
+        }
+        window.addEventListener('resize', resize);
+
         class Star {
             constructor() { this.init(); }
-            init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; this.color = Math.random()>0.8?'#bc13fe':'#00f3ff'; }
+            init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; this.color = Math.random() > 0.8 ? themeColors[1] : themeColors[0]; }
             update() { this.z -= 2; if(this.z <= 0) { this.init(); this.z = width; } }
+            draw() { const sx = (this.x/this.z)*width + width/2; const sy = (this.y/this.z)*height + height/2; const r = (1 - this.z/width)*2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0,r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
+        }
+
+        class PlexusNode {
+            constructor() {
+                this.x = Math.random() * width; this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() - 0.5) * 1.5;
+                this.radius = Math.random() * 2 + 1;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if(this.x < 0 || this.x > width) this.vx *= -1;
+                if(this.y < 0 || this.y > height) this.vy *= -1;
+            }
             draw() {
-                const sx = (this.x/this.z)*width + width/2; const sy = (this.y/this.z)*height + height/2;
-                const r = (1 - this.z/width)*2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0,r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctx.fillStyle = themeColors[0]; ctx.fill();
             }
         }
-        for(let i=0; i<100; i++) stars.push(new Star());
+
+        class WarpStar {
+            constructor() { this.init(); }
+            init() {
+                this.x = (Math.random() - 0.5) * width;
+                this.y = (Math.random() - 0.5) * height;
+                this.z = Math.random() * width;
+                this.color = Math.random() > 0.5 ? themeColors[0] : themeColors[1];
+            }
+            update() { this.z -= 15; if(this.z <= 0) this.init(); }
+            draw() {
+                let sx = (this.x / this.z) * width + width/2;
+                let sy = (this.y / this.z) * height + height/2;
+                let px = (this.x / (this.z + 15)) * width + width/2;
+                let py = (this.y / (this.z + 15)) * height + height/2;
+                ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy);
+                ctx.strokeStyle = this.color; ctx.lineWidth = (1 - this.z/width) * 4; ctx.stroke();
+            }
+        }
+
+        let currentWallpaper = localStorage.getItem('midnight_wallpaper') || 'geometric';
+        
+        window.setWallpaper = function(type) {
+            currentWallpaper = type;
+            localStorage.setItem('midnight_wallpaper', type);
+            
+            if (type.startsWith('image:')) {
+                const filename = type.split(':')[1];
+                staticBg.style.backgroundImage = `url('wallpapers/${filename}')`;
+                ctx.clearRect(0, 0, width, height); 
+            } else {
+                staticBg.style.backgroundImage = 'none';
+                initBackground();
+            }
+        };
+
+        function initBackground() {
+            particles = [];
+            matrixColumns = Array(Math.floor(width / 20)).fill(0);
+            
+            if (currentWallpaper === 'starfield') {
+                for(let i=0; i<150; i++) particles.push(new Star());
+            } else if (currentWallpaper === 'geometric') {
+                let numNodes = Math.floor((width * height) / 12000); 
+                if(numNodes > 100) numNodes = 100; 
+                for(let i=0; i<numNodes; i++) particles.push(new PlexusNode());
+            } else if (currentWallpaper === 'hyperspace') {
+                for(let i=0; i<200; i++) particles.push(new WarpStar());
+            }
+        }
+
+        resize(); 
+        window.setWallpaper(currentWallpaper);
+
         function animate() {
-            ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height);
-            stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
+            if (currentWallpaper.startsWith('image:')) return; 
+            
+            if (currentWallpaper === 'matrix') {
+                ctx.fillStyle = 'rgba(3, 5, 8, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = themeColors[0];
+                ctx.font = '15pt monospace';
+                matrixColumns.forEach((y, i) => {
+                    const text = String.fromCharCode(Math.random() * 128 + 1000);
+                    ctx.fillText(text, i * 20, y);
+                    if (y > height && Math.random() > 0.975) matrixColumns[i] = 0;
+                    else matrixColumns[i] = y + 20;
+                });
+                return;
+            }
+
+            if (currentWallpaper === 'waves') {
+                ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
+                ctx.fillRect(0, 0, width, height);
+                waveTime += 0.02;
+                for(let i=0; i<3; i++) {
+                    ctx.beginPath();
+                    for(let x=0; x<=width; x+=20) {
+                        let y = height/2 + Math.sin(x*0.005 + waveTime + i) * 150 + Math.cos(x*0.003 - waveTime + i*2) * 80;
+                        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+                    }
+                    ctx.strokeStyle = i===0 ? themeColors[0] : themeColors[1];
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                return;
+            }
+
+            if (currentWallpaper === 'synthwave') {
+                ctx.fillStyle = 'rgba(3, 5, 8, 1)';
+                ctx.fillRect(0, 0, width, height);
+                let horizon = height * 0.55;
+                waveTime = (waveTime || 0) + 1.5;
+
+                ctx.beginPath();
+                ctx.arc(width/2, horizon, 100, Math.PI, 0);
+                let grad = ctx.createLinearGradient(0, horizon - 100, 0, horizon);
+                grad.addColorStop(0, themeColors[1]);
+                grad.addColorStop(1, themeColors[0]);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.strokeStyle = themeColors[0];
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                for(let z = (waveTime % 20); z < 300; z += 20) {
+                    let y = horizon + Math.pow(z, 1.2); 
+                    if (y < height) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
+                }
+                ctx.stroke();
+
+                ctx.strokeStyle = themeColors[1];
+                ctx.beginPath();
+                for(let x = -width*2; x < width * 3; x += 80) {
+                    ctx.moveTo(width/2, horizon); ctx.lineTo(x, height);
+                }
+                ctx.stroke();
+                return;
+            }
+
+            ctx.fillStyle = 'rgba(3, 5, 8, 0.6)'; 
+            ctx.fillRect(0, 0, width, height);
+            
+            if (currentWallpaper === 'starfield' || currentWallpaper === 'hyperspace') {
+                particles.forEach(p => { p.update(); p.draw(); });
+            } else if (currentWallpaper === 'geometric') {
+                for(let i=0; i<particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    for(let j=i+1; j<particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let distSq = dx*dx + dy*dy;
+                        if(distSq < 22500) { 
+                            let dist = Math.sqrt(distSq);
+                            ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = themeColors[1]; ctx.lineWidth = 1.5; ctx.globalAlpha = 1 - (dist/150); 
+                            ctx.stroke(); ctx.globalAlpha = 1.0;
+                        }
+                    }
+                }
+            }
         }
         animate();
     </script>

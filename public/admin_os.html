@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Admin // Midnight OS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" src="midnight-core.js"></script>
+
+    <style>
+        :root {
+            --accent-primary: #00f3ff;
+            --accent-secondary: #bc13fe;
+            --text-main: #e0f7fa;
+            --text-muted: #8aa3ac;
+            --error: #ff4a4a;
+            --success: #00ff88;
+        }
+
+        * { box-sizing: border-box; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 74, 74, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 74, 74, 0.6); }
+
+        body { 
+            margin: 0; 
+            height: 100vh; 
+            font-family: 'Rajdhani', sans-serif; 
+            background-color: transparent; 
+            color: var(--text-main); 
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .header {
+            border-bottom: 1px solid rgba(255, 74, 74, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 { margin: 0 0 5px; font-family: "Orbitron"; font-size: 28px; color: var(--error); letter-spacing: 1px; text-shadow: 0 0 15px rgba(255, 74, 74, 0.4); }
+        p { margin: 0; color: var(--text-muted); font-size: 15px; font-weight: 600;}
+
+        /* Bubbly User List */
+        .user-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-card {
+            background: rgba(10, 15, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .user-card:hover {
+            background: rgba(15, 20, 35, 0.9);
+            border-color: rgba(255, 74, 74, 0.3);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .user-info { display: flex; flex-direction: column; gap: 4px; }
+        .user-name { font-family: 'Space Grotesk'; font-size: 16px; font-weight: 700; color: #fff; }
+        .user-handle { font-size: 13px; color: var(--text-muted); font-weight: 600;}
+        .user-id { font-size: 10px; color: rgba(255,255,255,0.3); font-family: monospace; }
+
+        /* Role Selector */
+        .role-select {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--text-muted);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-family: 'Orbitron';
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .role-select:focus { border-color: var(--accent-primary); }
+        
+        /* Status Colors */
+        .role-admin { border-color: var(--error); color: var(--error); }
+        .role-user { border-color: var(--accent-primary); color: var(--accent-primary); }
+        .role-unapproved { border-color: var(--text-muted); color: var(--text-muted); }
+        .role-banned { border-color: #888; color: #888; background: rgba(255,0,0,0.1); text-decoration: line-through; }
+
+        #unauthorized {
+            display: none;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="unauthorized">
+        <h1 style="font-size: 50px;">RESTRICTED AREA</h1>
+        <p style="color:var(--text-muted);">Admin clearance required.</p>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>SYSTEM ADMIN</h1>
+            <p>Database User Registry & Access Control</p>
+        </div>
+        <div style="font-family: 'Orbitron'; color: var(--text-muted); font-size: 12px;" id="userCount">SCANNING...</div>
+    </div>
+
+    <div class="user-grid" id="userList">
+        </div>
+
+    <script type="module">
+        import { db, auth } from './midnight-core.js';
+        import { collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const userListContainer = document.getElementById('userList');
+        const countDisplay = document.getElementById('userCount');
+
+        // Security Check
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists() && snap.data().role === 'admin') {
+                        fetchUsers();
+                    } else {
+                        document.getElementById('unauthorized').style.display = 'flex';
+                    }
+                } catch (e) {
+                    document.getElementById('unauthorized').style.display = 'flex';
+                }
+            } else {
+                document.getElementById('unauthorized').style.display = 'flex';
+            }
+        });
+
+        async function fetchUsers() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "users"));
+                userListContainer.innerHTML = '';
+                
+                let count = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    count++;
+                    const data = docSnap.data();
+                    const uid = docSnap.id;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+
+                    // Set select styling based on current role
+                    let selectClass = 'role-unapproved';
+                    if(data.role === 'admin') selectClass = 'role-admin';
+                    if(data.role === 'user') selectClass = 'role-user';
+                    if(data.role === 'banned') selectClass = 'role-banned';
+
+                    card.innerHTML = `
+                        <div class="user-info">
+                            <div class="user-name">${data.displayName || 'UNKNOWN'}</div>
+                            <div class="user-handle">@${data.username || 'unknown'}</div>
+                            <div class="user-id">ID: ${uid}</div>
+                        </div>
+                        <select class="role-select ${selectClass}" onchange="updateRole('${uid}', this)">
+                            <option value="unapproved" ${data.role === 'unapproved' ? 'selected' : ''}>PENDING</option>
+                            <option value="user" ${data.role === 'user' ? 'selected' : ''}>USER</option>
+                            <option value="admin" ${data.role === 'admin' ? 'selected' : ''}>ADMIN</option>
+                            <option value="banned" ${data.role === 'banned' ? 'selected' : ''}>BANNED</option>
+                        </select>
+                    `;
+                    userListContainer.appendChild(card);
+                });
+
+                countDisplay.innerText = `TOTAL RECORDS: ${count}`;
+
+            } catch (e) {
+                userListContainer.innerHTML = `<div style="color:var(--error);">DB ERROR: ${e.message}</div>`;
+            }
+        }
+
+        // Global function for the select dropdown to call
+        window.updateRole = async (uid, selectElement) => {
+            const newRole = selectElement.value;
+            selectElement.style.opacity = '0.5'; // loading state
+
+            try {
+                await updateDoc(doc(db, "users", uid), {
+                    role: newRole
+                });
+                
+                // Update select element color classes
+                selectElement.className = 'role-select';
+                if(newRole === 'admin') selectElement.classList.add('role-admin');
+                if(newRole === 'user') selectElement.classList.add('role-user');
+                if(newRole === 'unapproved') selectElement.classList.add('role-unapproved');
+                if(newRole === 'banned') selectElement.classList.add('role-banned');
+
+            } catch(e) {
+                alert("Failed to update role: " + e.message);
+                fetchUsers(); // Refresh to original state on fail
+            } finally {
+                selectElement.style.opacity = '1';
+            }
+        };
+    </script>
+</body>
+</html>
