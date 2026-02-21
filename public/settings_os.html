@@ -70,6 +70,12 @@
         </div>
 
         <div class="card">
+            <h2 style="color:var(--accent-primary);">LEGACY UI MODE</h2>
+            <p style="color:var(--text-muted); margin-bottom: 20px;">Revert to the classic Midnight user interface. When enabled, visiting the site will not automatically redirect you to this OS environment.</p>
+            <button class="btn" id="legacyBtnOS" onclick="toggleLegacyOS()">ENABLE LEGACY MODE</button>
+        </div>
+
+        <div class="card">
             <h2 style="color:var(--accent-secondary);">STEALTH MODE</h2>
             <p style="color:var(--text-muted); margin-bottom: 20px;">Deploy the OS interface into a hidden about:blank tab to evade history logging and monitoring. The current tab will self-destruct.</p>
             <button class="btn btn-stealth" onclick="activateCloak()">ENGAGE CLOAKING</button>
@@ -83,6 +89,33 @@
     </main>
 
     <script type="module">
+        // --- LEGACY MODE TOGGLE LOGIC ---
+        const legacyBtnOS = document.getElementById('legacyBtnOS');
+        function initLegacyBtnOS() {
+            if (localStorage.getItem('midnight_legacy_mode') === 'true') {
+                legacyBtnOS.innerText = "DISABLE LEGACY MODE";
+                legacyBtnOS.style.color = "var(--error)";
+                legacyBtnOS.style.borderColor = "var(--error)";
+                legacyBtnOS.style.background = "rgba(255, 42, 42, 0.1)";
+            } else {
+                legacyBtnOS.innerText = "ENABLE LEGACY MODE";
+                legacyBtnOS.style.color = "var(--accent-primary)";
+                legacyBtnOS.style.borderColor = "var(--accent-primary)";
+                legacyBtnOS.style.background = "rgba(0, 243, 255, 0.1)";
+            }
+        }
+        
+        window.toggleLegacyOS = () => {
+            if (localStorage.getItem('midnight_legacy_mode') === 'true') {
+                localStorage.setItem('midnight_legacy_mode', 'false');
+            } else {
+                localStorage.setItem('midnight_legacy_mode', 'true');
+            }
+            initLegacyBtnOS();
+        };
+        initLegacyBtnOS(); // Run on load
+
+        // --- EXISTING LOGIC ---
         window.activateCloak = () => {
             let win = window.open('about:blank', '_blank');
             if(!win) { alert("Popup blocker prevented stealth mode. Please allow popups."); return; }

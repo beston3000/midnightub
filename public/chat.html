@@ -176,7 +176,7 @@
                         <button type="button" class="poll-btn" id="btnCreatePoll" onclick="openModal('poll')">POLL</button>
                         <button type="button" class="gif-btn" onclick="openModal('gif')">GIF</button>
                         <input type="text" class="app-input" id="messageInput" placeholder="ENTER TRANSMISSION..." autocomplete="off">
-                        <button type="submit" class="send-btn">SEND</button>
+                        <button type="submit" class="send-btn">TRANSMIT</button>
                     </form>
                 </div>
 
@@ -449,7 +449,7 @@
                 list.scrollTop = list.scrollHeight;
             }, (error) => {
                 console.error("Chat Error:", error);
-                list.innerHTML = '<div style="padding:20px; color:var(--error);">ACCESS DENIED // RESTRICTED CHANNEL</div>';
+                list.innerHTML = `<div style="color:var(--error); padding:20px; text-align:center;">CONNECTION ERROR: ${error.message}</div>`;
             });
         }
 
@@ -646,6 +646,7 @@
         async function sendGif(url) {
             const payload = {
                 text: url,
+                type: 'gif', // FIXED FOR FIRESTORE RULES
                 senderId: currentUser.uid,
                 senderName: currentUserData ? currentUserData.displayName : "Unknown",
                 createdAt: serverTimestamp()
@@ -755,6 +756,7 @@
             
             const payload = {
                 text: text,
+                type: 'text', // FIXED FOR FIRESTORE RULES
                 senderId: currentUser.uid,
                 senderName: currentUserData ? currentUserData.displayName : "Unknown",
                 createdAt: serverTimestamp()
