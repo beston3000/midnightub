@@ -15,7 +15,13 @@ class UIManager {
     update() {
         this.powerValue.textContent = Math.floor(this.game.state.oxygen);
         this.timeValue.textContent = `${this.game.state.currentTime === 0 ? 12 : this.game.state.currentTime} AM`;
-        this.nightValue.textContent = this.game.state.currentNight;
+        
+        // Custom Night 显示为 "7" 或 "CUSTOM"
+        if (this.game.state.customNight && this.game.state.currentNight === 7) {
+            this.nightValue.textContent = '7';
+        } else {
+            this.nightValue.textContent = this.game.state.currentNight;
+        }
         
         // Only update scene image when camera is not open
         if (!this.game.state.cameraOpen) {

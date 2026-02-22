@@ -693,6 +693,10 @@ button {
     z-index: 100;
 }
 
+#main-menu > h1 {
+    margin-top: -10vh; /* 整体上移 */
+}
+
 /* 星星图标 - 放在中间偏上位置 */
 #star-icon {
     position: absolute;
@@ -717,6 +721,19 @@ button {
     height: auto;
     z-index: 103;
     animation: star-glow 2s ease-in-out infinite 0.5s; /* 延迟0.5s，产生交替闪烁效果 */
+}
+
+/* 第三颗星星 - 在第二颗下面 (20/20/20通关) */
+#star-icon-3 {
+    position: absolute;
+    top: 29vh; /* 比第二颗低7vh */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5vw;
+    max-width: 80px;
+    height: auto;
+    z-index: 103;
+    animation: star-glow 2s ease-in-out infinite 1s; /* 延迟1s，产生交替闪烁效果 */
 }
 
 @keyframes star-glow {
@@ -796,6 +813,144 @@ button {
     font-weight: bold;
     letter-spacing: 2px;
     line-height: 1.2;
+}
+
+/* 音量按钮 */
+#volume-btn {
+    position: fixed;
+    top: 2vh;
+    right: 2vw;
+    padding: 15px 25px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 102; /* 在白噪声(101)上面，但低于其他UI(103) */
+    transition: all 0.2s;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 3px;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
+}
+
+#volume-btn:hover {
+    transform: scale(1.05);
+    text-shadow: 4px 4px 12px rgba(0, 0, 0, 1);
+}
+
+/* 音量设置面板 */
+#volume-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.98);
+    border: 2px solid #666;
+    border-radius: 0;
+    padding: 20px;
+    z-index: 105; /* 面板要在最上面 */
+    min-width: 400px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#volume-panel h3 {
+    color: #ff0000;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    margin-bottom: 15px;
+    margin-top: 0;
+    text-align: center;
+    letter-spacing: 3px;
+    text-shadow: 
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        2px 2px 4px #000;
+}
+
+.volume-item {
+    margin-bottom: 15px;
+}
+
+.volume-item label {
+    color: #ff0000;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 
+        0 0 5px #ff0000,
+        0 0 10px #ff0000;
+}
+
+.volume-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-slider-container input[type="range"] {
+    flex: 1;
+    height: 3px;
+    background: #333;
+    outline: none;
+    border-radius: 0;
+    cursor: pointer;
+    border: 1px solid #555;
+}
+
+.volume-slider-container input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #666;
+    border-radius: 0;
+    cursor: pointer;
+    border: 1px solid #888;
+}
+
+.volume-slider-container input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #666;
+    border-radius: 0;
+    cursor: pointer;
+    border: 1px solid #888;
+}
+
+.volume-percent {
+    color: #777;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    min-width: 45px;
+    text-align: right;
+}
+
+#close-volume-panel {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: #222;
+    color: #888;
+    border: 1px solid #555;
+    border-radius: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 2px;
+}
+
+#close-volume-panel:hover {
+    background: #333;
+    color: #aaa;
+    border-color: #777;
 }
 
 #main-menu button {
@@ -1288,6 +1443,12 @@ button {
         top: 18vh; /* 比第一颗低8vh */
     }
     
+    #star-icon-3 {
+        width: 12vw;
+        max-width: 60px;
+        top: 26vh; /* 比第二颗低8vh */
+    }
+    
     #main-menu h1 {
         font-size: 10vw;
         margin-bottom: 8vh;
@@ -1577,6 +1738,46 @@ button {
     .cutscene-hint {
         font-size: 2vh;
     }
+    
+    /* Volume button landscape */
+    #volume-btn {
+        font-size: 2vh;
+        padding: 1vh 2vw;
+        top: 1vh;
+        right: 1vw;
+    }
+    
+    /* Volume panel landscape - 优化高度防止溢出 */
+    #volume-panel {
+        padding: 2vh 3vw;
+        min-width: 300px;
+        max-width: 70vw;
+        max-height: 85vh;
+    }
+    
+    #volume-panel h3 {
+        font-size: 2vh;
+        margin-bottom: 1.5vh;
+    }
+    
+    .volume-item {
+        margin-bottom: 1.5vh;
+    }
+    
+    .volume-item label {
+        font-size: 1.5vh;
+        margin-bottom: 0.5vh;
+    }
+    
+    .volume-percent {
+        font-size: 1.5vh;
+    }
+    
+    #close-volume-panel {
+        font-size: 1.8vh;
+        padding: 1vh;
+        margin-top: 1.5vh;
+    }
 }
 
 /* Prevent text selection on touch devices */
@@ -1605,5 +1806,217 @@ button {
     button:active {
         opacity: 0.7;
         transform: scale(0.95);
+    }
+}
+
+
+/* ==================== Custom Night Menu ==================== */
+#custom-night-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 2vh;
+}
+
+#custom-night-menu h1 {
+    font-size: 5vw;
+    color: #fff;
+    margin-bottom: 4vh;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.custom-night-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+    width: 60%;
+    max-width: 800px;
+    margin-bottom: 4vh;
+}
+
+.ai-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(20, 20, 20, 0.8);
+    padding: 2vh 3vw;
+    border-radius: 10px;
+    border: 2px solid rgba(100, 100, 100, 0.3);
+    transition: all 0.3s;
+}
+
+.ai-control:hover {
+    background: rgba(40, 40, 40, 0.9);
+    border-color: rgba(150, 150, 150, 0.5);
+}
+
+.ai-name {
+    font-size: 2vw;
+    font-weight: bold;
+    color: #fff;
+    min-width: 150px;
+}
+
+.ai-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 1vw;
+    flex: 1;
+    margin: 0 2vw;
+}
+
+.ai-btn-minus,
+.ai-btn-plus {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    font-weight: bold;
+    background: rgba(50, 50, 50, 0.8);
+    border: 2px solid rgba(100, 100, 100, 0.5);
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.ai-btn-minus:hover,
+.ai-btn-plus:hover {
+    background: rgba(80, 80, 80, 0.9);
+    border-color: rgba(150, 150, 150, 0.7);
+    transform: scale(1.1);
+}
+
+.ai-btn-minus:active,
+.ai-btn-plus:active {
+    transform: scale(0.95);
+}
+
+.ai-slider {
+    flex: 1;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(80, 80, 80, 0.6);
+    border-radius: 5px;
+    outline: none;
+}
+
+.ai-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(200, 200, 200, 0.5);
+    transition: all 0.2s;
+}
+
+.ai-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(220, 220, 220, 0.8);
+}
+
+.ai-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px rgba(200, 200, 200, 0.5);
+    transition: all 0.2s;
+}
+
+.ai-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(220, 220, 220, 0.8);
+}
+
+.ai-value {
+    font-size: 2.5vw;
+    font-weight: bold;
+    color: #fff;
+    min-width: 60px;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.custom-night-buttons {
+    display: flex;
+    gap: 2vw;
+}
+
+.custom-night-buttons button {
+    padding: 1.5vh 3vw;
+    font-size: 1.5vw;
+    font-weight: bold;
+    background: rgba(50, 50, 50, 0.8);
+    border: 2px solid rgba(100, 100, 100, 0.5);
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+    min-width: 150px;
+}
+
+.custom-night-buttons button:hover {
+    background: rgba(80, 80, 80, 0.9);
+    border-color: rgba(150, 150, 150, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.custom-night-buttons button:active {
+    transform: translateY(0);
+}
+
+/* Mobile 适配 */
+@media (max-width: 768px) {
+    #custom-night-menu h1 {
+        font-size: 8vw;
+    }
+    
+    .custom-night-controls {
+        width: 90%;
+    }
+    
+    .ai-control {
+        flex-direction: column;
+        gap: 1vh;
+        padding: 2vh;
+    }
+    
+    .ai-name {
+        font-size: 5vw;
+        min-width: auto;
+    }
+    
+    .ai-slider-container {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .ai-value {
+        font-size: 6vw;
+    }
+    
+    .custom-night-buttons {
+        flex-direction: column;
+        width: 80%;
+    }
+    
+    .custom-night-buttons button {
+        font-size: 4vw;
+        width: 100%;
     }
 }

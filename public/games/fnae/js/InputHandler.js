@@ -25,6 +25,31 @@ class InputHandler {
     handleKeyPress(e) {
         // ==================== 作弊键（生产环境请注释掉） ====================
         
+        /* // F6 作弊键：立即触发特朗普进入管道（测试音效用）
+        if (e.key === 'F6') {
+            e.preventDefault();
+            if (this.game.state.isGameRunning && this.game.enemyAI.trump.hasSpawned) {
+                console.log('🎮 CHEAT: Forcing Trump to crawl into vents...');
+                this.showCheatNotification('Trump entering vents NOW!');
+                
+                // 强制特朗普从 cam1 开始爬行
+                this.game.enemyAI.trump.currentLocation = 'cam1';
+                
+                // 立即播放音效（不等待延迟）- 音量改为1.0（最大值）
+                console.log('Playing crawling sound immediately...');
+                this.game.assets.playSound('ventCrawling', true, 1.0);
+                
+                // 10秒后停止音效
+                setTimeout(() => {
+                    console.log('Stopping crawling sound...');
+                    this.game.assets.stopSound('ventCrawling');
+                }, 10000);
+            } else if (this.game.state.isGameRunning) {
+                this.showCheatNotification('Trump not spawned yet!');
+            }
+            return;
+        }
+        
         // F9 作弊键：跳过当前夜晚（调试用）
         if (e.key === 'F9') {
             e.preventDefault();
@@ -56,7 +81,20 @@ class InputHandler {
             return;
         }
         
-        /*
+        // F8 作弊键：解锁Custom Night（调试用）
+        if (e.key === 'F8') {
+            e.preventDefault();
+            console.log('🎮 CHEAT: Unlocking Custom Night...');
+            localStorage.setItem('night6Completed', 'true');
+            this.showCheatNotification('Custom Night Unlocked!');
+            
+            // 如果在主菜单，立即更新按钮显示
+            if (this.game.mainMenu && !this.game.mainMenu.classList.contains('hidden')) {
+                this.game.updateContinueButton();
+            }
+            return;
+        }
+        
         // F7 作弊键：时间加速（测试用）
         if (e.key === 'F7') {
             e.preventDefault();
@@ -97,8 +135,8 @@ class InputHandler {
                 }
             }
             return;
-        }
-        */
+        } */
+        
         // ==================== 作弊键结束 ====================
         
         if (!this.game.state.isGameRunning) return;

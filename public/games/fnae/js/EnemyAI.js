@@ -36,11 +36,11 @@ class EnemyAI {
                 movementDuration: 1000,
                 spawnDelay: 0,
                 movementProbability: {
-                    forward: 0.9,
-                    lateral: 0.1,
+                    forward: 0.8,
+                    lateral: 0.2,
                     backward: 0
                 },
-                soundLureResistance: 0.15  // Night 3开始：15%概率抵抗sound吸引
+                soundLureResistance: 0.1  // Night 3开始：15%概率抵抗sound吸引
             },
             4: {
                 aiLevel: 12,
@@ -103,18 +103,18 @@ class EnemyAI {
                 }
             },
             3: {
-                aiLevel: 13,              // 65%移动概率
-                movementInterval: [8000, 9000],  // 8-9秒随机（比EP快一点）
+                aiLevel: 11,              // 降低到55%移动概率（从65%）
+                movementInterval: [9000, 10000],  // 改为9-10秒（从8-9秒）
                 movementDuration: 1000,
                 spawnDelay: 0,
                 movementProbability: {
-                    forward: 0.8,         // 80% 前进
-                    lateral: 0.2,         // 20% 平移（增加不可预测性）
+                    forward: 0.75,        // 降低到75%前进（从80%）
+                    lateral: 0.25,        // 增加到25%平移
                     backward: 0.0
                 },
                 ventCrawling: {
                     cam1Probability: 1.0,
-                    cam2Probability: 0.5,
+                    cam2Probability: 0.4, // 降低到40%（从50%）
                     soundDelay: 5000,
                     soundDuration: 10000,
                     totalDuration: 20000,
@@ -203,47 +203,47 @@ class EnemyAI {
         
         // 每个摄像头使用的角色图片（根据距离办公室远近）
         this.characterImages = {
-            'cam11': '/FNAE-HTML5-1.1.5/assets/images/enemyep1.png',
-            'cam10': '/FNAE-HTML5-1.1.5/assets/images/ep1.png',
-            'cam1': '/FNAE-HTML5-1.1.5/assets/images/ep4.png',
-            'cam9': '/FNAE-HTML5-1.1.5/assets/images/enemyep1.png',
-            'cam8': '/FNAE-HTML5-1.1.5/assets/images/enemyep1.png',
-            'cam7': '/FNAE-HTML5-1.1.5/assets/images/enemyep1.png',
-            'cam6': '/FNAE-HTML5-1.1.5/assets/images/enemyep1.png',
-            'cam5': '/FNAE-HTML5-1.1.5/assets/images/enemyep4.png',
-            'cam4': '/FNAE-HTML5-1.1.5/assets/images/ep1.png',
-            'cam3': '/FNAE-HTML5-1.1.5/assets/images/ep4.png',
-            'cam2': '/FNAE-HTML5-1.1.5/assets/images/enemyep1.png',
+            'cam11': 'assets/images/enemyep1.png',
+            'cam10': 'assets/images/ep1.png',
+            'cam1': 'assets/images/ep4.png',
+            'cam9': 'assets/images/enemyep1.png',
+            'cam8': 'assets/images/enemyep1.png',
+            'cam7': 'assets/images/enemyep1.png',
+            'cam6': 'assets/images/enemyep1.png',
+            'cam5': 'assets/images/enemyep4.png',
+            'cam4': 'assets/images/ep1.png',
+            'cam3': 'assets/images/ep4.png',
+            'cam2': 'assets/images/enemyep1.png',
         };
         
         // Night 6 专用图片（带电眼）
         this.characterImagesNight6 = {
-            'cam11': '/FNAE-HTML5-1.1.5/assets/images/enemyep1_night6.png',
-            'cam10': '/FNAE-HTML5-1.1.5/assets/images/ep1_night6.png',
-            'cam1': '/FNAE-HTML5-1.1.5/assets/images/ep4_night6.png',
-            'cam9': '/FNAE-HTML5-1.1.5/assets/images/enemyep1_night6.png',
-            'cam8': '/FNAE-HTML5-1.1.5/assets/images/enemyep1_night6.png',
-            'cam7': '/FNAE-HTML5-1.1.5/assets/images/enemyep1_night6.png',
-            'cam6': '/FNAE-HTML5-1.1.5/assets/images/enemyep1_night6.png',
-            'cam5': '/FNAE-HTML5-1.1.5/assets/images/enemyep4_night6.png',
-            'cam4': '/FNAE-HTML5-1.1.5/assets/images/ep1_night6.png',
-            'cam3': '/FNAE-HTML5-1.1.5/assets/images/ep4_night6.png',
-            'cam2': '/FNAE-HTML5-1.1.5/assets/images/enemyep1_night6.png',
+            'cam11': 'assets/images/enemyep1_night6.png',
+            'cam10': 'assets/images/ep1_night6.png',
+            'cam1': 'assets/images/ep4_night6.png',
+            'cam9': 'assets/images/enemyep1_night6.png',
+            'cam8': 'assets/images/enemyep1_night6.png',
+            'cam7': 'assets/images/enemyep1_night6.png',
+            'cam6': 'assets/images/enemyep1_night6.png',
+            'cam5': 'assets/images/enemyep4_night6.png',
+            'cam4': 'assets/images/ep1_night6.png',
+            'cam3': 'assets/images/ep4_night6.png',
+            'cam2': 'assets/images/enemyep1_night6.png',
         };
         
         // 特朗普的图片配置（使用绝对路径）
         this.trumpImages = {
-            'cam10': '/FNAE-HTML5-1.1.5/assets/images/trump3.png',
-            'cam11': '/FNAE-HTML5-1.1.5/assets/images/trump3.png',
-            'cam9': '/FNAE-HTML5-1.1.5/assets/images/trump.png',
-            'cam8': '/FNAE-HTML5-1.1.5/assets/images/trump5.png',
-            'cam7': '/FNAE-HTML5-1.1.5/assets/images/trump3.png',
-            'cam6': '/FNAE-HTML5-1.1.5/assets/images/trump3.png',
-            'cam5': '/FNAE-HTML5-1.1.5/assets/images/trump2.png',
-            'cam1': '/FNAE-HTML5-1.1.5/assets/images/trump4.png',
-            'cam2': '/FNAE-HTML5-1.1.5/assets/images/trump4.png',
-            'cam3': '/FNAE-HTML5-1.1.5/assets/images/trump2.png',
-            'cam4': '/FNAE-HTML5-1.1.5/assets/images/trump3.png',
+            'cam10': 'assets/images/trump3.png',
+            'cam11': 'assets/images/trump3.png',
+            'cam9': 'assets/images/trump.png',
+            'cam8': 'assets/images/trump5.png',
+            'cam7': 'assets/images/trump3.png',
+            'cam6': 'assets/images/trump3.png',
+            'cam5': 'assets/images/trump2.png',
+            'cam1': 'assets/images/trump4.png',
+            'cam2': 'assets/images/trump4.png',
+            'cam3': 'assets/images/trump2.png',
+            'cam4': 'assets/images/trump3.png',
         };
         
         // 定义移动路径图（根据地图连接关系，只能向前移动）
@@ -460,16 +460,20 @@ class EnemyAI {
         console.log(`Night ${this.game.state.currentNight} - Epstein AI Config:`, this.currentEpsteinConfig);
         console.log(`Epstein will spawn in ${this.currentEpsteinConfig.spawnDelay / 1000} seconds...`);
         
-        // 根据配置延迟后EP出场
-        const spawnTimer = setTimeout(() => {
-            console.log(`⏰ Spawn timer triggered after ${this.currentEpsteinConfig.spawnDelay}ms`);
-            this.spawnEpstein();
-        }, this.currentEpsteinConfig.spawnDelay);
+        // 根据配置延迟后EP出场（如果AI等级>0）
+        if (this.epstein.aiLevel > 0) {
+            const spawnTimer = setTimeout(() => {
+                console.log(`⏰ Spawn timer triggered after ${this.currentEpsteinConfig.spawnDelay}ms`);
+                this.spawnEpstein();
+            }, this.currentEpsteinConfig.spawnDelay);
+            
+            console.log(`⏰ Spawn timer created:`, spawnTimer);
+        } else {
+            console.log('Epstein AI level is 0, not spawning');
+        }
         
-        console.log(`⏰ Spawn timer created:`, spawnTimer);
-        
-        // 第2-5晚，特朗普出场（Night 6 没有 Trump）
-        if (this.game.state.currentNight >= 2 && this.game.state.currentNight <= 5 && this.currentTrumpConfig) {
+        // Trump出场逻辑
+        if (this.currentTrumpConfig && this.trump.aiLevel > 0) {
             console.log(`Night ${this.game.state.currentNight} - Trump AI Config:`, this.currentTrumpConfig);
             console.log(`Trump will spawn in ${this.currentTrumpConfig.spawnDelay / 1000} seconds...`);
             
@@ -479,8 +483,14 @@ class EnemyAI {
             }, this.currentTrumpConfig.spawnDelay);
         }
         
-        // 第3晚及以后，霍金激活（但 Night 6 不激活）
-        if (this.game.state.currentNight >= 3 && this.game.state.currentNight <= 5) {
+        // Hawking激活逻辑
+        // Custom Night: 根据自定义等级决定是否激活
+        if (this.game.state.customNight && this.game.state.customAILevels.hawking > 0) {
+            console.log('Custom Night: Hawking activated at cam6!');
+            this.startHawking();
+        }
+        // 普通夜晚：Night 3-5 激活
+        else if (!this.game.state.customNight && this.game.state.currentNight >= 3 && this.game.state.currentNight <= 5) {
             console.log('Hawking activated at cam6!');
             this.startHawking();
         }
@@ -490,6 +500,66 @@ class EnemyAI {
     loadAIConfig() {
         const night = this.game.state.currentNight;
         
+        // Custom Night (Night 7) - 使用自定义AI等级
+        if (this.game.state.customNight && night === 7) {
+            const customLevels = this.game.state.customAILevels;
+            
+            // Epstein 自定义配置
+            this.currentEpsteinConfig = {
+                aiLevel: customLevels.epstein,
+                movementInterval: [9000, 10000],
+                movementDuration: 1000,
+                spawnDelay: 0,
+                movementProbability: {
+                    forward: 0.9,
+                    lateral: 0.1,
+                    backward: 0.0
+                },
+                soundLureResistance: 0.15
+            };
+            this.epstein.aiLevel = customLevels.epstein;
+            this.epstein.movementInterval = this.getRandomInterval(this.currentEpsteinConfig.movementInterval);
+            
+            // Trump 自定义配置
+            if (customLevels.trump > 0) {
+                this.currentTrumpConfig = {
+                    aiLevel: customLevels.trump,
+                    movementInterval: [8000, 9000],
+                    movementDuration: 1000,
+                    spawnDelay: 0,
+                    movementProbability: {
+                        forward: 0.8,
+                        lateral: 0.2,
+                        backward: 0.0
+                    },
+                    ventCrawling: {
+                        cam1Probability: 1.0,
+                        cam2Probability: 0.5,
+                        soundDelay: 5000,
+                        soundDuration: 10000,
+                        totalDuration: 20000,
+                        retreatDelay: 2000,
+                        retreatSoundDuration: 3000
+                    }
+                };
+                this.trump.aiLevel = customLevels.trump;
+                this.trump.movementInterval = this.getRandomInterval(this.currentTrumpConfig.movementInterval);
+            } else {
+                this.currentTrumpConfig = null;
+            }
+            
+            // Hawking 自定义配置（通过 customAILevels.hawking 控制）
+            // Hawking 的 AI 等级不影响移动，只影响是否激活
+            
+            console.log(`Custom Night AI Config loaded:`);
+            console.log(`- Epstein: Level ${this.epstein.aiLevel}`);
+            console.log(`- Trump: Level ${this.trump.aiLevel || 0}`);
+            console.log(`- Hawking: Level ${customLevels.hawking}`);
+            
+            return;
+        }
+        
+        // 普通夜晚配置
         // 加载Epstein配置
         this.currentEpsteinConfig = this.epsteinConfig[night] || this.epsteinConfig[1];
         this.epstein.aiLevel = this.currentEpsteinConfig.aiLevel;
@@ -971,6 +1041,39 @@ class EnemyAI {
     startTrumpCrawling(fromLocation) {
         const config = this.currentTrumpConfig.ventCrawling;
         
+        // 检查通风管是否已经关闭
+        if (this.game.state.ventsClosed) {
+            console.log('Trump tried to crawl but vents are already closed! Silent retreat.');
+            
+            // 静默撤退 - 不播放任何音效
+            // 找出所有步长为3的位置
+            const depth3Locations = Object.keys(this.trumpLocationDepth).filter(loc => 
+                this.trumpLocationDepth[loc] === 3 && loc !== 'office'
+            );
+            
+            // 如果没有步长为3的位置，使用EP的步长3位置
+            let retreatLocation;
+            if (depth3Locations.length > 0) {
+                retreatLocation = depth3Locations[Math.floor(Math.random() * depth3Locations.length)];
+            } else {
+                const epDepth3Locations = Object.keys(this.locationDepth).filter(loc => 
+                    this.locationDepth[loc] === 3 && loc !== 'office'
+                );
+                retreatLocation = epDepth3Locations[Math.floor(Math.random() * epDepth3Locations.length)];
+            }
+            
+            console.log(`Trump silently retreats to ${retreatLocation} (depth 3)`);
+            
+            // 直接移动到撤退位置，不播放音效
+            this.trump.currentLocation = retreatLocation;
+            this.trump.isCrawling = false;
+            this.trump.crawlingFrom = null;
+            
+            // 更新摄像头显示
+            this.updateCameraDisplay();
+            return;
+        }
+        
         this.trump.isCrawling = true;
         this.trump.crawlingFrom = fromLocation; // 记录从哪里开始爬行
         this.trump.currentLocation = 'crawling'; // 标记为爬行状态
@@ -986,7 +1089,7 @@ class EnemyAI {
             // 检查Trump是否还在爬行（可能已经被阻止）
             if (this.trump.isCrawling && this.trump.currentLocation === 'crawling') {
                 console.log('Playing crawling sound...');
-                this.game.assets.playSound('ventCrawling', true, 0.8);
+                this.game.assets.playSound('ventCrawling', true, 1.0);
                 
                 // 根据配置持续时长后停止爬行音效
                 setTimeout(() => {
@@ -1065,7 +1168,7 @@ class EnemyAI {
         // 根据配置延迟后播放撤退音效
         setTimeout(() => {
             console.log('Playing retreat crawling sound...');
-            this.game.assets.playSound('ventCrawling', false, 0.8);
+            this.game.assets.playSound('ventCrawling', false, 1.0);
             
             // 根据配置持续时长后停止音效
             setTimeout(() => {
@@ -1366,10 +1469,35 @@ class EnemyAI {
         this.hawking.warningLevel = 0;
         console.log('Hawking started at cam6');
         
-        // 20秒后开始黄色警告
+        // 根据AI等级计算警告时间
+        // AI等级越高，警告时间越短（更难）
+        // AI 1-5: 30秒 → 黄色
+        // AI 6-10: 25秒 → 黄色
+        // AI 11-15: 20秒 → 黄色
+        // AI 16-20: 15秒 → 黄色
+        let initialWarningTime = 30000; // 默认30秒
+        
+        if (this.game.state.customNight && this.game.state.currentNight === 7) {
+            const hawkingLevel = this.game.state.customAILevels.hawking;
+            if (hawkingLevel >= 16) {
+                initialWarningTime = 15000; // 15秒
+            } else if (hawkingLevel >= 11) {
+                initialWarningTime = 20000; // 20秒
+            } else if (hawkingLevel >= 6) {
+                initialWarningTime = 25000; // 25秒
+            } else {
+                initialWarningTime = 30000; // 30秒
+            }
+            console.log(`Hawking AI Level ${hawkingLevel}: Initial warning in ${initialWarningTime/1000}s`);
+        } else {
+            // 普通夜晚使用默认20秒
+            initialWarningTime = 20000;
+        }
+        
+        // X秒后开始黄色警告
         this.hawking.timer = setTimeout(() => {
             this.showHawkingWarning('yellow');
-        }, 20000);
+        }, initialWarningTime);
     }
     
     // 显示霍金警告
@@ -1378,22 +1506,44 @@ class EnemyAI {
         
         console.log(`Hawking warning: ${level}`);
         
+        // 根据AI等级计算警告升级时间
+        // AI等级越高，警告升级越快（更难）
+        let yellowToRedTime = 5000; // 默认5秒
+        let redToBreakTime = 5000;  // 默认5秒
+        
+        if (this.game.state.customNight && this.game.state.currentNight === 7) {
+            const hawkingLevel = this.game.state.customAILevels.hawking;
+            if (hawkingLevel >= 16) {
+                yellowToRedTime = 3000; // 3秒
+                redToBreakTime = 3000;  // 3秒
+            } else if (hawkingLevel >= 11) {
+                yellowToRedTime = 4000; // 4秒
+                redToBreakTime = 4000;  // 4秒
+            } else if (hawkingLevel >= 6) {
+                yellowToRedTime = 5000; // 5秒
+                redToBreakTime = 5000;  // 5秒
+            } else {
+                yellowToRedTime = 6000; // 6秒
+                redToBreakTime = 6000;  // 6秒
+            }
+        }
+        
         if (level === 'yellow') {
             this.hawking.warningLevel = 1;
             this.updateHawkingWarningDisplay();
             
-            // 5秒后升级为红色警告
+            // X秒后升级为红色警告
             this.hawking.warningTimer = setTimeout(() => {
                 this.showHawkingWarning('red');
-            }, 5000);
+            }, yellowToRedTime);
         } else if (level === 'red') {
             this.hawking.warningLevel = 2;
             this.updateHawkingWarningDisplay();
             
-            // 5秒后摄像头坏掉
+            // X秒后摄像头坏掉
             this.hawking.warningTimer = setTimeout(() => {
                 this.hawkingBreakCamera();
-            }, 5000);
+            }, redToBreakTime);
         }
     }
     
@@ -1456,9 +1606,9 @@ class EnemyAI {
         
         // 设置警告图片
         if (this.hawking.warningLevel === 1) {
-            warningIcon.src = '/FNAE-HTML5-1.1.5/assets/images/Warninglight.png';
+            warningIcon.src = 'assets/images/Warninglight.png';
         } else if (this.hawking.warningLevel === 2) {
-            warningIcon.src = '/FNAE-HTML5-1.1.5/assets/images/Warningheavy.png';
+            warningIcon.src = 'assets/images/Warningheavy.png';
         }
     }
     
@@ -1523,7 +1673,7 @@ class EnemyAI {
         
         // 创建霍金图片（在房间里）
         const hawkingImg = document.createElement('img');
-        hawkingImg.src = '/FNAE-HTML5-1.1.5/assets/images/mrstephen.png';
+        hawkingImg.src = 'assets/images/mrstephen.png';
         hawkingImg.style.position = 'absolute';
         hawkingImg.style.left = '43.6%';
         hawkingImg.style.bottom = '27.4%';
@@ -1534,7 +1684,7 @@ class EnemyAI {
         
         // 创建导弹图片（从霍金位置飞向玩家）
         const missileImg = document.createElement('img');
-        missileImg.src = '/FNAE-HTML5-1.1.5/assets/images/front.png';
+        missileImg.src = 'assets/images/front.png';
         missileImg.style.position = 'absolute';
         missileImg.style.left = '25%';
         missileImg.style.top = '40%';
@@ -1552,7 +1702,7 @@ class EnemyAI {
         explosionImg.style.width = '50vw'; // 容器宽度
         explosionImg.style.height = '50vh'; // 容器高度
         explosionImg.style.zIndex = '4';
-        explosionImg.style.backgroundImage = 'url(/FNAE-HTML5-1.1.5/assets/images/exp2.png)';
+        explosionImg.style.backgroundImage = 'url(assets/images/exp2.png)';
         explosionImg.style.backgroundSize = '400% auto'; // 4列，高度自适应
         explosionImg.style.backgroundRepeat = 'no-repeat';
         explosionImg.style.backgroundPosition = '0% 0%';
@@ -1641,10 +1791,26 @@ class EnemyAI {
         // 播放电击音效
         this.game.assets.playSound('hawking_shock', false, 0.8);
         
-        // 20秒后重新开始警告
+        // 根据AI等级计算重置后的警告时间
+        let resetWarningTime = 20000; // 默认20秒
+        
+        if (this.game.state.customNight && this.game.state.currentNight === 7) {
+            const hawkingLevel = this.game.state.customAILevels.hawking;
+            if (hawkingLevel >= 16) {
+                resetWarningTime = 15000; // 15秒
+            } else if (hawkingLevel >= 11) {
+                resetWarningTime = 20000; // 20秒
+            } else if (hawkingLevel >= 6) {
+                resetWarningTime = 25000; // 25秒
+            } else {
+                resetWarningTime = 30000; // 30秒
+            }
+        }
+        
+        // X秒后重新开始警告
         this.hawking.timer = setTimeout(() => {
             this.showHawkingWarning('yellow');
-        }, 20000);
+        }, resetWarningTime);
         
         return true;
     }

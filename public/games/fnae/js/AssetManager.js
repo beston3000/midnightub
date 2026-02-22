@@ -4,6 +4,46 @@ class AssetManager {
         this.images = {};
         this.sounds = {};
         this.loaded = false;
+        
+        // 分类音量设置
+        this.volumeSettings = this.loadVolumeSettings();
+    }
+    
+    // 从 localStorage 加载音量设置
+    loadVolumeSettings() {
+        const saved = localStorage.getItem('fnae_volume_settings');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        // 默认音量设置
+        return {
+            master: 0.7,
+            gameBg: 0.7,
+            menuMusic: 0.7,
+            jumpscare: 0.7,
+            ventCrawling: 0.7
+        };
+    }
+    
+    // 保存音量设置
+    saveVolumeSettings() {
+        localStorage.setItem('fnae_volume_settings', JSON.stringify(this.volumeSettings));
+    }
+    
+    // 设置特定类型的音量
+    setVolume(type, volume) {
+        this.volumeSettings[type] = Math.max(0, Math.min(1, volume));
+        this.saveVolumeSettings();
+    }
+    
+    // 获取特定类型的音量
+    getVolume(type) {
+        return this.volumeSettings[type] || 0.7;
+    }
+    
+    // 获取所有音量设置
+    getAllVolumes() {
+        return this.volumeSettings;
     }
 
     async loadAssets() {
@@ -69,7 +109,12 @@ class AssetManager {
     }
 
     getBasePath() {
-        // 本地开发环境 - 始终使用相对路径
+        // 检查是否在 iframe 中
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/FNAE-HTML5-1.2.2-fix/')) {
+            return '/FNAE-HTML5-1.2.2-fix/';
+        }
+        // 本地开发环境
         return './';
     }
 
@@ -85,7 +130,22 @@ class AssetManager {
     playSound(key, loop = false, volume = 1.0) {
         if (this.sounds[key]) {
             this.sounds[key].loop = loop;
-            this.sounds[key].volume = volume;
+            
+            // 根据音效类型应用对应的音量
+            let categoryVolume = this.volumeSettings.master;
+            
+            if (key === 'music' || key === 'music3') {
+                categoryVolume *= this.volumeSettings.menuMusic;
+            } else if (key === 'jumpscare' || key === 'hawkingJumpscare' || key === 'trumpJumpscare') {
+                categoryVolume *= this.volumeSettings.jumpscare;
+            } else if (key === 'ventCrawling') {
+                categoryVolume *= this.volumeSettings.ventCrawling;
+            } else if (key === 'vents' || key === 'ambience' || key === 'staticLoop' || key === 'static' || key === 'blip' || key === 'Blip') {
+                // 游戏背景音乐：包括通风口声音、静态噪声、摄像机切换声等
+                categoryVolume *= this.volumeSettings.gameBg;
+            }
+            
+            this.sounds[key].volume = Math.min(1, volume * categoryVolume);
             this.sounds[key].play();
         }
     }

@@ -33,19 +33,177 @@ class Game {
         this.startBtn = document.getElementById('start-game');
         this.continueBtn = document.getElementById('continue-game');
         this.specialNightBtn = document.getElementById('special-night-btn');
+        this.customNightBtn = document.getElementById('custom-night-btn');
         this.starIcon = document.getElementById('star-icon');
         this.starIcon2 = document.getElementById('star-icon-2');
+        this.starIcon3 = document.getElementById('star-icon-3');
         this.restartBtn = document.getElementById('restart');
         this.mainMenuBtn = document.getElementById('main-menu-btn');
+        
+        // 音量控制元素
+        this.volumeBtn = document.getElementById('volume-btn');
+        this.volumePanel = document.getElementById('volume-panel');
+        this.closeVolumePanelBtn = document.getElementById('close-volume-panel');
+        this.gameBgVolumeSlider = document.getElementById('game-bg-volume');
+        this.menuMusicVolumeSlider = document.getElementById('menu-music-volume');
+        this.jumpscareVolumeSlider = document.getElementById('jumpscare-volume');
+        this.ventCrawlingVolumeSlider = document.getElementById('vent-crawling-volume');
+        this.masterVolumeSlider = document.getElementById('master-volume');
+        
+        // 调试：检查元素是否找到
+        if (!this.volumeBtn) console.error('Volume button not found!');
+        if (!this.volumePanel) console.error('Volume panel not found!');
+        
+        // Custom Night 元素
+        this.customNightMenu = document.getElementById('custom-night-menu');
+        this.epsteinSlider = document.getElementById('epstein-slider');
+        this.trumpSlider = document.getElementById('trump-slider');
+        this.hawkingSlider = document.getElementById('hawking-slider');
+        this.epsteinValue = document.getElementById('epstein-value');
+        this.trumpValue = document.getElementById('trump-value');
+        this.hawkingValue = document.getElementById('hawking-value');
+        this.startCustomNightBtn = document.getElementById('start-custom-night');
+        this.backToMenuBtn = document.getElementById('back-to-menu');
+        
+        // 初始化音量设置
+        this.initVolumeSettings();
+    }
+    
+    initVolumeSettings() {
+        const volumes = this.assets.getAllVolumes();
+        this.gameBgVolumeSlider.value = Math.round(volumes.gameBg * 100);
+        this.menuMusicVolumeSlider.value = Math.round(volumes.menuMusic * 100);
+        this.jumpscareVolumeSlider.value = Math.round(volumes.jumpscare * 100);
+        this.ventCrawlingVolumeSlider.value = Math.round(volumes.ventCrawling * 100);
+        this.masterVolumeSlider.value = Math.round(volumes.master * 100);
+        
+        // 更新百分比显示
+        this.updateVolumePercents();
+    }
+    
+    updateVolumePercents() {
+        const sliders = [
+            this.gameBgVolumeSlider,
+            this.menuMusicVolumeSlider,
+            this.jumpscareVolumeSlider,
+            this.ventCrawlingVolumeSlider,
+            this.masterVolumeSlider
+        ];
+        
+        sliders.forEach(slider => {
+            const percent = slider.parentElement.querySelector('.volume-percent');
+            if (percent) {
+                percent.textContent = slider.value + '%';
+            }
+        });
     }
 
     bindEvents() {
         this.startBtn.addEventListener('click', () => this.startGame());
         this.continueBtn.addEventListener('click', () => this.continueGame());
         this.specialNightBtn.addEventListener('click', () => this.startSpecialNight());
+        this.customNightBtn.addEventListener('click', () => this.showCustomNightMenu());
         this.restartBtn.addEventListener('click', () => this.restartGame());
+        
+        // 音量面板事件
+        this.volumeBtn.addEventListener('click', () => {
+            this.volumePanel.classList.toggle('hidden');
+        });
+        
+        this.closeVolumePanelBtn.addEventListener('click', () => {
+            this.volumePanel.classList.add('hidden');
+        });
+        
+        // 音量滑块事件
+        this.gameBgVolumeSlider.addEventListener('input', (e) => {
+            this.assets.setVolume('gameBg', parseInt(e.target.value) / 100);
+            this.updateVolumePercents();
+            // 立即更新游戏中的背景音效
+            if (this.state.isGameRunning) {
+                const ventsSound = this.assets.sounds['vents'];
+                if (ventsSound && !ventsSound.paused) {
+                    const volumes = this.assets.getAllVolumes();
+                    ventsSound.volume = volumes.gameBg * volumes.master;
+                }
+            }
+        });
+        
+        this.menuMusicVolumeSlider.addEventListener('input', (e) => {
+            this.assets.setVolume('menuMusic', parseInt(e.target.value) / 100);
+            this.updateVolumePercents();
+            // 立即更新主菜单音乐音量
+            const menuMusic = document.getElementById('menu-music');
+            if (menuMusic && !menuMusic.paused) {
+                const volumes = this.assets.getAllVolumes();
+                menuMusic.volume = volumes.menuMusic * volumes.master;
+            }
+        });
+        
+        this.jumpscareVolumeSlider.addEventListener('input', (e) => {
+            this.assets.setVolume('jumpscare', parseInt(e.target.value) / 100);
+            this.updateVolumePercents();
+        });
+        
+        this.ventCrawlingVolumeSlider.addEventListener('input', (e) => {
+            this.assets.setVolume('ventCrawling', parseInt(e.target.value) / 100);
+            this.updateVolumePercents();
+        });
+        
+        this.masterVolumeSlider.addEventListener('input', (e) => {
+            this.assets.setVolume('master', parseInt(e.target.value) / 100);
+            this.updateVolumePercents();
+            // 立即更新所有正在播放的音效
+            const menuMusic = document.getElementById('menu-music');
+            if (menuMusic && !menuMusic.paused) {
+                const volumes = this.assets.getAllVolumes();
+                menuMusic.volume = volumes.menuMusic * volumes.master;
+            }
+            if (this.state.isGameRunning) {
+                const ventsSound = this.assets.sounds['vents'];
+                if (ventsSound && !ventsSound.paused) {
+                    const volumes = this.assets.getAllVolumes();
+                    ventsSound.volume = volumes.gameBg * volumes.master;
+                }
+            }
+        });
         this.mainMenuBtn.addEventListener('click', () => this.showMainMenu());
         this.tutorialGotItBtn.addEventListener('click', () => this.closeTutorial());
+        
+        // Custom Night 事件
+        this.startCustomNightBtn.addEventListener('click', () => this.startCustomNight());
+        this.backToMenuBtn.addEventListener('click', () => this.hideCustomNightMenu());
+        
+        // AI滑块事件
+        this.epsteinSlider.addEventListener('input', (e) => {
+            this.epsteinValue.textContent = e.target.value;
+        });
+        this.trumpSlider.addEventListener('input', (e) => {
+            this.trumpValue.textContent = e.target.value;
+        });
+        this.hawkingSlider.addEventListener('input', (e) => {
+            this.hawkingValue.textContent = e.target.value;
+        });
+        
+        // +/- 按钮事件
+        document.querySelectorAll('.ai-btn-minus').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const aiName = btn.dataset.ai;
+                const slider = document.getElementById(`${aiName}-slider`);
+                const value = Math.max(0, parseInt(slider.value) - 1);
+                slider.value = value;
+                document.getElementById(`${aiName}-value`).textContent = value;
+            });
+        });
+        
+        document.querySelectorAll('.ai-btn-plus').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const aiName = btn.dataset.ai;
+                const slider = document.getElementById(`${aiName}-slider`);
+                const value = Math.min(20, parseInt(slider.value) + 1);
+                slider.value = value;
+                document.getElementById(`${aiName}-value`).textContent = value;
+            });
+        });
     }
     
     // 加载保存的进度
@@ -96,18 +254,89 @@ class Game {
         const night6Completed = localStorage.getItem('night6Completed');
         if (night6Completed === 'true') {
             this.starIcon2.classList.remove('hidden');
+            this.customNightBtn.classList.remove('hidden'); // 通关Night 6后解锁Custom Night
         } else {
             this.starIcon2.classList.add('hidden');
+            this.customNightBtn.classList.add('hidden');
+        }
+        
+        // 检查是否通关20/20/20 Custom Night
+        const customNight202020 = localStorage.getItem('customNight202020');
+        if (customNight202020 === 'true') {
+            this.starIcon3.classList.remove('hidden');
+        } else {
+            this.starIcon3.classList.add('hidden');
         }
         
         // 恢复到Night 1（不影响按钮显示）
         this.state.currentNight = 1;
     }
     
+    // 显示Custom Night菜单
+    showCustomNightMenu() {
+        this.mainMenu.classList.add('hidden');
+        this.customNightMenu.classList.remove('hidden');
+    }
+    
+    // 隐藏Custom Night菜单
+    hideCustomNightMenu() {
+        this.customNightMenu.classList.add('hidden');
+        this.mainMenu.classList.remove('hidden');
+    }
+    
+    // 开始Custom Night
+    async startCustomNight() {
+        const epsteinLevel = parseInt(this.epsteinSlider.value);
+        const trumpLevel = parseInt(this.trumpSlider.value);
+        const hawkingLevel = parseInt(this.hawkingSlider.value);
+        
+        // 保存自定义AI等级到state
+        this.state.customNight = true;
+        this.state.currentNight = 7; // Custom Night = Night 7
+        this.state.customAILevels = {
+            epstein: epsteinLevel,
+            trump: trumpLevel,
+            hawking: hawkingLevel
+        };
+        
+        console.log('Starting Custom Night with AI levels:', this.state.customAILevels);
+        
+        this.customNightMenu.classList.add('hidden');
+        
+        // 隐藏音量按钮和面板
+        if (this.volumeBtn) {
+            this.volumeBtn.classList.add('hidden');
+        }
+        if (this.volumePanel) {
+            this.volumePanel.classList.add('hidden');
+        }
+        
+        const menuMusic = document.getElementById('menu-music');
+        if (menuMusic) {
+            menuMusic.pause();
+            menuMusic.currentTime = 0;
+            menuMusic.loop = false;
+        }
+        
+        // 重置敌人AI状态
+        this.enemyAI.reset();
+        
+        // 直接开始游戏
+        await this.initGame();
+    }
+    
     // Continue游戏（从保存的关卡开始）
     async continueGame() {
         if (this.loadProgress()) {
             this.mainMenu.classList.add('hidden');
+            
+            // 隐藏音量按钮和面板
+            if (this.volumeBtn) {
+                this.volumeBtn.classList.add('hidden');
+            }
+            if (this.volumePanel) {
+                this.volumePanel.classList.add('hidden');
+            }
             
             const menuMusic = document.getElementById('menu-music');
             if (menuMusic) {
@@ -131,6 +360,14 @@ class Game {
         
         this.mainMenu.classList.add('hidden');
         
+        // 隐藏音量按钮和面板
+        if (this.volumeBtn) {
+            this.volumeBtn.classList.add('hidden');
+        }
+        if (this.volumePanel) {
+            this.volumePanel.classList.add('hidden');
+        }
+        
         const menuMusic = document.getElementById('menu-music');
         if (menuMusic) {
             menuMusic.pause();
@@ -151,6 +388,14 @@ class Game {
         this.clearProgress(); // 清除之前的进度
         
         this.mainMenu.classList.add('hidden');
+        
+        // 隐藏音量按钮和面板
+        if (this.volumeBtn) {
+            this.volumeBtn.classList.add('hidden');
+        }
+        if (this.volumePanel) {
+            this.volumePanel.classList.add('hidden');
+        }
         
         const menuMusic = document.getElementById('menu-music');
         if (menuMusic) {
@@ -372,7 +617,7 @@ class Game {
         
         // 创建金色霍金图片
         const goldenImg = document.createElement('img');
-        goldenImg.src = '/FNAE-HTML5-1.1.5/assets/images/goldenstephen.png';
+        goldenImg.src = '/FNAE-HTML5-1.2.2-fix/assets/images/goldenstephen.png';
         goldenImg.style.position = 'absolute';
         goldenImg.style.top = '50%';
         goldenImg.style.left = '50%';
@@ -401,7 +646,11 @@ class Game {
             const nightIntroText = document.getElementById('night-intro-text');
             
             // Update night number text
-            nightIntroText.textContent = `NIGHT ${this.state.currentNight}`;
+            if (this.state.customNight && this.state.currentNight === 7) {
+                nightIntroText.textContent = 'CUSTOM NIGHT';
+            } else {
+                nightIntroText.textContent = `NIGHT ${this.state.currentNight}`;
+            }
             
             // Show scene
             nightIntro.classList.remove('hidden');
@@ -425,6 +674,7 @@ class Game {
             }, 3500); // 1500ms fade in + 2000ms display
         });
     }
+
     
     startViewRotation() {
         const rotationLoop = () => {
@@ -648,6 +898,15 @@ class Game {
         // 立即隐藏游戏画面，防止闪烁
         this.gameScreen.classList.remove('active');
         
+        // 检查是否通关20/20/20 Custom Night
+        if (this.state.customNight && this.state.currentNight === 7) {
+            const levels = this.state.customAILevels;
+            if (levels.epstein === 20 && levels.trump === 20 && levels.hawking === 20) {
+                console.log('🌟 20/20/20 Custom Night completed!');
+                localStorage.setItem('customNight202020', 'true');
+            }
+        }
+        
         // 如果是 Night 6，播放特殊的胜利动画并标记完成
         if (this.state.currentNight === 6) {
             localStorage.setItem('night6Completed', 'true');
@@ -737,7 +996,7 @@ class Game {
                         
                         // 创建胜利画面
                         const winScreen = document.createElement('img');
-                        winScreen.src = '/FNAE-HTML5-1.1.5/assets/images/winscreen.png';
+                        winScreen.src = '/FNAE-HTML5-1.2.2-fix/assets/images/winscreen.png';
                         winScreen.style.width = '100%';
                         winScreen.style.height = '100%';
                         winScreen.style.objectFit = 'contain';
@@ -825,7 +1084,7 @@ class Game {
                 
                 // 创建night6.png图片
                 const night6Image = document.createElement('img');
-                night6Image.src = '/FNAE-HTML5-1.1.5/assets/images/night6.png';
+                night6Image.src = '/FNAE-HTML5-1.2.2-fix/assets/images/night6.png';
                 night6Image.style.width = '100%';
                 night6Image.style.height = '100%';
                 night6Image.style.objectFit = 'contain';
@@ -903,8 +1162,14 @@ class Game {
             timeDisplay.style.opacity = '0';
             
             setTimeout(() => {
+                // Custom Night 通关显示
+                if (this.state.customNight && this.state.currentNight === 7) {
+                    timeDisplay.textContent = 'CUSTOM NIGHT COMPLETE';
+                    timeDisplay.style.fontSize = '5vw';
+                    timeDisplay.style.color = '#0f0'; // 绿色表示完成
+                }
                 // 如果还有下一关，显示剩余天数（故事设定是5晚，所以总是显示5-当前关卡）
-                if (this.state.currentNight < this.state.maxNights) {
+                else if (this.state.currentNight < this.state.maxNights) {
                     const daysRemaining = 5 - this.state.currentNight; // 固定按5晚计算
                     timeDisplay.textContent = `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} until rescue`;
                     timeDisplay.style.fontSize = '5vw';
@@ -925,8 +1190,12 @@ class Game {
                 setTimeout(() => {
                     document.body.removeChild(animationContainer);
                     
+                    // Custom Night 通关后返回主菜单
+                    if (this.state.customNight && this.state.currentNight === 7) {
+                        this.showMainMenu();
+                    }
                     // 如果还有下一关，直接进入下一关
-                    if (this.state.currentNight < this.state.maxNights) {
+                    else if (this.state.currentNight < this.state.maxNights) {
                         this.state.currentNight++;
                         this.continueToNextNight();
                     } else {
@@ -935,7 +1204,7 @@ class Game {
                         this.showMainMenu();
                     }
                 }, 500);
-            }, 3000); // 改为3秒，让玩家有时间看TO BE CONTINUED
+            }, 3000); // 改为3秒，让玩家有时间看消息
         }, 3000);
     }
 
@@ -1078,12 +1347,23 @@ class Game {
         this.gameOverElement.classList.add('hidden');
         // Hide game screen, prepare to restart
         this.gameScreen.classList.remove('active');
-        this.startGame();
+        
+        // 如果是Custom Night，重新开始Custom Night
+        if (this.state.customNight && this.state.currentNight === 7) {
+            this.startCustomNight();
+        } else {
+            this.startGame();
+        }
     }
 
     showMainMenu() {
         this.gameOverElement.classList.add('hidden');
         this.gameScreen.classList.remove('active');
+        
+        // 显示音量按钮
+        if (this.volumeBtn) {
+            this.volumeBtn.classList.remove('hidden');
+        }
         
         // 关闭摄像头面板
         if (this.state.cameraOpen) {

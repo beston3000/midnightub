@@ -942,11 +942,21 @@ class CameraSystem {
         }, 1000);
     }
     
-    // 更新电击按钮显示（只在cam6且第3-5关才显示，Night 6不显示）
+    // 更新电击按钮显示（Night 3-5 和 Custom Night 中 Hawking 激活时显示）
     updateShockButtonVisibility() {
         if (this.shockHawkingBtn) {
             const currentCam = this.game.state.currentCam;
-            if (this.game.state.currentNight >= 3 && this.game.state.currentNight <= 5 && this.game.state.cameraOpen && currentCam === 'cam6') {
+            const night = this.game.state.currentNight;
+            
+            // Night 3-5 显示
+            const isNormalNight = night >= 3 && night <= 5;
+            
+            // Custom Night 且 Hawking AI > 0 时显示
+            const isCustomNightWithHawking = this.game.state.customNight && 
+                                            night === 7 && 
+                                            this.game.state.customAILevels.hawking > 0;
+            
+            if ((isNormalNight || isCustomNightWithHawking) && this.game.state.cameraOpen && currentCam === 'cam6') {
                 this.shockHawkingBtn.style.display = 'block';
             } else {
                 this.shockHawkingBtn.style.display = 'none';

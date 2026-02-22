@@ -15,6 +15,14 @@ class GameState {
         this.cameraFailed = false; // 摄像头是否故障
         this.cameraRestarting = false; // 摄像头是否正在重启
         this.controlPanelBusy = false; // 控制面板是否正在处理操作
+        
+        // Custom Night 状态
+        this.customNight = false; // 是否为自定义夜晚
+        this.customAILevels = {
+            epstein: 0,
+            trump: 0,
+            hawking: 0
+        };
     }
 
     reset() {
@@ -30,5 +38,6 @@ class GameState {
         this.cameraFailed = false;
         this.cameraRestarting = false;
         this.controlPanelBusy = false;
+        // 注意：不重置 customNight 和 customAILevels，因为它们在 initGame 之前设置
     }
 }
