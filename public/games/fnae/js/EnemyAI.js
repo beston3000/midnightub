@@ -10,7 +10,7 @@ class EnemyAI {
                 aiLevel: 12,              // AI等级 (0-20)，12/20 = 60%移动概率
                 movementInterval: [9000, 10000],  // 移动检查间隔（毫秒）[最小值, 最大值]
                 movementDuration: 1000,   // 移动动画时长（毫秒）
-                spawnDelay: 120000,        // 出场延迟（毫秒）
+                spawnDelay: 1000,        // 出场延迟（毫秒）
                 movementProbability: {    // 移动方向概率
                     forward: 0.8,         // 前进概率 100%
                     lateral: 0.1,         // 平移概率 0%（当前不支持）
