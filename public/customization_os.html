@@ -91,6 +91,12 @@
                 <button class="theme-btn" onclick="window.top.setWallpaper('synthwave')" style="border-color: #ffd700;">
                     <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#ffd700;">grid_on</span>SYNTHWAVE
                 </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('fireflies')" style="border-color: #ffb703;">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#ffb703;">flare</span>FIREFLIES
+                </button>
+                <button class="theme-btn" onclick="window.top.setWallpaper('tunnel')" style="border-color: #00f3ff;">
+                    <span class="material-symbols-outlined" style="font-size:32px; margin-bottom:5px; color:#00f3ff;">all_out</span>CYBER TUNNEL
+                </button>
             </div>
         </div>
 
@@ -130,13 +136,13 @@
         // Scanner System: Fetches from the backend API, falls back if it fails
         async function loadWallpapers() {
             const grid = document.getElementById('staticGrid');
-            let files = ["1.png", "Paper.jpeg"]; // Hardcoded fallbacks
+            let files = ["1.png", "Paper.jpeg"]; 
             
             try {
                 const res = await fetch('/api/wallpapers');
                 if (res.ok) {
                     const data = await res.json();
-                    if(data.length > 0) files = data; // Overwrite fallback if API worked
+                    if(data.length > 0) files = data; 
                 }
             } catch (e) {
                 console.log("No backend folder scanner found. Using defaults.");

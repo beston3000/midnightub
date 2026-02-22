@@ -109,7 +109,10 @@
             if (localStorage.getItem('midnight_legacy_mode') === 'true') {
                 localStorage.setItem('midnight_legacy_mode', 'false');
             } else {
+                // Instantly redirect to Legacy interface when enabled
                 localStorage.setItem('midnight_legacy_mode', 'true');
+                window.top.location.href = 'index.html';
+                return;
             }
             initLegacyBtnOS();
         };

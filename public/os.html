@@ -70,11 +70,11 @@
         .os-window[data-state="maximized"] .resize-handle { display: none; }
 
         .os-window[data-state="immersive"] {
-            position: fixed !important; /* FIXED: Pops the window out of the desktop constraint */
+            position: fixed !important; 
             top: 0 !important; left: 0 !important;
             width: 100vw !important; height: 100vh !important;
             border-radius: 0 !important; border: none !important;
-            z-index: 99999 !important; /* Now successfully forces it over taskbar */
+            z-index: 99999 !important; 
         }
         .os-window[data-state="immersive"] .resize-handle { display: none; }
         .os-window[data-state="immersive"] .window-header {
@@ -84,7 +84,6 @@
             z-index: 100;
         }
         
-        /* The invisible hover zone in the top right for Immersive Mode */
         .immersive-trigger { display: none; position: absolute; top: 0; right: 0; width: 300px; height: 20px; z-index: 101; }
         .os-window[data-state="immersive"] .immersive-trigger { display: block; }
         .os-window[data-state="immersive"] .immersive-trigger:hover ~ .window-header,
@@ -208,7 +207,7 @@
         <div class="changelog-card">
             <div class="changelog-header">
                 <h2>SYSTEM UPDATE</h2>
-                <div class="version-badge">v1.3</div>
+                <div class="version-badge">v1.3.1</div>
             </div>
             <div class="changelog-body">
                 <ul>
@@ -216,7 +215,7 @@
                     <li><strong style="color:#ffcc00">Yellow (Minimize):</strong> Hides active apps to declutter your workspace. Click the app in the taskbar to restore without duplicating windows.</li>
                     <li><strong style="color:#00ff41">Green (Maximize):</strong> Snaps the app to your screen edge while maintaining taskbar and header access.</li>
                     <li><strong style="color:var(--accent-secondary)">Purple (Immersive Fullscreen):</strong> Complete UI override. Hides the taskbar and app header. Hover in the top-right corner to reveal controls.</li>
-                    <li><strong>Settings Configuration:</strong> Added Legacy fallback toggle for legacy users.</li>
+                    <li><strong>New Live Backgrounds:</strong> Added <em>Fireflies</em> and <em>Cyber Tunnel</em> render engines.</li>
                 </ul>
             </div>
             <button class="changelog-btn" onclick="closeChangelog()">ACKNOWLEDGE</button>
@@ -225,7 +224,7 @@
 
     <script>
         // --- CHANGELOG LOGIC ---
-        const CURRENT_VERSION = 'v1.3'; 
+        const CURRENT_VERSION = 'v1.3.1'; 
         const changelogOverlay = document.getElementById('changelogOverlay');
 
         window.closeChangelog = function() {
@@ -254,7 +253,6 @@
             activeWindows: {},
 
             launch: function(appId, title, url) {
-                // If it already exists, restore it and bring to front
                 if (this.activeWindows[appId]) { 
                     this.restore(appId); 
                     return; 
@@ -263,7 +261,7 @@
                 const win = document.createElement('div');
                 win.className = 'os-window'; 
                 win.dataset.app = appId;
-                win.dataset.state = 'normal'; // Initial State
+                win.dataset.state = 'normal'; 
                 
                 this.zIndex++; 
                 win.style.zIndex = this.zIndex;
@@ -294,11 +292,8 @@
                 if (this.activeWindows[appId]) { this.activeWindows[appId].remove(); delete this.activeWindows[appId]; } 
             },
             
-            // NEW WINDOW STATES
             minimize: function(appId) {
-                if(this.activeWindows[appId]) {
-                    this.activeWindows[appId].style.display = 'none';
-                }
+                if(this.activeWindows[appId]) this.activeWindows[appId].style.display = 'none';
             },
             restore: function(appId) {
                 if(this.activeWindows[appId]) {
@@ -320,23 +315,20 @@
                     else win.dataset.state = 'immersive';
                 }
             },
-
-            bringToFront: function(winElement) { 
-                this.zIndex++; winElement.style.zIndex = this.zIndex; 
-            },
+            bringToFront: function(winElement) { this.zIndex++; winElement.style.zIndex = this.zIndex; },
             
             action: null, target: null, startX: 0, startY: 0, startW: 0, startH: 0,
             createGlass: function(cursorType) { const glass = document.createElement('div'); glass.id = 'action-glass'; glass.style.cssText = `position:fixed; inset:0; z-index:99999; cursor:${cursorType};`; document.body.appendChild(glass); },
             removeGlass: function() { const glass = document.getElementById('action-glass'); if (glass) glass.remove(); },
             
             startDrag: function(e, winElement) { 
-                if (winElement.dataset.state !== 'normal') return; // Cannot drag maxed/immersive windows
+                if (winElement.dataset.state !== 'normal') return; 
                 this.action = 'drag'; this.target = winElement; this.bringToFront(winElement); 
                 const rect = winElement.getBoundingClientRect(); this.startX = e.clientX - rect.left; this.startY = e.clientY - rect.top; this.createGlass('grabbing'); 
             },
             startResize: function(e, winElement) { 
                 e.stopPropagation(); 
-                if (winElement.dataset.state !== 'normal') return; // Cannot resize maxed/immersive windows
+                if (winElement.dataset.state !== 'normal') return; 
                 this.action = 'resize'; this.target = winElement; this.bringToFront(winElement); 
                 this.startX = e.clientX; this.startY = e.clientY; const rect = winElement.getBoundingClientRect(); this.startW = rect.width; this.startH = rect.height; this.createGlass('se-resize'); 
             },
@@ -379,6 +371,7 @@
         }
         window.addEventListener('resize', resize);
 
+        // Particle Classes
         class Star {
             constructor() { this.init(); }
             init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; this.color = Math.random() > 0.8 ? themeColors[1] : themeColors[0]; }
@@ -422,6 +415,50 @@
             }
         }
 
+        class Firefly {
+            constructor() { this.init(); this.y = Math.random() * height; }
+            init() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 100;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() * -1) - 0.5;
+                this.size = Math.random() * 3 + 1;
+                this.color = Math.random() > 0.5 ? themeColors[0] : themeColors[1];
+                this.alpha = 0;
+                this.fade = (Math.random() * 0.02) + 0.005;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.alpha += this.fade;
+                if(this.alpha > 1) { this.alpha = 1; this.fade *= -1; }
+                if(this.alpha < 0) { this.alpha = 0; this.fade *= -1; }
+                if(this.y < -10) this.init();
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.globalAlpha = Math.max(0, this.alpha); ctx.fill(); ctx.globalAlpha = 1.0;
+            }
+        }
+
+        class TunnelRing {
+            constructor(z) { this.z = z; }
+            update() {
+                this.z -= 10;
+                if (this.z <= 0) this.z = 1000;
+            }
+            draw() {
+                let scale = 800 / this.z;
+                let r = 80 * scale;
+                ctx.beginPath();
+                ctx.arc(width/2, height/2, r, 0, Math.PI*2);
+                ctx.strokeStyle = themeColors[1];
+                ctx.lineWidth = Math.min(20, Math.max(1, 3 * scale / 5));
+                ctx.globalAlpha = Math.max(0, 1 - (this.z / 1000));
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
         let currentWallpaper = localStorage.getItem('midnight_wallpaper') || 'geometric';
         
         window.setWallpaper = function(type) {
@@ -450,6 +487,10 @@
                 for(let i=0; i<numNodes; i++) particles.push(new PlexusNode());
             } else if (currentWallpaper === 'hyperspace') {
                 for(let i=0; i<200; i++) particles.push(new WarpStar());
+            } else if (currentWallpaper === 'fireflies') {
+                for(let i=0; i<100; i++) particles.push(new Firefly());
+            } else if (currentWallpaper === 'tunnel') {
+                for(let i=0; i<20; i++) particles.push(new TunnelRing(i * 50));
             }
         }
 
@@ -523,6 +564,36 @@
                 return;
             }
 
+            if (currentWallpaper === 'tunnel') {
+                ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
+                ctx.fillRect(0, 0, width, height);
+                particles.sort((a,b) => b.z - a.z); // Render from back to front
+                particles.forEach(p => { p.update(); p.draw(); });
+                
+                // Draw radiating center lines
+                ctx.beginPath();
+                for(let i=0; i<8; i++) {
+                    let angle = (i / 8) * Math.PI * 2 + (waveTime * 0.005);
+                    ctx.moveTo(width/2, height/2);
+                    ctx.lineTo(width/2 + Math.cos(angle)*width, height/2 + Math.sin(angle)*width);
+                }
+                ctx.strokeStyle = themeColors[0];
+                ctx.globalAlpha = 0.3;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+                waveTime += 1;
+                return;
+            }
+
+            if (currentWallpaper === 'fireflies') {
+                ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
+                ctx.fillRect(0, 0, width, height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                return;
+            }
+
+            // Default fallback for Starfield & Geometric
             ctx.fillStyle = 'rgba(3, 5, 8, 0.6)'; 
             ctx.fillRect(0, 0, width, height);
             
