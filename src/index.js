@@ -9,6 +9,7 @@ import path from "node:path";
 import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
+import { Server as SocketIOServer } from "socket.io"; // ADDED FOR MULTIPLAYER
 
 import { scramjetPath } from "@mercuryworkshop/scramjet/path";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
@@ -38,11 +39,54 @@ const fastify = Fastify({
 				handler(req, res);
 			})
 			.on("upgrade", (req, socket, head) => {
+                // ADDED: Let Socket.io handle its own websocket connections!
+                if (req.url.startsWith("/socket.io/")) return; 
 				if (req.url.endsWith("/wisp/")) wisp.routeRequest(req, socket, head);
 				else socket.end();
 			});
 	},
 });
+
+// --- MULTIPLAYER SETUP ---
+const io = new SocketIOServer(fastify.server, {
+    cors: { origin: "*" }
+});
+
+io.on("connection", (socket) => {
+    console.log("Player connected:", socket.id);
+
+    // Player creates a room (Host / Engineer)
+    socket.on("createRoom", (roomId) => {
+        socket.join(roomId);
+        socket.emit("roleAssigned", "engineer"); 
+        console.log(`Room ${roomId} created by ${socket.id} (Engineer)`);
+    });
+
+    // Player joins a room (Client / Watcher)
+    socket.on("joinRoom", (roomId) => {
+        const room = io.sockets.adapter.rooms.get(roomId);
+        if (room && room.size === 1) {
+            socket.join(roomId);
+            socket.emit("roleAssigned", "watcher");
+            io.to(roomId).emit("gameReady"); // Tell both players the lobby is ready
+            console.log(`${socket.id} joined ${roomId} as Watcher`);
+        } else {
+            socket.emit("roomError", "Room is full or does not exist.");
+        }
+    });
+
+    // Relay game events between the two players in the room
+    socket.on("gameEvent", (data) => {
+        if (data.roomId) {
+            socket.to(data.roomId).emit("gameEvent", data);
+        }
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Player disconnected:", socket.id);
+    });
+});
+// -------------------------
 
 // --- STATIC FILES ---
 fastify.register(fastifyStatic, { root: publicPath, decorateReply: true });
