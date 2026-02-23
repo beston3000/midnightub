@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-    <title>Midnight OS // v1.3</title>
+    <title>Midnight OS // v1.3.3</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,6 +102,12 @@
 
         .window-controls { display: flex; gap: 8px; }
         .win-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
+        
+        .win-mute { background: var(--accent-primary); opacity: 0.7; }
+        .win-mute:hover { opacity: 1; box-shadow: 0 0 10px var(--accent-primary); }
+        .win-mute.muted { background: var(--text-muted); opacity: 0.5; box-shadow: none; }
+        .win-mute.muted:hover { opacity: 1; box-shadow: 0 0 10px var(--text-muted); }
+
         .win-min { background: #ffcc00; opacity: 0.7; }
         .win-min:hover { opacity: 1; box-shadow: 0 0 10px #ffcc00; }
         .win-max { background: #00ff41; opacity: 0.7; }
@@ -207,15 +213,15 @@
         <div class="changelog-card">
             <div class="changelog-header">
                 <h2>SYSTEM UPDATE</h2>
-                <div class="version-badge">v1.3.1</div>
+                <div class="version-badge">v1.3.3</div>
             </div>
             <div class="changelog-body">
                 <ul>
+                    <li><strong>Aggressive Mute Engine:</strong> Upgraded the Cyan Mute button. It now intercepts WebAudio and HTML5 prototypes across all proxy layers, muting web games flawlessly.</li>
                     <li><strong>Upgraded Window Manager:</strong> Replaced close button with a complete OS control suite.</li>
-                    <li><strong style="color:#ffcc00">Yellow (Minimize):</strong> Hides active apps to declutter your workspace. Click the app in the taskbar to restore without duplicating windows.</li>
-                    <li><strong style="color:#00ff41">Green (Maximize):</strong> Snaps the app to your screen edge while maintaining taskbar and header access.</li>
-                    <li><strong style="color:var(--accent-secondary)">Purple (Immersive Fullscreen):</strong> Complete UI override. Hides the taskbar and app header. Hover in the top-right corner to reveal controls.</li>
-                    <li><strong>New Live Backgrounds:</strong> Added <em>Fireflies</em> and <em>Cyber Tunnel</em> render engines.</li>
+                    <li><strong style="color:#ffcc00">Yellow (Minimize):</strong> Hides active apps to declutter your workspace.</li>
+                    <li><strong style="color:#00ff41">Green (Maximize):</strong> Snaps the app to your screen edge.</li>
+                    <li><strong style="color:var(--accent-secondary)">Purple (Immersive Fullscreen):</strong> Complete UI override. Hides the taskbar and app header.</li>
                 </ul>
             </div>
             <button class="changelog-btn" onclick="closeChangelog()">ACKNOWLEDGE</button>
@@ -224,7 +230,7 @@
 
     <script>
         // --- CHANGELOG LOGIC ---
-        const CURRENT_VERSION = 'v1.3.1'; 
+        const CURRENT_VERSION = 'v1.3.3'; 
         const changelogOverlay = document.getElementById('changelogOverlay');
 
         window.closeChangelog = function() {
@@ -262,6 +268,7 @@
                 win.className = 'os-window'; 
                 win.dataset.app = appId;
                 win.dataset.state = 'normal'; 
+                win.dataset.muted = 'false';
                 
                 this.zIndex++; 
                 win.style.zIndex = this.zIndex;
@@ -275,6 +282,7 @@
                     <div class="window-header" onmousedown="WindowManager.startDrag(event, this.parentElement)">
                         <div class="window-title">${title}</div>
                         <div class="window-controls">
+                            <button class="win-btn win-mute" onmousedown="event.stopPropagation()" onclick="WindowManager.toggleMute('${appId}', this)" title="Mute Audio"></button>
                             <button class="win-btn win-min" onmousedown="event.stopPropagation()" onclick="WindowManager.minimize('${appId}')" title="Minimize"></button>
                             <button class="win-btn win-max" onmousedown="event.stopPropagation()" onclick="WindowManager.toggleMaximize('${appId}')" title="Maximize"></button>
                             <button class="win-btn win-immersive" onmousedown="event.stopPropagation()" onclick="WindowManager.toggleImmersive('${appId}')" title="Immersive Fullscreen"></button>
@@ -289,9 +297,146 @@
             },
 
             close: function(appId) { 
-                if (this.activeWindows[appId]) { this.activeWindows[appId].remove(); delete this.activeWindows[appId]; } 
+                if (this.activeWindows[appId]) { 
+                    if (this.activeWindows[appId].muteInterval) {
+                        clearInterval(this.activeWindows[appId].muteInterval);
+                    }
+                    this.activeWindows[appId].remove(); 
+                    delete this.activeWindows[appId]; 
+                } 
             },
             
+            toggleMute: function(appId, btn) {
+                const win = this.activeWindows[appId];
+                if(!win) return;
+                
+                const isMuted = win.dataset.muted === 'true';
+                const newState = !isMuted;
+                win.dataset.muted = newState;
+                
+                if (newState) {
+                    btn.classList.add('muted');
+                    btn.title = "Unmute Audio";
+                } else {
+                    btn.classList.remove('muted');
+                    btn.title = "Mute Audio";
+                }
+                
+                this.applyMuteState(appId);
+            },
+
+            // THE PROTOTYPE INTERCEPTOR
+            forceMuteIframe: function(cw, isMuted) {
+                if (!cw) return;
+                try {
+                    // Send standard message for custom apps
+                    if (cw.postMessage) cw.postMessage({ action: 'setMute', muted: isMuted }, '*');
+                    
+                    // If CORS blocks us here, it throws safely and stops.
+                    if (!cw.document) return;
+                    cw.__isMuted = isMuted;
+
+                    // 1. Mute Existing DOM Elements
+                    cw.document.querySelectorAll('audio, video').forEach(el => el.muted = isMuted);
+
+                    // 2. Suspend Known High-Level Engines
+                    if (cw.Howler) cw.Howler.mute(isMuted);
+                    if (cw.WEBAudio && cw.WEBAudio.audioContext) {
+                        if (isMuted && cw.WEBAudio.audioContext.state === 'running') cw.WEBAudio.audioContext.suspend();
+                        else if (!isMuted && cw.WEBAudio.audioContext.state === 'suspended') cw.WEBAudio.audioContext.resume();
+                    }
+
+                    // 3. Suspend previously captured Contexts/Elements
+                    if (cw.__audioContexts) {
+                        cw.__audioContexts.forEach(ctx => {
+                            if (isMuted && ctx.state === 'running') ctx.suspend();
+                            else if (!isMuted && ctx.state === 'suspended') ctx.resume();
+                        });
+                    }
+                    if (cw.__mediaElements) {
+                        cw.__mediaElements.forEach(el => el.muted = isMuted);
+                    }
+
+                    // 4. Inject Hooks ONCE per iframe window
+                    if (!cw.__muteHooked) {
+                        cw.__muteHooked = true;
+                        cw.__audioContexts = new Set();
+                        cw.__mediaElements = new Set();
+
+                        // Hook Web Audio API (Catches dynamic game sounds)
+                        if (cw.AudioNode) {
+                            const origConnect = cw.AudioNode.prototype.connect;
+                            cw.AudioNode.prototype.connect = function(...args) {
+                                cw.__audioContexts.add(this.context);
+                                if (cw.__isMuted && this.context.state === 'running') this.context.suspend();
+                                return origConnect.apply(this, args);
+                            };
+                        }
+
+                        // Block games from forcefully unmuting themselves
+                        const hookResume = (CtxClass) => {
+                            if (CtxClass) {
+                                const origResume = CtxClass.prototype.resume;
+                                CtxClass.prototype.resume = function() {
+                                    cw.__audioContexts.add(this);
+                                    if (cw.__isMuted) return Promise.resolve(); 
+                                    return origResume.call(this);
+                                };
+                            }
+                        };
+                        hookResume(cw.AudioContext);
+                        hookResume(cw.webkitAudioContext);
+
+                        // Hook HTMLMediaElement (Catches invisible new Audio() instances)
+                        if (cw.HTMLMediaElement) {
+                            const origPlay = cw.HTMLMediaElement.prototype.play;
+                            cw.HTMLMediaElement.prototype.play = function() {
+                                cw.__mediaElements.add(this);
+                                if (cw.__isMuted) this.muted = true;
+                                return origPlay.call(this);
+                            };
+                        }
+                    }
+
+                    // 5. Recursively drill down into the NEXT layer of Proxy Iframes
+                    const nested = cw.document.querySelectorAll('iframe');
+                    nested.forEach(nIfr => this.forceMuteIframe(nIfr.contentWindow, isMuted));
+
+                } catch (e) {
+                    // Fail silently on restricted cross-origin frames without breaking the loop
+                }
+            },
+
+            applyMuteState: function(appId) {
+                const win = this.activeWindows[appId];
+                if (!win) return;
+                const isMuted = win.dataset.muted === 'true';
+                
+                if (win.muteInterval) {
+                    clearInterval(win.muteInterval);
+                    win.muteInterval = null;
+                }
+
+                const mainIfr = win.querySelector('iframe');
+
+                if (!isMuted) {
+                    if (mainIfr) this.forceMuteIframe(mainIfr.contentWindow, false);
+                    return;
+                }
+
+                // Aggressive Polling: Re-apply hooks constantly to catch newly spawned iframes/sounds
+                const enforceMute = () => {
+                    if (!this.activeWindows[appId] || win.dataset.muted !== 'true') {
+                        if (win.muteInterval) clearInterval(win.muteInterval);
+                        return;
+                    }
+                    if (mainIfr) this.forceMuteIframe(mainIfr.contentWindow, true);
+                };
+
+                enforceMute();
+                win.muteInterval = setInterval(enforceMute, 500); 
+            },
+
             minimize: function(appId) {
                 if(this.activeWindows[appId]) this.activeWindows[appId].style.display = 'none';
             },
