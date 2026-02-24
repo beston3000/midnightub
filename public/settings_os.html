@@ -59,6 +59,11 @@
 
         .btn-danger { background: rgba(255, 74, 74, 0.1); color: var(--error); border-color: var(--error); }
         .btn-danger:hover { background: var(--error); color: #000; box-shadow: 0 0 15px var(--error); transform: scale(1.05); }
+
+        /* Cloak Config Buttons */
+        .btn-cloak { background: rgba(0,0,0,0.4); border: 1px solid var(--text-muted); color: var(--text-main); }
+        .btn-cloak:hover { background: rgba(255,255,255,0.05); border-color: var(--accent-primary); }
+        .btn-cloak.active { background: rgba(0, 243, 255, 0.15); border-color: var(--accent-primary); color: var(--accent-primary); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
     </style>
 </head>
 <body class="logged-out">
@@ -67,6 +72,17 @@
         <div class="header">
             <h1>SYSTEM SECURITY</h1>
             <p>Manage connection parameters and privacy settings.</p>
+        </div>
+
+        <div class="card">
+            <h2 style="color:var(--accent-primary);">TAB CLOAK PROFILE</h2>
+            <p style="color:var(--text-muted); margin-bottom: 20px;">Select the disguise used when Stealth Mode creates an invisible about:blank tab. Settings sync automatically to your cloud profile.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-cloak" id="clk-classroom" onclick="setOSCloak('classroom')">Google Classroom</button>
+                <button class="btn btn-cloak" id="clk-google" onclick="setOSCloak('google')">Google Search</button>
+                <button class="btn btn-cloak" id="clk-clever" onclick="setOSCloak('clever')">Clever</button>
+                <button class="btn btn-cloak" id="clk-canvas" onclick="setOSCloak('canvas')">Canvas</button>
+            </div>
         </div>
 
         <div class="card">
@@ -89,6 +105,33 @@
     </main>
 
     <script type="module">
+        // --- CLOAK CONFIG LOGIC ---
+        const cloakProfiles = {
+            classroom: { title: "Classes", icon: "https://ssl.gstatic.com/classroom/favicon.png", url: "https://classroom.google.com" },
+            google: { title: "Google", icon: "https://www.google.com/favicon.ico", url: "https://www.google.com" },
+            clever: { title: "Clever | Portal", icon: "https://clever.com/favicon.ico", url: "https://clever.com" },
+            canvas: { title: "Dashboard", icon: "https://du11hjcvx0uqb.cloudfront.net/br/dist/images/favicon-e10d657a73.ico", url: "https://canvas.instructure.com" }
+        };
+
+        window.setOSCloak = (type) => {
+            // Update UI
+            document.querySelectorAll('.btn-cloak').forEach(b => b.classList.remove('active'));
+            document.getElementById('clk-' + type).classList.add('active');
+            
+            // Save to Firebase and Local via the OS Master function
+            if (window.top.savePreference) {
+                window.top.savePreference('cloak', type);
+            } else {
+                localStorage.setItem('midnight_cloak', type);
+            }
+        };
+
+        // Init Cloak UI
+        const activeCloak = localStorage.getItem('midnight_cloak') || 'classroom';
+        if(document.getElementById('clk-' + activeCloak)) {
+            document.getElementById('clk-' + activeCloak).classList.add('active');
+        }
+
         // --- LEGACY MODE TOGGLE LOGIC ---
         const legacyBtnOS = document.getElementById('legacyBtnOS');
         function initLegacyBtnOS() {
@@ -109,27 +152,30 @@
             if (localStorage.getItem('midnight_legacy_mode') === 'true') {
                 localStorage.setItem('midnight_legacy_mode', 'false');
             } else {
-                // Instantly redirect to Legacy interface when enabled
                 localStorage.setItem('midnight_legacy_mode', 'true');
                 window.top.location.href = 'index.html';
                 return;
             }
             initLegacyBtnOS();
         };
-        initLegacyBtnOS(); // Run on load
+        initLegacyBtnOS(); 
 
-        // --- EXISTING LOGIC ---
+        // --- DYNAMIC STEALTH LOGIC ---
         window.activateCloak = () => {
             let win = window.open('about:blank', '_blank');
             if(!win) { alert("Popup blocker prevented stealth mode. Please allow popups."); return; }
+            
+            const currentType = localStorage.getItem('midnight_cloak') || 'classroom';
+            const profile = cloakProfiles[currentType] || cloakProfiles.classroom;
+
             let iframe = win.document.createElement('iframe');
             iframe.style.border = 'none'; iframe.style.width = '100%'; iframe.style.height = '100vh'; iframe.style.margin = '0';
             iframe.src = window.top.location.href; 
             win.document.body.style.margin = '0'; win.document.body.style.overflow = 'hidden'; win.document.body.appendChild(iframe);
-            win.document.title = "Classes";
-            let link = win.document.createElement('link'); link.rel = 'icon'; link.href = 'https://ssl.gstatic.com/classroom/favicon.png';
+            win.document.title = profile.title;
+            let link = win.document.createElement('link'); link.rel = 'icon'; link.href = profile.icon;
             win.document.head.appendChild(link);
-            window.top.location.replace('https://classroom.google.com');
+            window.top.location.replace(profile.url);
         };
 
         window.disconnectSession = () => {

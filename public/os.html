@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-    <title>Midnight OS // v1.3.3</title>
+    <title>Midnight OS // v1.4.2</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +37,10 @@
             flex-direction: column;
         }
 
+        /* STEALTH OVERLAY STYLES */
+        #stealthIntroOverlay { position: fixed; inset: 0; z-index: 999999; background: #030508; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.5s; }
+        @keyframes pulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+
         /* --- BACKGROUND FX --- */
         #static-bg { position: fixed; inset: 0; z-index: -3; background-size: cover; background-position: center; transition: background-image 0.5s ease-in-out; }
         #bg-canvas { position: fixed; inset: 0; z-index: -2; }
@@ -61,53 +65,25 @@
             min-width: 350px; min-height: 250px;
         }
 
-        /* WINDOW STATES */
-        .os-window[data-state="maximized"] {
-            top: 0 !important; left: 0 !important;
-            width: 100vw !important; height: calc(100vh - 75px) !important;
-            border-radius: 0 !important; border: none !important;
-        }
+        .os-window[data-state="maximized"] { top: 0 !important; left: 0 !important; width: 100vw !important; height: calc(100vh - 75px) !important; border-radius: 0 !important; border: none !important; }
         .os-window[data-state="maximized"] .resize-handle { display: none; }
-
-        .os-window[data-state="immersive"] {
-            position: fixed !important; 
-            top: 0 !important; left: 0 !important;
-            width: 100vw !important; height: 100vh !important;
-            border-radius: 0 !important; border: none !important;
-            z-index: 99999 !important; 
-        }
+        .os-window[data-state="immersive"] { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; border-radius: 0 !important; border: none !important; z-index: 99999 !important; }
         .os-window[data-state="immersive"] .resize-handle { display: none; }
-        .os-window[data-state="immersive"] .window-header {
-            position: absolute; top: 0; left: 0; width: 100%;
-            transform: translateY(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 100;
-        }
-        
+        .os-window[data-state="immersive"] .window-header { position: absolute; top: 0; left: 0; width: 100%; transform: translateY(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
         .immersive-trigger { display: none; position: absolute; top: 0; right: 0; width: 300px; height: 20px; z-index: 101; }
         .os-window[data-state="immersive"] .immersive-trigger { display: block; }
-        .os-window[data-state="immersive"] .immersive-trigger:hover ~ .window-header,
-        .os-window[data-state="immersive"] .window-header:hover {
-            transform: translateY(0);
-        }
+        .os-window[data-state="immersive"] .immersive-trigger:hover ~ .window-header, .os-window[data-state="immersive"] .window-header:hover { transform: translateY(0); }
 
-        .window-header {
-            height: 40px; background: rgba(0, 0, 0, 0.8);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; cursor: grab;
-        }
+        .window-header { height: 40px; background: rgba(0, 0, 0, 0.8); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; cursor: grab; }
         .window-header:active { cursor: grabbing; }
         .window-title { font-family: "Orbitron", sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--accent-primary); pointer-events: none; text-shadow: 0 0 5px var(--accent-primary);}
 
         .window-controls { display: flex; gap: 8px; }
         .win-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
-        
         .win-mute { background: var(--accent-primary); opacity: 0.7; }
         .win-mute:hover { opacity: 1; box-shadow: 0 0 10px var(--accent-primary); }
         .win-mute.muted { background: var(--text-muted); opacity: 0.5; box-shadow: none; }
         .win-mute.muted:hover { opacity: 1; box-shadow: 0 0 10px var(--text-muted); }
-
         .win-min { background: #ffcc00; opacity: 0.7; }
         .win-min:hover { opacity: 1; box-shadow: 0 0 10px #ffcc00; }
         .win-max { background: #00ff41; opacity: 0.7; }
@@ -120,20 +96,14 @@
         .window-body { flex: 1; position: relative; background: transparent; }
         .window-body iframe { width: 100%; height: 100%; border: none; background: transparent; }
 
-        .resize-handle {
-            position: absolute; bottom: 0; right: 0;
-            width: 20px; height: 20px; cursor: se-resize; z-index: 20;
-        }
-        .resize-handle::after {
-            content: ''; position: absolute; bottom: 6px; right: 6px;
-            width: 8px; height: 8px; border-right: 2px solid rgba(255,255,255,0.3); border-bottom: 2px solid rgba(255,255,255,0.3); border-radius: 2px;
-        }
+        .resize-handle { position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; cursor: se-resize; z-index: 20; }
+        .resize-handle::after { content: ''; position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-right: 2px solid rgba(255,255,255,0.3); border-bottom: 2px solid rgba(255,255,255,0.3); border-radius: 2px; }
         .resize-handle:hover::after { border-color: var(--accent-primary); }
 
         /* App Default Sizes */
         .os-window[data-app="chat"] { width: 400px; height: 650px; }
         .os-window[data-app="music"] { width: 900px; height: 650px; }
-        .os-window[data-app="settings"] { width: 500px; height: 400px; }
+        .os-window[data-app="settings"] { width: 500px; height: 450px; }
         .os-window[data-app="customization"] { width: 750px; height: 500px; }
 
         /* --- TASKBAR --- */
@@ -160,23 +130,54 @@
         }
         .app-icon:hover .material-symbols-outlined { text-shadow: 0 0 10px var(--accent-primary); }
         .sys-clock { font-family: 'Space Grotesk', monospace; font-size: 15px; color: var(--accent-primary); text-align: right; }
-
-        /* --- CHANGELOG MODAL --- */
-        .changelog-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(3, 5, 8, 0.8); backdrop-filter: blur(10px); transition: opacity 0.3s; }
-        .changelog-overlay.hidden { opacity: 0; pointer-events: none; }
-        .changelog-card { width: 500px; max-width: 90vw; background: var(--window-bg); border: 1px solid var(--accent-primary); border-radius: 16px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0, 243, 255, 0.1); font-family: 'Rajdhani', sans-serif; display: flex; flex-direction: column; gap: 20px; transform: translateY(0); transition: transform 0.3s; }
-        .changelog-overlay.hidden .changelog-card { transform: translateY(20px); }
-        .changelog-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-        .changelog-header h2 { margin: 0; font-family: 'Orbitron'; font-size: 20px; color: var(--accent-primary); text-shadow: 0 0 10px var(--accent-primary); }
-        .version-badge { background: rgba(188, 19, 254, 0.2); color: var(--accent-secondary); border: 1px solid var(--accent-secondary); padding: 4px 8px; border-radius: 8px; font-weight: bold; font-family: 'Orbitron'; font-size: 12px; }
-        .changelog-body ul { margin: 0; padding-left: 20px; color: var(--text-main); font-size: 15px; line-height: 1.6; }
-        .changelog-body li { margin-bottom: 10px; }
-        .changelog-body strong { color: var(--accent-secondary); }
-        .changelog-btn { background: rgba(0, 243, 255, 0.1); color: var(--accent-primary); border: 1px solid var(--accent-primary); padding: 10px; border-radius: 12px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; outline: none;}
-        .changelog-btn:hover { background: var(--accent-primary); color: #000; box-shadow: 0 0 15px var(--accent-primary); }
     </style>
 </head>
 <body class="logged-out">
+
+    <div id="stealthIntroOverlay">
+        <div style="position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px); pointer-events: none;"></div>
+        <h1 style="font-family: 'Orbitron', sans-serif; color: #00f3ff; font-size: clamp(24px, 5vw, 40px); letter-spacing: 4px; text-shadow: 0 0 15px rgba(0, 243, 255, 0.5); margin:0; animation: pulse 1.5s infinite alternate;">MIDNIGHT OS</h1>
+        <p style="font-family: 'Space Grotesk', sans-serif; color: #bc13fe; font-size: 16px; letter-spacing: 2px; margin-top: 15px; font-weight: bold;">CLICK TO INITIALIZE SECURE ENVIRONMENT</p>
+    </div>
+
+    <script>
+        // --- STEALTH OVERLAY LOGIC ---
+        const stealthOverlay = document.getElementById('stealthIntroOverlay');
+        const cloakProfiles = {
+            classroom: { title: "Classes", icon: "https://ssl.gstatic.com/classroom/favicon.png", url: "https://classroom.google.com" },
+            google: { title: "Google", icon: "https://www.google.com/favicon.ico", url: "https://www.google.com" },
+            clever: { title: "Clever | Portal", icon: "https://clever.com/favicon.ico", url: "https://clever.com" },
+            canvas: { title: "Dashboard", icon: "https://du11hjcvx0uqb.cloudfront.net/br/dist/images/favicon-e10d657a73.ico", url: "https://canvas.instructure.com" }
+        };
+
+        if (window !== window.top) {
+            stealthOverlay.remove();
+        } else {
+            stealthOverlay.addEventListener('click', () => {
+                const activeCloak = localStorage.getItem('midnight_cloak') || 'classroom';
+                const profile = cloakProfiles[activeCloak] || cloakProfiles.classroom;
+
+                let win = window.open('about:blank', '_blank');
+                if(!win) { 
+                    alert("Popup blocker prevented stealth mode. Please allow popups."); 
+                    stealthOverlay.remove();
+                    return; 
+                }
+                
+                let iframe = win.document.createElement('iframe');
+                iframe.style.border = 'none'; iframe.style.width = '100%'; iframe.style.height = '100vh'; iframe.style.margin = '0';
+                iframe.src = window.location.href; 
+                
+                win.document.body.style.margin = '0'; win.document.body.style.overflow = 'hidden'; 
+                win.document.body.appendChild(iframe);
+                win.document.title = profile.title;
+                let link = win.document.createElement('link'); link.rel = 'icon'; link.href = profile.icon;
+                win.document.head.appendChild(link);
+                
+                window.location.replace(profile.url);
+            });
+        }
+    </script>
 
     <div id="static-bg"></div>
     <canvas id="bg-canvas"></canvas>
@@ -209,74 +210,78 @@
         </div>
     </div>
 
-    <div id="changelogOverlay" class="changelog-overlay hidden">
-        <div class="changelog-card">
-            <div class="changelog-header">
-                <h2>SYSTEM UPDATE</h2>
-                <div class="version-badge">v1.3.3</div>
-            </div>
-            <div class="changelog-body">
-                <ul>
-                    <li><strong>Aggressive Mute Engine:</strong> Upgraded the Cyan Mute button. It now intercepts WebAudio and HTML5 prototypes across all proxy layers, muting web games flawlessly.</li>
-                    <li><strong>Upgraded Window Manager:</strong> Replaced close button with a complete OS control suite.</li>
-                    <li><strong style="color:#ffcc00">Yellow (Minimize):</strong> Hides active apps to declutter your workspace.</li>
-                    <li><strong style="color:#00ff41">Green (Maximize):</strong> Snaps the app to your screen edge.</li>
-                    <li><strong style="color:var(--accent-secondary)">Purple (Immersive Fullscreen):</strong> Complete UI override. Hides the taskbar and app header.</li>
-                </ul>
-            </div>
-            <button class="changelog-btn" onclick="closeChangelog()">ACKNOWLEDGE</button>
-        </div>
-    </div>
-
     <script>
-        // --- CHANGELOG LOGIC ---
-        const CURRENT_VERSION = 'v1.3.3'; 
-        const changelogOverlay = document.getElementById('changelogOverlay');
-
-        window.closeChangelog = function() {
-            localStorage.setItem(`midnight_changelog_${CURRENT_VERSION}`, 'true');
-            changelogOverlay.classList.add('hidden');
+        // --- GLOBAL THEME & CLOAK PREFERENCE HANDLER ---
+        window.themeMap = {
+            'midnight': {p: '#00f3ff', s: '#bc13fe'},
+            'matrix': {p: '#00ff41', s: '#008f11'},
+            'bloodmoon': {p: '#ff2a2a', s: '#ff8c00'},
+            'vaporwave': {p: '#ff00c8', s: '#00f3ff'},
+            'solar': {p: '#ffd700', s: '#ff8c00'},
+            'frost': {p: '#ffffff', s: '#00f3ff'},
+            'camden': {p: '#ff9ebd', s: '#4a2511'},
+            'cyberpunk': {p: '#fcee0a', s: '#ff003c'},
+            'dracula': {p: '#ff79c6', s: '#bd93f9'},
+            'ocean': {p: '#00b4d8', s: '#03045e'},
+            'forest': {p: '#aacc00', s: '#2d6a4f'},
+            'outrun': {p: '#ea00d9', s: '#711c91'},
+            'gold': {p: '#ffb703', s: '#fb8500'},
+            'monochrome': {p: '#ffffff', s: '#666666'},
+            'toxic': {p: '#ccff00', s: '#00ff00'},
+            'sunset': {p: '#ff7f50', s: '#6a0572'}
         };
 
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'class') {
-                    if (!document.body.classList.contains('logged-out')) {
-                        if (!localStorage.getItem(`midnight_changelog_${CURRENT_VERSION}`)) {
-                            changelogOverlay.classList.remove('hidden');
-                        }
-                        observer.disconnect(); 
-                    }
-                }
+        window.applyMidnightTheme = function(themeName, save = true) {
+            localStorage.setItem('midnight_theme', themeName);
+            const colors = window.themeMap[themeName] || window.themeMap['midnight'];
+            
+            // 1. Inject into Main OS
+            document.documentElement.style.setProperty('--accent-primary', colors.p);
+            document.documentElement.style.setProperty('--accent-secondary', colors.s);
+
+            // 2. Inject into all currently open App Iframes
+            document.querySelectorAll('iframe').forEach(ifr => {
+                try {
+                    ifr.contentWindow.document.documentElement.style.setProperty('--accent-primary', colors.p);
+                    ifr.contentWindow.document.documentElement.style.setProperty('--accent-secondary', colors.s);
+                } catch(e) {} // Fails silently on secure proxies
             });
-        });
-        observer.observe(document.body, { attributes: true });
+
+            window.dispatchEvent(new Event('storage')); 
+            if (save && window.savePreference) window.savePreference('theme', themeName);
+        };
+
+        window.setWallpaper = function(type, save = true) {
+            window.currentWallpaper = type;
+            localStorage.setItem('midnight_wallpaper', type);
+            if (save && window.savePreference) window.savePreference('wallpaper', type);
+            if (type.startsWith('image:')) {
+                const filename = type.split(':')[1];
+                document.getElementById('static-bg').style.backgroundImage = `url('wallpapers/${filename}')`;
+                if(ctx) ctx.clearRect(0, 0, width, height); 
+            } else {
+                document.getElementById('static-bg').style.backgroundImage = 'none';
+                initBackground();
+            }
+        };
+
+        // --- FIX FOR ABOUT:BLANK IFRAME SCOPING ---
+        try { window.top.setWallpaper = window.setWallpaper; } catch(e) {}
+        try { window.parent.setWallpaper = window.setWallpaper; } catch(e) {}
+        try { window.top.applyMidnightTheme = window.applyMidnightTheme; } catch(e) {}
+        try { window.parent.applyMidnightTheme = window.applyMidnightTheme; } catch(e) {}
 
         // --- ENHANCED WINDOW MANAGER ---
         const WindowManager = {
-            desktop: document.getElementById('desktop'), 
-            zIndex: 100, 
-            activeWindows: {},
-
+            desktop: document.getElementById('desktop'), zIndex: 100, activeWindows: {},
+            
             launch: function(appId, title, url) {
-                if (this.activeWindows[appId]) { 
-                    this.restore(appId); 
-                    return; 
-                }
-
-                const win = document.createElement('div');
-                win.className = 'os-window'; 
-                win.dataset.app = appId;
-                win.dataset.state = 'normal'; 
-                win.dataset.muted = 'false';
+                if (this.activeWindows[appId]) { this.restore(appId); return; }
+                const win = document.createElement('div'); win.className = 'os-window'; win.dataset.app = appId; win.dataset.state = 'normal'; win.dataset.muted = 'false';
+                this.zIndex++; win.style.zIndex = this.zIndex;
+                const offset = Object.keys(this.activeWindows).length * 30; win.style.top = `${50 + offset}px`; win.style.left = `${100 + offset}px`;
                 
-                this.zIndex++; 
-                win.style.zIndex = this.zIndex;
-                
-                const offset = Object.keys(this.activeWindows).length * 30;
-                win.style.top = `${50 + offset}px`; 
-                win.style.left = `${100 + offset}px`;
-                
+                // Note the new onload function -> applyThemeToIframe
                 win.innerHTML = `
                     <div class="immersive-trigger"></div>
                     <div class="window-header" onmousedown="WindowManager.startDrag(event, this.parentElement)">
@@ -289,194 +294,62 @@
                             <button class="win-btn win-close" onmousedown="event.stopPropagation()" onclick="WindowManager.close('${appId}')" title="Close"></button>
                         </div>
                     </div>
-                    <div class="window-body"><iframe src="${url}"></iframe><div class="resize-handle" onmousedown="WindowManager.startResize(event, this.parentElement.parentElement)"></div></div>
+                    <div class="window-body"><iframe src="${url}" onload="WindowManager.applyMuteState('${appId}'); WindowManager.applyThemeToIframe(this);"></iframe><div class="resize-handle" onmousedown="WindowManager.startResize(event, this.parentElement.parentElement)"></div></div>
                 `;
                 win.addEventListener('mousedown', () => this.bringToFront(win));
-                this.desktop.appendChild(win); 
-                this.activeWindows[appId] = win;
+                this.desktop.appendChild(win); this.activeWindows[appId] = win;
             },
 
-            close: function(appId) { 
-                if (this.activeWindows[appId]) { 
-                    if (this.activeWindows[appId].muteInterval) {
-                        clearInterval(this.activeWindows[appId].muteInterval);
-                    }
-                    this.activeWindows[appId].remove(); 
-                    delete this.activeWindows[appId]; 
-                } 
-            },
-            
-            toggleMute: function(appId, btn) {
-                const win = this.activeWindows[appId];
-                if(!win) return;
-                
-                const isMuted = win.dataset.muted === 'true';
-                const newState = !isMuted;
-                win.dataset.muted = newState;
-                
-                if (newState) {
-                    btn.classList.add('muted');
-                    btn.title = "Unmute Audio";
-                } else {
-                    btn.classList.remove('muted');
-                    btn.title = "Mute Audio";
-                }
-                
-                this.applyMuteState(appId);
+            applyThemeToIframe: function(ifr) {
+                try {
+                    const currentTheme = localStorage.getItem('midnight_theme') || 'midnight';
+                    const colors = window.themeMap[currentTheme] || window.themeMap['midnight'];
+                    ifr.contentWindow.document.documentElement.style.setProperty('--accent-primary', colors.p);
+                    ifr.contentWindow.document.documentElement.style.setProperty('--accent-secondary', colors.s);
+                } catch(e) {}
             },
 
-            // THE PROTOTYPE INTERCEPTOR
+            close: function(appId) { if (this.activeWindows[appId]) { if (this.activeWindows[appId].muteInterval) clearInterval(this.activeWindows[appId].muteInterval); this.activeWindows[appId].remove(); delete this.activeWindows[appId]; } },
+            toggleMute: function(appId, btn) { const win = this.activeWindows[appId]; if(!win) return; const newState = !(win.dataset.muted === 'true'); win.dataset.muted = newState; if (newState) { btn.classList.add('muted'); btn.title = "Unmute Audio"; } else { btn.classList.remove('muted'); btn.title = "Mute Audio"; } this.applyMuteState(appId); },
             forceMuteIframe: function(cw, isMuted) {
                 if (!cw) return;
                 try {
-                    // Send standard message for custom apps
                     if (cw.postMessage) cw.postMessage({ action: 'setMute', muted: isMuted }, '*');
-                    
-                    // If CORS blocks us here, it throws safely and stops.
                     if (!cw.document) return;
                     cw.__isMuted = isMuted;
-
-                    // 1. Mute Existing DOM Elements
                     cw.document.querySelectorAll('audio, video').forEach(el => el.muted = isMuted);
-
-                    // 2. Suspend Known High-Level Engines
                     if (cw.Howler) cw.Howler.mute(isMuted);
-                    if (cw.WEBAudio && cw.WEBAudio.audioContext) {
-                        if (isMuted && cw.WEBAudio.audioContext.state === 'running') cw.WEBAudio.audioContext.suspend();
-                        else if (!isMuted && cw.WEBAudio.audioContext.state === 'suspended') cw.WEBAudio.audioContext.resume();
-                    }
-
-                    // 3. Suspend previously captured Contexts/Elements
-                    if (cw.__audioContexts) {
-                        cw.__audioContexts.forEach(ctx => {
-                            if (isMuted && ctx.state === 'running') ctx.suspend();
-                            else if (!isMuted && ctx.state === 'suspended') ctx.resume();
-                        });
-                    }
-                    if (cw.__mediaElements) {
-                        cw.__mediaElements.forEach(el => el.muted = isMuted);
-                    }
-
-                    // 4. Inject Hooks ONCE per iframe window
+                    if (cw.WEBAudio && cw.WEBAudio.audioContext) { if (isMuted && cw.WEBAudio.audioContext.state === 'running') cw.WEBAudio.audioContext.suspend(); else if (!isMuted && cw.WEBAudio.audioContext.state === 'suspended') cw.WEBAudio.audioContext.resume(); }
+                    if (cw.__audioContexts) cw.__audioContexts.forEach(ctx => { if (isMuted && ctx.state === 'running') ctx.suspend(); else if (!isMuted && ctx.state === 'suspended') ctx.resume(); });
+                    if (cw.__mediaElements) cw.__mediaElements.forEach(el => el.muted = isMuted);
                     if (!cw.__muteHooked) {
-                        cw.__muteHooked = true;
-                        cw.__audioContexts = new Set();
-                        cw.__mediaElements = new Set();
-
-                        // Hook Web Audio API (Catches dynamic game sounds)
-                        if (cw.AudioNode) {
-                            const origConnect = cw.AudioNode.prototype.connect;
-                            cw.AudioNode.prototype.connect = function(...args) {
-                                cw.__audioContexts.add(this.context);
-                                if (cw.__isMuted && this.context.state === 'running') this.context.suspend();
-                                return origConnect.apply(this, args);
-                            };
-                        }
-
-                        // Block games from forcefully unmuting themselves
-                        const hookResume = (CtxClass) => {
-                            if (CtxClass) {
-                                const origResume = CtxClass.prototype.resume;
-                                CtxClass.prototype.resume = function() {
-                                    cw.__audioContexts.add(this);
-                                    if (cw.__isMuted) return Promise.resolve(); 
-                                    return origResume.call(this);
-                                };
-                            }
-                        };
-                        hookResume(cw.AudioContext);
-                        hookResume(cw.webkitAudioContext);
-
-                        // Hook HTMLMediaElement (Catches invisible new Audio() instances)
-                        if (cw.HTMLMediaElement) {
-                            const origPlay = cw.HTMLMediaElement.prototype.play;
-                            cw.HTMLMediaElement.prototype.play = function() {
-                                cw.__mediaElements.add(this);
-                                if (cw.__isMuted) this.muted = true;
-                                return origPlay.call(this);
-                            };
-                        }
+                        cw.__muteHooked = true; cw.__audioContexts = new Set(); cw.__mediaElements = new Set();
+                        if (cw.AudioNode) { const origConnect = cw.AudioNode.prototype.connect; cw.AudioNode.prototype.connect = function(...args) { cw.__audioContexts.add(this.context); if (cw.__isMuted && this.context.state === 'running') this.context.suspend(); return origConnect.apply(this, args); }; }
+                        const hookResume = (CtxClass) => { if (CtxClass) { const origResume = CtxClass.prototype.resume; CtxClass.prototype.resume = function() { cw.__audioContexts.add(this); if (cw.__isMuted) return Promise.resolve(); return origResume.call(this); }; } };
+                        hookResume(cw.AudioContext); hookResume(cw.webkitAudioContext);
+                        if (cw.HTMLMediaElement) { const origPlay = cw.HTMLMediaElement.prototype.play; cw.HTMLMediaElement.prototype.play = function() { cw.__mediaElements.add(this); if (cw.__isMuted) this.muted = true; return origPlay.call(this); }; }
                     }
-
-                    // 5. Recursively drill down into the NEXT layer of Proxy Iframes
-                    const nested = cw.document.querySelectorAll('iframe');
-                    nested.forEach(nIfr => this.forceMuteIframe(nIfr.contentWindow, isMuted));
-
-                } catch (e) {
-                    // Fail silently on restricted cross-origin frames without breaking the loop
-                }
+                    cw.document.querySelectorAll('iframe').forEach(nIfr => this.forceMuteIframe(nIfr.contentWindow, isMuted));
+                } catch (e) {}
             },
-
             applyMuteState: function(appId) {
-                const win = this.activeWindows[appId];
-                if (!win) return;
-                const isMuted = win.dataset.muted === 'true';
-                
-                if (win.muteInterval) {
-                    clearInterval(win.muteInterval);
-                    win.muteInterval = null;
-                }
-
+                const win = this.activeWindows[appId]; if (!win) return; const isMuted = win.dataset.muted === 'true';
+                if (win.muteInterval) { clearInterval(win.muteInterval); win.muteInterval = null; }
                 const mainIfr = win.querySelector('iframe');
-
-                if (!isMuted) {
-                    if (mainIfr) this.forceMuteIframe(mainIfr.contentWindow, false);
-                    return;
-                }
-
-                // Aggressive Polling: Re-apply hooks constantly to catch newly spawned iframes/sounds
-                const enforceMute = () => {
-                    if (!this.activeWindows[appId] || win.dataset.muted !== 'true') {
-                        if (win.muteInterval) clearInterval(win.muteInterval);
-                        return;
-                    }
-                    if (mainIfr) this.forceMuteIframe(mainIfr.contentWindow, true);
-                };
-
-                enforceMute();
-                win.muteInterval = setInterval(enforceMute, 500); 
+                if (!isMuted) { if (mainIfr) this.forceMuteIframe(mainIfr.contentWindow, false); return; }
+                const enforceMute = () => { if (!this.activeWindows[appId] || win.dataset.muted !== 'true') { if (win.muteInterval) clearInterval(win.muteInterval); return; } if (mainIfr) this.forceMuteIframe(mainIfr.contentWindow, true); };
+                enforceMute(); win.muteInterval = setInterval(enforceMute, 500); 
             },
-
-            minimize: function(appId) {
-                if(this.activeWindows[appId]) this.activeWindows[appId].style.display = 'none';
-            },
-            restore: function(appId) {
-                if(this.activeWindows[appId]) {
-                    this.activeWindows[appId].style.display = 'flex';
-                    this.bringToFront(this.activeWindows[appId]);
-                }
-            },
-            toggleMaximize: function(appId) {
-                const win = this.activeWindows[appId];
-                if(win) {
-                    if(win.dataset.state === 'maximized') win.dataset.state = 'normal';
-                    else win.dataset.state = 'maximized';
-                }
-            },
-            toggleImmersive: function(appId) {
-                const win = this.activeWindows[appId];
-                if(win) {
-                    if(win.dataset.state === 'immersive') win.dataset.state = 'normal';
-                    else win.dataset.state = 'immersive';
-                }
-            },
+            minimize: function(appId) { if(this.activeWindows[appId]) this.activeWindows[appId].style.display = 'none'; },
+            restore: function(appId) { if(this.activeWindows[appId]) { this.activeWindows[appId].style.display = 'flex'; this.bringToFront(this.activeWindows[appId]); } },
+            toggleMaximize: function(appId) { const win = this.activeWindows[appId]; if(win) { if(win.dataset.state === 'maximized') win.dataset.state = 'normal'; else win.dataset.state = 'maximized'; } },
+            toggleImmersive: function(appId) { const win = this.activeWindows[appId]; if(win) { if(win.dataset.state === 'immersive') win.dataset.state = 'normal'; else win.dataset.state = 'immersive'; } },
             bringToFront: function(winElement) { this.zIndex++; winElement.style.zIndex = this.zIndex; },
-            
             action: null, target: null, startX: 0, startY: 0, startW: 0, startH: 0,
             createGlass: function(cursorType) { const glass = document.createElement('div'); glass.id = 'action-glass'; glass.style.cssText = `position:fixed; inset:0; z-index:99999; cursor:${cursorType};`; document.body.appendChild(glass); },
             removeGlass: function() { const glass = document.getElementById('action-glass'); if (glass) glass.remove(); },
-            
-            startDrag: function(e, winElement) { 
-                if (winElement.dataset.state !== 'normal') return; 
-                this.action = 'drag'; this.target = winElement; this.bringToFront(winElement); 
-                const rect = winElement.getBoundingClientRect(); this.startX = e.clientX - rect.left; this.startY = e.clientY - rect.top; this.createGlass('grabbing'); 
-            },
-            startResize: function(e, winElement) { 
-                e.stopPropagation(); 
-                if (winElement.dataset.state !== 'normal') return; 
-                this.action = 'resize'; this.target = winElement; this.bringToFront(winElement); 
-                this.startX = e.clientX; this.startY = e.clientY; const rect = winElement.getBoundingClientRect(); this.startW = rect.width; this.startH = rect.height; this.createGlass('se-resize'); 
-            },
+            startDrag: function(e, winElement) { if (winElement.dataset.state !== 'normal') return; this.action = 'drag'; this.target = winElement; this.bringToFront(winElement); const rect = winElement.getBoundingClientRect(); this.startX = e.clientX - rect.left; this.startY = e.clientY - rect.top; this.createGlass('grabbing'); },
+            startResize: function(e, winElement) { e.stopPropagation(); if (winElement.dataset.state !== 'normal') return; this.action = 'resize'; this.target = winElement; this.bringToFront(winElement); this.startX = e.clientX; this.startY = e.clientY; const rect = winElement.getBoundingClientRect(); this.startW = rect.width; this.startH = rect.height; this.createGlass('se-resize'); },
             doAction: function(e) {
                 if (!this.action || !this.target) return;
                 if (this.action === 'drag') { let newX = e.clientX - this.startX; let newY = e.clientY - this.startY; if (newY < 0) newY = 0; this.target.style.left = `${newX}px`; this.target.style.top = `${newY}px`; } 
@@ -487,282 +360,86 @@
 
         document.addEventListener('mousemove', (e) => WindowManager.doAction(e));
         document.addEventListener('mouseup', () => WindowManager.stopAction());
-
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('sysClock').innerHTML = `${now.toLocaleTimeString('en-US', { hour12: true })}<br><span style="font-size:10px; color:var(--text-muted)">SYS.ONLINE</span>`;
-        }, 1000);
+        setInterval(() => { const now = new Date(); document.getElementById('sysClock').innerHTML = `${now.toLocaleTimeString('en-US', { hour12: true })}<br><span style="font-size:10px; color:var(--text-muted)">SYS.ONLINE</span>`; }, 1000);
 
         // --- DYNAMIC MULTI-WALLPAPER ENGINE ---
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        const staticBg = document.getElementById('static-bg');
-        let width, height, particles = [];
-        
-        let matrixColumns = [];
-        let waveTime = 0;
-        
-        let themeColors = ['#00f3ff', '#bc13fe'];
-        setInterval(() => {
-            const style = getComputedStyle(document.documentElement);
-            themeColors[0] = style.getPropertyValue('--accent-primary').trim() || '#00f3ff';
-            themeColors[1] = style.getPropertyValue('--accent-secondary').trim() || '#bc13fe';
-        }, 500); 
-
-        function resize() { 
-            width = window.innerWidth; height = window.innerHeight; 
-            canvas.width = width; canvas.height = height; 
-            initBackground(); 
-        }
+        const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+        let width, height, particles = [], matrixColumns = [], waveTime = 0, themeColors = ['#00f3ff', '#bc13fe'];
+        setInterval(() => { const style = getComputedStyle(document.documentElement); themeColors[0] = style.getPropertyValue('--accent-primary').trim() || '#00f3ff'; themeColors[1] = style.getPropertyValue('--accent-secondary').trim() || '#bc13fe'; }, 500); 
+        function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; initBackground(); }
         window.addEventListener('resize', resize);
-
-        // Particle Classes
-        class Star {
-            constructor() { this.init(); }
-            init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; this.color = Math.random() > 0.8 ? themeColors[1] : themeColors[0]; }
-            update() { this.z -= 2; if(this.z <= 0) { this.init(); this.z = width; } }
-            draw() { const sx = (this.x/this.z)*width + width/2; const sy = (this.y/this.z)*height + height/2; const r = (1 - this.z/width)*2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0,r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
-        }
-
-        class PlexusNode {
-            constructor() {
-                this.x = Math.random() * width; this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() - 0.5) * 1.5;
-                this.radius = Math.random() * 2 + 1;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                if(this.x < 0 || this.x > width) this.vx *= -1;
-                if(this.y < 0 || this.y > height) this.vy *= -1;
-            }
-            draw() {
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-                ctx.fillStyle = themeColors[0]; ctx.fill();
-            }
-        }
-
-        class WarpStar {
-            constructor() { this.init(); }
-            init() {
-                this.x = (Math.random() - 0.5) * width;
-                this.y = (Math.random() - 0.5) * height;
-                this.z = Math.random() * width;
-                this.color = Math.random() > 0.5 ? themeColors[0] : themeColors[1];
-            }
-            update() { this.z -= 15; if(this.z <= 0) this.init(); }
-            draw() {
-                let sx = (this.x / this.z) * width + width/2;
-                let sy = (this.y / this.z) * height + height/2;
-                let px = (this.x / (this.z + 15)) * width + width/2;
-                let py = (this.y / (this.z + 15)) * height + height/2;
-                ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy);
-                ctx.strokeStyle = this.color; ctx.lineWidth = (1 - this.z/width) * 4; ctx.stroke();
-            }
-        }
-
-        class Firefly {
-            constructor() { this.init(); this.y = Math.random() * height; }
-            init() {
-                this.x = Math.random() * width;
-                this.y = height + Math.random() * 100;
-                this.vx = (Math.random() - 0.5) * 1.5;
-                this.vy = (Math.random() * -1) - 0.5;
-                this.size = Math.random() * 3 + 1;
-                this.color = Math.random() > 0.5 ? themeColors[0] : themeColors[1];
-                this.alpha = 0;
-                this.fade = (Math.random() * 0.02) + 0.005;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                this.alpha += this.fade;
-                if(this.alpha > 1) { this.alpha = 1; this.fade *= -1; }
-                if(this.alpha < 0) { this.alpha = 0; this.fade *= -1; }
-                if(this.y < -10) this.init();
-            }
-            draw() {
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color; ctx.globalAlpha = Math.max(0, this.alpha); ctx.fill(); ctx.globalAlpha = 1.0;
-            }
-        }
-
-        class TunnelRing {
-            constructor(z) { this.z = z; }
-            update() {
-                this.z -= 10;
-                if (this.z <= 0) this.z = 1000;
-            }
-            draw() {
-                let scale = 800 / this.z;
-                let r = 80 * scale;
-                ctx.beginPath();
-                ctx.arc(width/2, height/2, r, 0, Math.PI*2);
-                ctx.strokeStyle = themeColors[1];
-                ctx.lineWidth = Math.min(20, Math.max(1, 3 * scale / 5));
-                ctx.globalAlpha = Math.max(0, 1 - (this.z / 1000));
-                ctx.stroke();
-                ctx.globalAlpha = 1.0;
-            }
-        }
-
-        let currentWallpaper = localStorage.getItem('midnight_wallpaper') || 'geometric';
         
-        window.setWallpaper = function(type) {
-            currentWallpaper = type;
-            localStorage.setItem('midnight_wallpaper', type);
-            
-            if (type.startsWith('image:')) {
-                const filename = type.split(':')[1];
-                staticBg.style.backgroundImage = `url('wallpapers/${filename}')`;
-                ctx.clearRect(0, 0, width, height); 
-            } else {
-                staticBg.style.backgroundImage = 'none';
-                initBackground();
-            }
-        };
-
+        class Star { constructor() { this.init(); } init() { this.x = (Math.random()-0.5)*width*2; this.y = (Math.random()-0.5)*height*2; this.z = Math.random()*width; this.color = Math.random() > 0.8 ? themeColors[1] : themeColors[0]; } update() { this.z -= 2; if(this.z <= 0) { this.init(); this.z = width; } } draw() { const sx = (this.x/this.z)*width + width/2; const sy = (this.y/this.z)*height + height/2; const r = (1 - this.z/width)*2; ctx.beginPath(); ctx.arc(sx, sy, Math.max(0,r), 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); } }
+        class PlexusNode { constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() - 0.5) * 1.5; this.radius = Math.random() * 2 + 1; } update() { this.x += this.vx; this.y += this.vy; if(this.x < 0 || this.x > width) this.vx *= -1; if(this.y < 0 || this.y > height) this.vy *= -1; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fillStyle = themeColors[0]; ctx.fill(); } }
+        class WarpStar { constructor() { this.init(); } init() { this.x = (Math.random() - 0.5) * width; this.y = (Math.random() - 0.5) * height; this.z = Math.random() * width; this.color = Math.random() > 0.5 ? themeColors[0] : themeColors[1]; } update() { this.z -= 15; if(this.z <= 0) this.init(); } draw() { let sx = (this.x / this.z) * width + width/2; let sy = (this.y / this.z) * height + height/2; let px = (this.x / (this.z + 15)) * width + width/2; let py = (this.y / (this.z + 15)) * height + height/2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.strokeStyle = this.color; ctx.lineWidth = (1 - this.z/width) * 4; ctx.stroke(); } }
+        class Firefly { constructor() { this.init(); this.y = Math.random() * height; } init() { this.x = Math.random() * width; this.y = height + Math.random() * 100; this.vx = (Math.random() - 0.5) * 1.5; this.vy = (Math.random() * -1) - 0.5; this.size = Math.random() * 3 + 1; this.color = Math.random() > 0.5 ? themeColors[0] : themeColors[1]; this.alpha = 0; this.fade = (Math.random() * 0.02) + 0.005; } update() { this.x += this.vx; this.y += this.vy; this.alpha += this.fade; if(this.alpha > 1) { this.alpha = 1; this.fade *= -1; } if(this.alpha < 0) { this.alpha = 0; this.fade *= -1; } if(this.y < -10) this.init(); } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.globalAlpha = Math.max(0, this.alpha); ctx.fill(); ctx.globalAlpha = 1.0; } }
+        class TunnelRing { constructor(z) { this.z = z; } update() { this.z -= 10; if (this.z <= 0) this.z = 1000; } draw() { let scale = 800 / this.z; let r = 80 * scale; ctx.beginPath(); ctx.arc(width/2, height/2, r, 0, Math.PI*2); ctx.strokeStyle = themeColors[1]; ctx.lineWidth = Math.min(20, Math.max(1, 3 * scale / 5)); ctx.globalAlpha = Math.max(0, 1 - (this.z / 1000)); ctx.stroke(); ctx.globalAlpha = 1.0; } }
+        
+        window.currentWallpaper = localStorage.getItem('midnight_wallpaper') || 'geometric';
         function initBackground() {
-            particles = [];
-            matrixColumns = Array(Math.floor(width / 20)).fill(0);
-            
-            if (currentWallpaper === 'starfield') {
-                for(let i=0; i<150; i++) particles.push(new Star());
-            } else if (currentWallpaper === 'geometric') {
-                let numNodes = Math.floor((width * height) / 12000); 
-                if(numNodes > 100) numNodes = 100; 
-                for(let i=0; i<numNodes; i++) particles.push(new PlexusNode());
-            } else if (currentWallpaper === 'hyperspace') {
-                for(let i=0; i<200; i++) particles.push(new WarpStar());
-            } else if (currentWallpaper === 'fireflies') {
-                for(let i=0; i<100; i++) particles.push(new Firefly());
-            } else if (currentWallpaper === 'tunnel') {
-                for(let i=0; i<20; i++) particles.push(new TunnelRing(i * 50));
-            }
+            particles = []; matrixColumns = Array(Math.floor(width / 20)).fill(0);
+            if (window.currentWallpaper === 'starfield') { for(let i=0; i<150; i++) particles.push(new Star()); }
+            else if (window.currentWallpaper === 'geometric') { let numNodes = Math.floor((width * height) / 12000); if(numNodes > 100) numNodes = 100; for(let i=0; i<numNodes; i++) particles.push(new PlexusNode()); }
+            else if (window.currentWallpaper === 'hyperspace') { for(let i=0; i<200; i++) particles.push(new WarpStar()); }
+            else if (window.currentWallpaper === 'fireflies') { for(let i=0; i<100; i++) particles.push(new Firefly()); }
+            else if (window.currentWallpaper === 'tunnel') { for(let i=0; i<20; i++) particles.push(new TunnelRing(i * 50)); }
         }
-
-        resize(); 
-        window.setWallpaper(currentWallpaper);
+        resize(); window.setWallpaper(window.currentWallpaper, false);
 
         function animate() {
             requestAnimationFrame(animate);
-            if (currentWallpaper.startsWith('image:')) return; 
-            
-            if (currentWallpaper === 'matrix') {
-                ctx.fillStyle = 'rgba(3, 5, 8, 0.1)';
-                ctx.fillRect(0, 0, width, height);
-                ctx.fillStyle = themeColors[0];
-                ctx.font = '15pt monospace';
-                matrixColumns.forEach((y, i) => {
-                    const text = String.fromCharCode(Math.random() * 128 + 1000);
-                    ctx.fillText(text, i * 20, y);
-                    if (y > height && Math.random() > 0.975) matrixColumns[i] = 0;
-                    else matrixColumns[i] = y + 20;
-                });
-                return;
-            }
-
-            if (currentWallpaper === 'waves') {
-                ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
-                ctx.fillRect(0, 0, width, height);
-                waveTime += 0.02;
-                for(let i=0; i<3; i++) {
-                    ctx.beginPath();
-                    for(let x=0; x<=width; x+=20) {
-                        let y = height/2 + Math.sin(x*0.005 + waveTime + i) * 150 + Math.cos(x*0.003 - waveTime + i*2) * 80;
-                        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-                    }
-                    ctx.strokeStyle = i===0 ? themeColors[0] : themeColors[1];
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-                return;
-            }
-
-            if (currentWallpaper === 'synthwave') {
-                ctx.fillStyle = 'rgba(3, 5, 8, 1)';
-                ctx.fillRect(0, 0, width, height);
-                let horizon = height * 0.55;
-                waveTime = (waveTime || 0) + 1.5;
-
-                ctx.beginPath();
-                ctx.arc(width/2, horizon, 100, Math.PI, 0);
-                let grad = ctx.createLinearGradient(0, horizon - 100, 0, horizon);
-                grad.addColorStop(0, themeColors[1]);
-                grad.addColorStop(1, themeColors[0]);
-                ctx.fillStyle = grad;
-                ctx.fill();
-
-                ctx.strokeStyle = themeColors[0];
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                for(let z = (waveTime % 20); z < 300; z += 20) {
-                    let y = horizon + Math.pow(z, 1.2); 
-                    if (y < height) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
-                }
-                ctx.stroke();
-
-                ctx.strokeStyle = themeColors[1];
-                ctx.beginPath();
-                for(let x = -width*2; x < width * 3; x += 80) {
-                    ctx.moveTo(width/2, horizon); ctx.lineTo(x, height);
-                }
-                ctx.stroke();
-                return;
-            }
-
-            if (currentWallpaper === 'tunnel') {
-                ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
-                ctx.fillRect(0, 0, width, height);
-                particles.sort((a,b) => b.z - a.z); // Render from back to front
-                particles.forEach(p => { p.update(); p.draw(); });
-                
-                // Draw radiating center lines
-                ctx.beginPath();
-                for(let i=0; i<8; i++) {
-                    let angle = (i / 8) * Math.PI * 2 + (waveTime * 0.005);
-                    ctx.moveTo(width/2, height/2);
-                    ctx.lineTo(width/2 + Math.cos(angle)*width, height/2 + Math.sin(angle)*width);
-                }
-                ctx.strokeStyle = themeColors[0];
-                ctx.globalAlpha = 0.3;
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                ctx.globalAlpha = 1.0;
-                waveTime += 1;
-                return;
-            }
-
-            if (currentWallpaper === 'fireflies') {
-                ctx.fillStyle = 'rgba(3, 5, 8, 0.4)';
-                ctx.fillRect(0, 0, width, height);
-                particles.forEach(p => { p.update(); p.draw(); });
-                return;
-            }
-
-            // Default fallback for Starfield & Geometric
-            ctx.fillStyle = 'rgba(3, 5, 8, 0.6)'; 
-            ctx.fillRect(0, 0, width, height);
-            
-            if (currentWallpaper === 'starfield' || currentWallpaper === 'hyperspace') {
-                particles.forEach(p => { p.update(); p.draw(); });
-            } else if (currentWallpaper === 'geometric') {
-                for(let i=0; i<particles.length; i++) {
-                    particles[i].update();
-                    particles[i].draw();
-                    for(let j=i+1; j<particles.length; j++) {
-                        let dx = particles[i].x - particles[j].x;
-                        let dy = particles[i].y - particles[j].y;
-                        let distSq = dx*dx + dy*dy;
-                        if(distSq < 22500) { 
-                            let dist = Math.sqrt(distSq);
-                            ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y);
-                            ctx.strokeStyle = themeColors[1]; ctx.lineWidth = 1.5; ctx.globalAlpha = 1 - (dist/150); 
-                            ctx.stroke(); ctx.globalAlpha = 1.0;
-                        }
-                    }
-                }
-            }
+            if (window.currentWallpaper.startsWith('image:')) return; 
+            if (window.currentWallpaper === 'matrix') { ctx.fillStyle = 'rgba(3, 5, 8, 0.1)'; ctx.fillRect(0, 0, width, height); ctx.fillStyle = themeColors[0]; ctx.font = '15pt monospace'; matrixColumns.forEach((y, i) => { const text = String.fromCharCode(Math.random() * 128 + 1000); ctx.fillText(text, i * 20, y); if (y > height && Math.random() > 0.975) matrixColumns[i] = 0; else matrixColumns[i] = y + 20; }); return; }
+            if (window.currentWallpaper === 'waves') { ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height); waveTime += 0.02; for(let i=0; i<3; i++) { ctx.beginPath(); for(let x=0; x<=width; x+=20) { let y = height/2 + Math.sin(x*0.005 + waveTime + i) * 150 + Math.cos(x*0.003 - waveTime + i*2) * 80; if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.strokeStyle = i===0 ? themeColors[0] : themeColors[1]; ctx.lineWidth = 2; ctx.stroke(); } return; }
+            if (window.currentWallpaper === 'synthwave') { ctx.fillStyle = 'rgba(3, 5, 8, 1)'; ctx.fillRect(0, 0, width, height); let horizon = height * 0.55; waveTime = (waveTime || 0) + 1.5; ctx.beginPath(); ctx.arc(width/2, horizon, 100, Math.PI, 0); let grad = ctx.createLinearGradient(0, horizon - 100, 0, horizon); grad.addColorStop(0, themeColors[1]); grad.addColorStop(1, themeColors[0]); ctx.fillStyle = grad; ctx.fill(); ctx.strokeStyle = themeColors[0]; ctx.lineWidth = 1.5; ctx.beginPath(); for(let z = (waveTime % 20); z < 300; z += 20) { let y = horizon + Math.pow(z, 1.2); if (y < height) { ctx.moveTo(0, y); ctx.lineTo(width, y); } } ctx.stroke(); ctx.strokeStyle = themeColors[1]; ctx.beginPath(); for(let x = -width*2; x < width * 3; x += 80) { ctx.moveTo(width/2, horizon); ctx.lineTo(x, height); } ctx.stroke(); return; }
+            if (window.currentWallpaper === 'tunnel') { ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height); particles.sort((a,b) => b.z - a.z); particles.forEach(p => { p.update(); p.draw(); }); ctx.beginPath(); for(let i=0; i<8; i++) { let angle = (i / 8) * Math.PI * 2 + (waveTime * 0.005); ctx.moveTo(width/2, height/2); ctx.lineTo(width/2 + Math.cos(angle)*width, height/2 + Math.sin(angle)*width); } ctx.strokeStyle = themeColors[0]; ctx.globalAlpha = 0.3; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1.0; waveTime += 1; return; }
+            if (window.currentWallpaper === 'fireflies') { ctx.fillStyle = 'rgba(3, 5, 8, 0.4)'; ctx.fillRect(0, 0, width, height); particles.forEach(p => { p.update(); p.draw(); }); return; }
+            ctx.fillStyle = 'rgba(3, 5, 8, 0.6)'; ctx.fillRect(0, 0, width, height);
+            if (window.currentWallpaper === 'starfield' || window.currentWallpaper === 'hyperspace') { particles.forEach(p => { p.update(); p.draw(); }); } 
+            else if (window.currentWallpaper === 'geometric') { for(let i=0; i<particles.length; i++) { particles[i].update(); particles[i].draw(); for(let j=i+1; j<particles.length; j++) { let dx = particles[i].x - particles[j].x; let dy = particles[i].y - particles[j].y; let distSq = dx*dx + dy*dy; if(distSq < 22500) { let dist = Math.sqrt(distSq); ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = themeColors[1]; ctx.lineWidth = 1.5; ctx.globalAlpha = 1 - (dist/150); ctx.stroke(); ctx.globalAlpha = 1.0; } } } }
         }
         animate();
+
+        // Boot Init
+        window.applyMidnightTheme(localStorage.getItem('midnight_theme') || 'midnight', false);
+    </script>
+
+    <script type="module">
+        import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, initializeFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCbQWX-i8aW_wOsxamVR4tF_ndtOZ6ARIc", authDomain: "midnight-ub.firebaseapp.com", projectId: "midnight-ub", storageBucket: "midnight-ub.firebasestorage.app", messagingSenderId: "251456556509", appId: "1:251456556509:web:e2dd5d8e79a64adb877a34" };
+        const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+        const auth = getAuth(app);
+
+        let currentUserUid = null;
+        try { window.top.savePreference = window.savePreference; } catch(e){}
+        window.savePreference = async (key, value) => {
+            localStorage.setItem(`midnight_${key}`, value);
+            if (currentUserUid) {
+                const docRef = doc(db, "users", currentUserUid);
+                try { await updateDoc(docRef, { [key]: value }); } catch (e) { console.warn("Cloud sync failed.", e); }
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                try {
+                    const docSnap = await getDoc(doc(db, "users", user.uid));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.cloak) localStorage.setItem('midnight_cloak', data.cloak);
+                        if (data.wallpaper && window.setWallpaper) window.setWallpaper(data.wallpaper, false);
+                        if (data.theme && window.applyMidnightTheme) window.applyMidnightTheme(data.theme, false);
+                    }
+                } catch (e) {}
+            } else {
+                currentUserUid = null;
+            }
+        });
     </script>
 </body>
 </html>
