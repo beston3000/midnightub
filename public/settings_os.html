@@ -57,6 +57,9 @@
         .btn-stealth { background: rgba(188, 19, 254, 0.1); color: var(--accent-secondary); border-color: var(--accent-secondary); }
         .btn-stealth:hover { background: var(--accent-secondary); color: #000; box-shadow: 0 0 15px var(--accent-secondary); transform: scale(1.05); }
 
+        .btn-blob { background: rgba(0, 243, 255, 0.1); color: var(--accent-primary); border-color: var(--accent-primary); }
+        .btn-blob:hover { background: var(--accent-primary); color: #000; box-shadow: 0 0 15px var(--accent-primary); transform: scale(1.05); }
+
         .btn-danger { background: rgba(255, 74, 74, 0.1); color: var(--error); border-color: var(--error); }
         .btn-danger:hover { background: var(--error); color: #000; box-shadow: 0 0 15px var(--error); transform: scale(1.05); }
 
@@ -76,7 +79,7 @@
 
         <div class="card">
             <h2 style="color:var(--accent-primary);">TAB CLOAK PROFILE</h2>
-            <p style="color:var(--text-muted); margin-bottom: 20px;">Select the disguise used when Stealth Mode creates an invisible about:blank tab. Settings sync automatically to your cloud profile.</p>
+            <p style="color:var(--text-muted); margin-bottom: 20px;">Select the disguise used when Stealth Mode creates an invisible tab. Settings sync automatically to your cloud profile.</p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn btn-cloak" id="clk-classroom" onclick="setOSCloak('classroom')">Google Classroom</button>
                 <button class="btn btn-cloak" id="clk-google" onclick="setOSCloak('google')">Google Search</button>
@@ -93,8 +96,11 @@
 
         <div class="card">
             <h2 style="color:var(--accent-secondary);">STEALTH MODE</h2>
-            <p style="color:var(--text-muted); margin-bottom: 20px;">Deploy the OS interface into a hidden about:blank tab to evade history logging and monitoring. The current tab will self-destruct.</p>
-            <button class="btn btn-stealth" onclick="activateCloak()">ENGAGE CLOAKING</button>
+            <p style="color:var(--text-muted); margin-bottom: 20px;">Deploy the OS interface into a hidden tab to evade history logging and monitoring. The current tab will self-destruct.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-stealth" onclick="activateCloak()">ENGAGE ABOUT:BLANK</button>
+                <button class="btn btn-blob" onclick="activateBlobCloak()">ENGAGE BLOB CLOAK</button>
+            </div>
         </div>
 
         <div class="card">
@@ -114,11 +120,9 @@
         };
 
         window.setOSCloak = (type) => {
-            // Update UI
             document.querySelectorAll('.btn-cloak').forEach(b => b.classList.remove('active'));
             document.getElementById('clk-' + type).classList.add('active');
             
-            // Save to Firebase and Local via the OS Master function
             if (window.top.savePreference) {
                 window.top.savePreference('cloak', type);
             } else {
@@ -126,7 +130,6 @@
             }
         };
 
-        // Init Cloak UI
         const activeCloak = localStorage.getItem('midnight_cloak') || 'classroom';
         if(document.getElementById('clk-' + activeCloak)) {
             document.getElementById('clk-' + activeCloak).classList.add('active');
@@ -160,7 +163,7 @@
         };
         initLegacyBtnOS(); 
 
-        // --- DYNAMIC STEALTH LOGIC ---
+        // --- DYNAMIC STEALTH LOGIC (ABOUT:BLANK) ---
         window.activateCloak = () => {
             let win = window.open('about:blank', '_blank');
             if(!win) { alert("Popup blocker prevented stealth mode. Please allow popups."); return; }
@@ -175,6 +178,34 @@
             win.document.title = profile.title;
             let link = win.document.createElement('link'); link.rel = 'icon'; link.href = profile.icon;
             win.document.head.appendChild(link);
+            window.top.location.replace(profile.url);
+        };
+
+        // --- DYNAMIC STEALTH LOGIC (BLOB URL) ---
+        window.activateBlobCloak = () => {
+            const currentType = localStorage.getItem('midnight_cloak') || 'classroom';
+            const profile = cloakProfiles[currentType] || cloakProfiles.classroom;
+            const targetUrl = window.top.location.href;
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${profile.title}</title>
+                    <link rel="icon" href="${profile.icon}">
+                    <style>body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; background: #000; }</style>
+                </head>
+                <body>
+                    <iframe src="${targetUrl}" style="border: none; width: 100vw; height: 100vh; margin: 0;"></iframe>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            let win = window.open(blobUrl, '_blank');
+            
+            if(!win) { alert("Popup blocker prevented stealth mode. Please allow popups."); return; }
             window.top.location.replace(profile.url);
         };
 

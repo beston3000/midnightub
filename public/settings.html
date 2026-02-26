@@ -142,13 +142,14 @@
             <section class="card">
                 <h2 style="margin:0; font-family:Orbitron, sans-serif; font-size: 20px; letter-spacing:1px; color:var(--accent-secondary);">STEALTH MODE</h2>
                 <div class="row">
-                    <button class="btn" id="openNewTab" type="button" onclick="openGame()">Launch in Cloaked Tab</button>
+                    <button class="btn" id="openNewTab" type="button" onclick="openGame()">Launch in about:blank</button>
+                    <button class="btn" id="openBlobTab" type="button" onclick="openBlobGame()" style="border-color: var(--accent-primary); color: var(--accent-primary); background: rgba(0, 243, 255, 0.1);">Launch in Blob Cloak</button>
                 </div>
             </section>
 
             <section class="card" style="margin-top: 30px;">
                 <h2 style="margin:0; font-family:Orbitron, sans-serif; font-size: 20px; letter-spacing:1px; color:var(--accent-primary);">TAB CLOAK PROFILE</h2>
-                <p style="margin-top:10px;">Select the disguise used when Stealth Mode creates an invisible about:blank tab. Settings sync automatically to your cloud profile.</p>
+                <p style="margin-top:10px;">Select the disguise used when Stealth Mode creates an invisible tab. Settings sync automatically to your cloud profile.</p>
                 <div class="row">
                     <button class="btn btn-cloak" id="clk-classroom" onclick="setCloak('classroom')">Google Classroom</button>
                     <button class="btn btn-cloak" id="clk-google" onclick="setCloak('google')">Google Search</button>
@@ -288,6 +289,33 @@
             win.document.title = profile.title;
             let link = win.document.createElement('link'); link.rel = 'icon'; link.href = profile.icon;
             win.document.head.appendChild(link);
+            window.location.replace(profile.url);
+        }
+
+        function openBlobGame() {
+            const currentType = localStorage.getItem('midnight_cloak') || 'classroom';
+            const profile = cloakProfiles[currentType] || cloakProfiles.classroom;
+            const targetUrl = window.location.href; 
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${profile.title}</title>
+                    <link rel="icon" href="${profile.icon}">
+                    <style>body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; background: #000; }</style>
+                </head>
+                <body>
+                    <iframe src="${targetUrl}" style="border: none; width: 100vw; height: 100vh; margin: 0;"></iframe>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            let win = window.open(blobUrl, '_blank');
+            
+            if(!win) { alert("Popup blocker prevented stealth mode. Please allow popups."); return; }
             window.location.replace(profile.url);
         }
 
