@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-    <title>Midnight OS // v1.4.2</title>
+    <title>Midnight OS // v1.4.3</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,6 +177,13 @@
                 window.location.replace(profile.url);
             });
         }
+
+        // --- TAB CLOSURE PROTECTION (ANTI-LINEWIZE) ---
+        // Throws a mandatory browser popup to confirm leaving, blocking automated remote closure.
+        window.addEventListener('beforeunload', (e) => {
+            e.preventDefault();
+            e.returnValue = ''; // Required for standard modern browsers to show the prompt
+        });
     </script>
 
     <div id="static-bg"></div>
@@ -281,7 +288,6 @@
                 this.zIndex++; win.style.zIndex = this.zIndex;
                 const offset = Object.keys(this.activeWindows).length * 30; win.style.top = `${50 + offset}px`; win.style.left = `${100 + offset}px`;
                 
-                // Note the new onload function -> applyThemeToIframe
                 win.innerHTML = `
                     <div class="immersive-trigger"></div>
                     <div class="window-header" onmousedown="WindowManager.startDrag(event, this.parentElement)">
