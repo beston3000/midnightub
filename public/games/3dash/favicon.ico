@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JYK9F6YP13"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JYK9F6YP13');
+    </script>
+    <script src="https://pl28767403.effectivegatecpm.com/45/48/7d/45487d78fdd9532adca69b31c253efea.js" async></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IXL | Math, Language Arts, Science, Social Studies, and Spanish</title>
+    <meta
+      name="description"
+      content="IXL is the world's most popular subscription-based learning site for K–12. Used by over 18 million students, IXL provides personalized learning in more than 17,000 topics, covering math, language arts, science, social studies, and Spanish. Interactive questions, awards, and certificates keep kids motivated as they master skills."
+    />
+    <meta name="application-name" content="IXL Math" />
+    <meta name="apple-itunes-app" content="app-id=693689912, app-argument=https://www.ixl.com/" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://velara.cc/404" />
+    <meta property="og:title" content="IXL | Math, Language Arts, Science, Social Studies, and Spanish" />
+    <meta
+      property="og:description"
+      content="IXL is the world's most popular subscription-based learning site for K–12. Used by over 18 million students, IXL provides personalized learning in more than 17,000 topics, covering math, language arts, science, social studies, and Spanish. Interactive questions, awards, and certificates keep kids motivated as they master skills."
+    />
+    <meta property="og:url" content="https://www.ixl.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="IXL Learning" />
+    <meta
+      property="og:image"
+      content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/square_og_ixl.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="IXL | Math, Language Arts, Science, Social Studies, and Spanish" />
+    <meta
+      name="twitter:description"
+      content="IXL is the world's most popular subscription-based learning site for K–12. Used by over 18 million students, IXL provides personalized learning in more than 17,000 topics."
+    />
+    <meta
+      name="twitter:image"
+      content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/square_og_ixl.png"
+    />
+
+    <meta name="theme-color" content="#0d1117" />
+
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <link rel="stylesheet" href="styles/material-symbols.css" />
+  </head>
+  <body class="dock-collapsed">
+    <nav class="dock is-collapsed" aria-label="Primary">
+      <div class="dock-header">
+        <a class="dock-brand" href="/">
+          <img
+            class="dock-brand-icon"
+            src="/assets/images/vlr.svg"
+            alt="Velara"
+          />
+        </a>
+        <button
+          class="dock-toggle"
+          id="dock-toggle"
+          type="button"
+          aria-label="Expand sidebar"
+          aria-expanded="false"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">
+            chevron_right
+          </span>
+        </button>
+      </div>
+
+      <div class="dock-divider"></div>
+
+      <div class="dock-menu">
+        <a class="dock-item" href="/">
+          <span class="material-symbols-outlined" aria-hidden="true">home</span>
+          <span class="dock-item-text">Home</span>
+        </a>
+        <a class="dock-item" href="/g">
+          <span class="material-symbols-outlined" aria-hidden="true">
+            sports_esports
+          </span>
+          <span class="dock-item-text">Games</span>
+        </a>
+        <a class="dock-item" href="/a">
+          <span class="material-symbols-outlined" aria-hidden="true">apps</span>
+          <span class="dock-item-text">Apps</span>
+        </a>
+        <a class="dock-item" href="/messages">
+          <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+          <span class="dock-item-text">Messages</span>
+        </a>
+      </div>
+
+      <div class="dock-divider"></div>
+
+      <div class="dock-footer">
+        <a class="dock-item" href="/auth" id="profile-link">
+          <span class="material-symbols-outlined" aria-hidden="true">
+            account_circle
+          </span>
+          <span class="dock-item-text">Profile</span>
+        </a>
+        <a class="dock-item" href="/friends">
+          <span class="material-symbols-outlined" aria-hidden="true">
+            people
+          </span>
+          <span class="dock-item-text">Friends</span>
+        </a>
+        <a class="dock-item" href="/settings">
+          <span class="material-symbols-outlined" aria-hidden="true">
+            settings
+          </span>
+          <span class="dock-item-text">Settings</span>
+        </a>
+      </div>
+    </nav>
+    <main class="center">
+      <section class="hero error-hero">
+        <h1>404</h1>
+        <p class="error-copy">Page not found</p>
+        <div class="quick-links error-actions">
+          <a class="btn-community" href="/">Back to Home</a>
+        </div>
+      </section>
+    </main>
+    <script src="/js/theme.js" defer></script>
+    <script src="/js/tab-cloak.js" defer></script>
+    <script src="/js/debug.js" defer></script>
+    <script src="/scripts/battery.js"></script>
+    <script>
+      const initDockToggleDirect = () => {
+        const dock = document.querySelector(".dock");
+        const dockToggle = document.getElementById("dock-toggle");
+        if (dock && dockToggle) {
+          const icon = dockToggle.querySelector(".material-symbols-outlined");
+          const setState = (collapsed) => {
+            dock.classList.toggle("is-collapsed", collapsed);
+            document.body.classList.toggle("dock-collapsed", collapsed);
+            dockToggle.setAttribute("aria-expanded", String(!collapsed));
+            dockToggle.setAttribute(
+              "aria-label",
+              collapsed ? "Expand sidebar" : "Collapse sidebar",
+            );
+            if (icon) {
+              icon.textContent = collapsed ? "chevron_right" : "chevron_left";
+            }
+          };
+          dockToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setState(!dock.classList.contains("is-collapsed"));
+          });
+        }
+      };
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initDockToggleDirect);
+      } else {
+        initDockToggleDirect();
+      }
+    </script>
+  </body>
+</html>
